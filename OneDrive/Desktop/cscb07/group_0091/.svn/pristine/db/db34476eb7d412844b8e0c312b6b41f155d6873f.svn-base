@@ -1,0 +1,208 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import jShell.Redirection;
+import jShell.Shell;
+
+/**
+ * The history command prints out the recent commands entered by the user, 
+ * irrespective of their correctness. 
+ * It takes in a number as an optional argument. If no number is entered, 
+ * then all the commands entered by the user are displayed. 
+ * If 0 is displayed, then the program does nothing.
+ * If a negative number is entered, then an invalid argument error occurs. 
+ * If the number enterred is greater than the number of commands entered, 
+ * then everything is displayed.
+ * 
+ * @author Sankalp Sharma
+ * 
+ **/
+
+
+
+public class History extends Command {
+  @Override
+
+  /**
+   * Handles the errors for the History command. If any errors are found, 
+   * it stores the error code as a key and the corresponding 
+   * error message as value. The History isValid method takes care of
+   * additional argument error messages and non-integer 
+   * parameters and integers less than zero.
+   * 
+   * 
+   * @param args Arguments for the command
+   * @return Hashmap containing any error codes and their corresponding 
+   * error messages. If command is run successfully, 
+   * then an empty hashmap is returned.
+   */
+  public HashMap<String, String> isValid(String[] args) {
+
+    // HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+    
+    int numParams = args.length;
+    if (args.length > 2) {
+    //check for redirection
+      if ((args[1].equals(">") || args[1].equals(">>")) || 
+        (args[2].equals(">") || args[2].equals(">>"))) {
+        
+        //remove the count once you see redirection
+        numParams = numParams-2;
+      }
+    }
+    // Checking if the correct number of arguments if passed
+    if (numParams == 3 || numParams ==  4) {
+      errors.put("all", "WRONGARGS");
+      return errors;
+    }
+
+    // If second argument is passed, check if it's a number
+    else if (numParams > 1) {
+      try {
+        int numberArg = Integer.parseInt(args[1]);
+        if (numberArg < 0) {
+          errors.put(args[1], "LESSTHANZERO");
+        }
+      } catch (NumberFormatException e) {
+        errors.put(args[1], "INVALIDARGS");
+      }
+    }
+
+    return errors;
+  }
+
+  @Override
+  /**
+   * The run method parses the arguments to determine how many user entered 
+   * commands to print. It assumes all the arguments are of the current format.
+   * 
+   * @param array of Strings
+   **/
+  public void run(String[] args) {
+
+    Redirection r = new Redirection();
+    ArrayList<String> commandHistory =
+        Shell.getShell().getUserData().getCommandHistory();
+    // variable that will determine where the loop should begin
+    int start = 0;
+    // 1st case no optional number arguments. leave start as is
+    if (args.length == 1) {
+      start = 0;
+    } else {
+      // if it gets to here,that means its valid integer,so convert it for usage
+      int numberArg = Integer.parseInt(args[1]);
+
+      // now check within range
+      if (numberArg > 0 && numberArg <= commandHistory.size()) {
+        // start from most recent command
+        start = commandHistory.size() - numberArg;
+      }
+      // account case for 0 special case. Do nothing and return back to prompt
+      else if (numberArg == 0) {
+        return;
+      }
+    }
+    // loop through list, using correct value of start
+
+    String outputStr = "";
+    for (int i = start; i < commandHistory.size(); i++) {
+      outputStr += (i + 1) + "." + commandHistory.get(i) + "\n";
+    }
+  //print regulary
+    if (args.length > 1 && args[args.length-2].startsWith(">"))
+    {
+      r.fileHandling(args[args.length-2], args[args.length-1], outputStr, Shell.getShell().getFileSystem());
+    }
+    else {
+      Shell.getShell().outputToShellln(outputStr);
+    }
+    
+  }
+
+  @Override
+  public String toString() {
+
+    return "history";
+
+  }
+  
+  private void historyRedirection(String args[]) {
+    //check for normal 
+    
+  }
+
+
+
+  /*
+   * public static void main(String args[]) {
+   * 
+   * //TESTING VARIOUS CASES FOR HISTORY 
+   * Shell shell = new Shell();
+   * 
+   * //test 1 prints out 1.history 
+   * String test1 = "history"; 
+   * shell.getShell().onInput(test1);
+   * 
+   * //test 2 prints out 2.history 
+   * String test2 = "history 1"; 
+   * shell.getShell().onInput(test2);
+   * 
+   * //test 3 just returns back to prompt 
+   * String test3 = "history 0"; 
+   * shell.getShell().onInput(test3);
+   * 
+   * //test 4 gives the Error: Please Enter a non-negative number 
+   * String test4 = "history -2";
+   * shell.getShell().onInput(test4);
+   * 
+   * //test 5 gives the Error: Argument type is incorrect.
+   * String test5 = "history a";
+   * shell.getShell().onInput(test5);
+   * 
+   * //test 6 gives the Error: Incorrect number of arguments. 
+   * String test6 = "history 2 3";
+   * shell.getShell().onInput(test6);
+   * 
+   * //test 7 prints out everything up till that point 
+   * String test7 = "history 23";
+   * shell.getShell().onInput(test7);
+   * 
+   * //test 8 give the 5 most recent commands
+   * String test8= "history 5";
+   * shell.getShell().onInput(test8); }
+   */
+
+
+}

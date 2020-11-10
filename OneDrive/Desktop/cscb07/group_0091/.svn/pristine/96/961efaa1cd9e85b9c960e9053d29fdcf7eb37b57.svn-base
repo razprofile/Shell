@@ -1,0 +1,14 @@
+Class name: Cd
+Parent class: Command
+Subclasses: none
+
+Responsibilities:
+* go to a directory at given relative path
+* go to a directory at given full path
+* go to parent directory
+* check validity of given arguments
+
+Collaborators:
+* Path
+* Directory
+* FileSystem

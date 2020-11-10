@@ -1,0 +1,12 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class RedirectionException extends Error {
+
+  private static final String errorTemplate = "Arguments for redirection are invalid.";
+
+  public RedirectionException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

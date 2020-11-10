@@ -1,0 +1,286 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jshell;
+
+import jshell.commands.Cat;
+import jshell.commands.Cd;
+import jshell.commands.Command;
+import jshell.commands.Cp;
+import jshell.commands.Curl;
+import jshell.commands.Echo;
+import jshell.commands.Exit;
+import jshell.commands.Find;
+import jshell.commands.History;
+import jshell.commands.Load;
+import jshell.commands.Ls;
+import jshell.commands.Man;
+import jshell.commands.Mkdir;
+import jshell.commands.Mv;
+import jshell.commands.Popd;
+import jshell.commands.Pushd;
+import jshell.commands.Pwd;
+import jshell.commands.Rm;
+import jshell.commands.Save;
+import jshell.commands.Speak;
+import jshell.commands.Tree;
+import jshell.errors.CommandNotFoundException;
+import jshell.fileSystem.FileSystem;
+import jshell.fileSystem.Path;
+import jshell.fileSystem.Redirection;
+import jshell.interfaces.IFileSystem;
+import jshell.interfaces.IRedirection;
+import jshell.interfaces.IShell;
+import jshell.interfaces.IUserData;
+import jshell.interfaces.InputModeCommand;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+
+/**
+ * Main shell class.
+ * 
+ * @author Raz
+ */
+public class Shell extends IShell {
+
+  private static Shell Shell; // The main shell object for all classes to use
+
+  private IUserData userData;
+  private ArrayList<Command> commands; // Stores all the commands
+
+  private FileSystem fileSystem;
+
+  private Scanner input; // User input for the Shell
+  private boolean running; // Keep track if the Shell is running
+
+  private Redirection redirect; // Single Redirection object to be used by all classes
+  private InputModeCommand inputMode;
+
+  public InputModeCommand getInputMode() {
+    return inputMode;
+  }
+
+  public void setInputMode(InputModeCommand inputModeCommand) {
+    this.inputMode = inputModeCommand;
+  }
+
+  /**
+   * constructor for Shell.
+   */
+  public Shell() {
+
+    super();
+    Shell = (Shell) IShell.getShell();
+    setIsRunning(true);
+    commands = new ArrayList<Command>();
+    input = new Scanner(System.in);
+    redirect = new Redirection();
+    userData = new UserData(new Path("/"));
+    fileSystem = FileSystem.getFileSystem();
+    registerCommands();
+    // TODO Add directory class and create an object for it here
+  }
+
+  /**
+   * Returns userData.
+   * 
+   * @return The main UserData object for the shell
+   */
+  public IUserData getUserData() {
+
+    return userData;
+  }
+
+  /**
+   * Sets user dtata in shell.
+   * 
+   * @param ud is the UserData interface
+   */
+  public void setUserData(IUserData ud) {
+    userData = (IUserData) ud;
+  }
+
+  // Register all commands to the shell.
+  private void registerCommands() {
+    commands.add(new Exit());
+    commands.add(new Mkdir());
+    commands.add(new Cd());
+    commands.add(new Cat());
+    commands.add(new Echo());
+    commands.add(new Man());
+    commands.add(new Pwd());
+    commands.add(new Ls());
+    commands.add(new Pushd());
+    commands.add(new Popd());
+    commands.add(new History());
+    commands.add(new Mv());
+    commands.add(new Cp());
+    commands.add(new Rm());
+    commands.add(new Find());
+    commands.add(new Save());
+    commands.add(new Load());
+    commands.add(new Curl(new UrlDataFetcher()));
+    commands.add(new Tree());
+    commands.add(new Speak());
+    // commands.add(new CommandName());
+  }
+
+  /**
+   * Returns shell.
+   * 
+   * @return The shell object all others classes use
+   */
+  public static Shell getShell() {
+
+    return Shell;
+  }
+
+  /**
+   * Returns the input the user typed in the shell.
+   * 
+   * @return The input the user typed in the shell
+   */
+  public String getUserInput() {
+
+    return this.input.nextLine();
+  }
+
+  /**
+   * Output a value to the shell.
+   * 
+   * @param value The value to be output to the shell.
+   */
+  public void outputToShell(String value) {
+
+    System.out.print(value);
+  }
+
+  /**
+   * Prints an error to shell.
+   * 
+   * @param value the string error printed in red to shell
+   */
+  public void outputToShellErr(String value) {
+
+    System.err.println(value);
+  }
+
+  @Override
+  public void outputToShellln(String value) {
+    System.out.println(value);
+
+  }
+
+  /**
+   * Processes user's input.
+   * 
+   * @param input The input the user typed to the shell
+   */
+  public void onInput(String input) {
+    try {
+      if (inputMode != null) {
+        getUserData().getCommandHistory()
+            .set(getUserData().getCommandHistory().size() - 1,
+                getUserData().getCommandHistory()
+                    .get(getUserData().getCommandHistory().size() - 1) + " "
+                    + input);
+        inputMode.onInput(input);
+        return;
+      }
+      userData.getCommandHistory().add(input);
+      /*
+       * Get rid of all white spaces, and split the arguments into a String array
+       */
+      String[] args = input.trim().split("\\s+");
+      /*
+       * Check if command exists by comparing the first argument to class name
+       */
+      for (Command c : this.commands) {
+        if (c.getClass().getSimpleName().toLowerCase().equals(args[0])) {
+          // run command
+          String output = c.run(args);
+          if (!output.isEmpty()) {
+            outputToShellln(output);
+          }
+          return;
+        }
+      }
+      throw new CommandNotFoundException(args[0]);
+    } catch (jshell.errors.Error e) {
+      outputToShellErr("Error: " + e.getError());
+    }
+  }
+
+  /**
+   * Returns Whether the program is running or not.
+   * 
+   * @return Whether the program is running or not
+   */
+  public boolean isRunning() {
+
+    return running;
+  }
+
+  /**
+   * Sets running to isRunning.
+   * 
+   * @param isRunning The boolean value of isRunning
+   */
+  public void setIsRunning(boolean isRunning) {
+
+    running = isRunning;
+  }
+
+
+  /**
+   * Method to get reference to redirection.
+   * 
+   * @return reference to redirection
+   */
+  public IRedirection getRedirection() {
+    return redirect;
+  }
+
+  @Override
+  public void shutDown() {
+    commands.stream().filter(command -> command.getClass() == Speak.class)
+        .forEach(x -> {
+          ((Speak) x).shutDown();
+        });
+    setIsRunning(false);
+  }
+
+  @Override
+  public IFileSystem getFileSystem() {
+    return fileSystem;
+  }
+
+}

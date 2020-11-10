@@ -1,0 +1,14 @@
+package jShell.mockClasses;
+
+import jShell.interfaces.*;
+
+public class MockError implements IError{
+
+	@Override
+	public String errorMessage(String code) {
+		return "Holy Moly Macaroni! Error occured";
+	}
+	
+	
+
+}

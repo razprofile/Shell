@@ -1,0 +1,84 @@
+package jShell.commands;
+
+
+import jShell.Shell;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.InvalidURLException;
+import jShell.Errors.BadFileNameException;
+import jShell.interfaces.IDirectory;
+import jShell.interfaces.IRedirection;
+import jShell.interfaces.IShell;
+import java.net.*;
+import java.io.*;
+import jShell.fileSystem.File;
+import jShell.fileSystem.FileSystemNode;
+
+public class Curl extends Command {
+
+  public Curl() {
+    super();
+  }
+    // TODO Auto-generated constructor stub
+  
+
+  @Override
+  public String run(String[] args) throws ArgsNumberException,InvalidURLException,BadFileNameException  {
+    //catch errors right away
+    Curl.argChecker(args);
+    curlRun(args[1]);
+    return "";
+  }
+
+  
+  
+  
+  private  void curlRun(String path) throws InvalidURLException,BadFileNameException {
+    //remove slash
+    try {
+      URL url = new URL(path);
+      //assuming the format is sampleurl.com/file.txt
+      String fileName = path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf("."));
+      
+      if(!FileSystemNode.nameChecker(fileName)) {
+        throw new BadFileNameException(path);
+      }
+      //read the file and add it to the current working directory
+      String contents = "";
+       BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8")); 
+          for (String line; (line = reader.readLine()) != null;) {
+             contents += line + "\n";
+          }
+          //add it to FileSystem
+          File f = new File(fileName);
+          f.setContents(contents);
+          IDirectory d = Shell.getShell().getUserData().getCurDir();
+          //overwrite if already exists
+          if(d.ifChildExists(fileName)) {
+            IRedirection r = IShell.getShell().getRedirection();
+            r.fileHandling(">", fileName, contents);
+          }
+          else {
+            d.tryAddChildren(f);
+          }
+    }
+      catch(Exception e) {
+        throw new InvalidURLException(path);
+      }
+    }
+  
+  
+  private static void argChecker(String args[]) throws ArgsNumberException,InvalidURLException {
+    if(args.length != 2) {
+      throw new ArgsNumberException();
+    }
+  }
+  
+  @Override
+  public String toString() {
+    // TODO Auto-generated method stub
+    return "curl";
+  }
+
+  }
+
+

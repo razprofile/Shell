@@ -1,0 +1,9 @@
+package jShell.interfaces;
+
+import jShell.Errors.InvalidURLException;
+
+public interface IUrlDataFetcher {
+  
+  public String getUrlData(String path) throws InvalidURLException;
+
+}

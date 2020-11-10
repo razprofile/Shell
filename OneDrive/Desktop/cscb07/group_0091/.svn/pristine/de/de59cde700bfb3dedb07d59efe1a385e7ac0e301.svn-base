@@ -1,0 +1,12 @@
+Class name: Man
+Parent class: ShellComand
+Subclasses: none
+
+Responsibilities:
+* Print out documentation for a command entered by user
+* Give an error message if command is not found
+
+Collaborators:
+* Shell
+* ShellCommand
+* Error

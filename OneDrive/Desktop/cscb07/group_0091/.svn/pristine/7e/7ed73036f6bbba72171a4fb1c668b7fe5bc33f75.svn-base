@@ -1,0 +1,30 @@
+package jShell.commands;
+
+import java.util.HashMap;
+
+public abstract class Command {
+
+	/**
+	 * Run command with specified arguments, assuming passed arguments are valid
+	 * 
+	 * @param args arguments for the command
+	 */
+	public abstract void run(String args[]);
+
+	/**
+	 * If arguments for the command are valid, return empty hashmap. Otherwise, return a hashmap,
+	 * mapping invalid arguments to the error codes of errors they cause. Use keyword "all" to 
+	 * specify errors that are caused by all arguments together
+	 * 
+	 * @param args arguments for the command
+	 * @return hashmap of invalid arguments error code if error occurred; empty hashmap if no error
+	 * occurred
+	 */
+	public abstract HashMap<String, String> isValid(String[] args);
+	
+	/**
+	 * Return the name of the command
+	 */
+	public abstract String toString();
+	
+}

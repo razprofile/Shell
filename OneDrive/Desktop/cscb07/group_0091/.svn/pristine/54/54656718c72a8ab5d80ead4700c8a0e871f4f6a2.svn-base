@@ -1,0 +1,15 @@
+package jShell;
+
+public class Exit extends Command {
+
+	@Override
+	public void run(String[] args) {
+		if (args.length != 1) {
+			Error e = new Error();
+			Shell.getShell().outputToShell(e.errorMessage("WRONGARGS"));
+			return;
+		}
+		Shell.getShell().setIsRunning(false);
+	}
+
+}

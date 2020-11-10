@@ -1,0 +1,13 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class RedirectionOperatorsException extends Error {
+
+  private static final String errorTemplate = "Argument type is "
+      + "incorrect. Operators for redirection must be > or >>";
+
+  public RedirectionOperatorsException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

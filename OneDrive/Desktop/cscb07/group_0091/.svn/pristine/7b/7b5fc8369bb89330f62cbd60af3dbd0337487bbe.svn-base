@@ -1,0 +1,106 @@
+package jShell;
+
+
+public abstract class FileSystemNode {
+
+  /*
+   * Abstract class that Directory and File class use as super class.
+   * 
+   * 
+   */
+
+  private String name;
+
+  private Path path;
+  
+
+  public FileSystemNode() {
+
+  }
+
+  public FileSystemNode(String name) {
+    /*
+     * Constructor used for instantiating the subclasses if there is no additional logic to be used
+     * 
+     */
+
+    this.name = name;
+
+  }
+
+  public FileSystemNode(String name, Path path) {
+
+    /*
+     * Constructor used for instantiating the subclasses with a path
+     * 
+     * 
+     */
+
+    this.name = name;
+    this.path = path;
+
+  }
+
+  public String getName() {
+
+    /**
+     * Returns name of FileSystemNode
+     * 
+     * @return String the name of node
+     */
+
+    return name;
+  }
+
+  public abstract boolean ifChildExists(String name);
+
+
+  public void setPath(Path path) {
+
+    /*
+     * sets path
+     */
+
+    this.path = path;
+
+  }
+
+  public Path getPath() {
+    /*
+     * returns full path of node
+     * 
+     */
+
+    return path;
+  }
+  
+  public static boolean nameChecker(String name) {
+    Error e = new Error();
+    String spaceChecker[] = name.trim().split("\\s+");
+    if (spaceChecker.length > 1) {
+      return false;
+    }
+      // Check for invalid symbols in the name
+      String invalidChar[] = {"/", ".", "!", "@", "#", "$", "%", "^", "&", "*",
+          "(", ")", "{", "}", "~", "|", "<", ">", "?"};
+      String symbolChecker[] = name.split("");
+      for (String currentChar : symbolChecker) {
+        for (int i = 0; i < invalidChar.length; i++) {
+          if (currentChar.equals(invalidChar[i]) == true) {
+            return false;
+          }
+        }
+      }
+      return true;
+  }
+
+  public void setName(String name) {
+    if (!(nameChecker(name))) {
+      return;
+    }
+    this.name = name;
+    }
+  
+}
+
+

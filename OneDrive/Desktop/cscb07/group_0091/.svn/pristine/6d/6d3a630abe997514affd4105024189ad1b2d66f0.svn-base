@@ -1,0 +1,11 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class WorkingDirException extends Error {
+
+  private static final String errorTemplate = "Cannot delete current working directory.";
+  public WorkingDirException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

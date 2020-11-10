@@ -1,0 +1,8 @@
+package jShell;
+/**
+ * Abstract class for reading input from multiple lines in the shell
+ * @author Raz
+ */
+public interface InputModeCommand {
+	public void onInput(String input);
+}

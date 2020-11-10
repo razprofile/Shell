@@ -1,0 +1,76 @@
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.commands.Cat;
+import jShell.mockClasses.MockShell;
+
+public class CatTest {
+
+  MockShell s = new MockShell();
+  Cat c = new Cat ();
+
+  @Test
+  public void testRun() throws FileNotFoundException, ArgsNumberException, InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException { // Null pointer exceptions since the files don't exist
+    String[] params = {"cat", "file"};
+    assertEquals("hello\n\n\n\n", c.run(params));
+  }
+  
+  @Test
+  public void testRunMultipleFiles() throws FileNotFoundException, ArgsNumberException, InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException {
+    String[] params = {"cat", "file", "file"};
+    assertEquals("hello\n\n\n\nhello\n\n\n\n", c.run(params));
+  }
+  
+  @Test
+  public void testRunBadFileAmongGoodOnes() throws FileNotFoundException, ArgsNumberException, InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException {
+    String[] params = {"cat", "file", "badfile", "file"};
+    assertEquals("hello\n\n\n\nhello\n\n\n\n", c.run(params));
+  }
+  @Test
+  public void testRunAllBadFiles() throws FileNotFoundException, ArgsNumberException, InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException {
+    String[] params = {"cat", "badfile", "badfile2"};
+    assertEquals("", c.run(params));
+  }
+  
+  @Test
+  public void testRunRedirection() throws FileNotFoundException, ArgsNumberException, InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException { //Fail for now
+    String[] params = {"cat", "file", ">", "file2"};
+    assertEquals("", c.run(params));
+  }
+  
+  @Test
+  public void testRunRedirectionBadFile() throws FileNotFoundException, ArgsNumberException, InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException {
+    String[] params = {"cat", "badfile", ">", "file2"};
+    assertEquals("", c.run(params));
+  }
+  
+  @Test
+  public void testRunRedirectionMultipleGoodFiles() throws FileNotFoundException, ArgsNumberException, InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException { //Fail for now
+    String[] params = {"cat", "file", "file", ">", "file2"};
+    assertEquals("", c.run(params));
+  }
+  @Test
+  public void testRunRedirectionBadFileAmongGood() throws FileNotFoundException, ArgsNumberException, InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException { //Fail for now
+    String[] params = {"cat", "file", "badfile", ">", "file2"};
+    assertEquals("", c.run(params));
+  }
+  @Test
+  public void testRunRedirectionMultipleBadFiles() throws FileNotFoundException, ArgsNumberException, InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException { 
+    String[] params = {"cat", "badfile", "badfile", ">", "file2"};
+    assertEquals("", c.run(params));
+  }
+
+  @Test
+  public void testToString() {
+    // Testing toString's output
+    assertEquals("cat", c.toString());
+  }
+
+}

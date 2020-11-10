@@ -1,0 +1,13 @@
+Class name: Mkdir
+Parent class (if any): ShellCommand
+Subclasses (if any): -
+
+Responsibilities:
+*Create a new directory with a given name in the current directory.
+*Create a new diretory with a given name in a specified path.
+*Prints an error message to shell, if the directory already exists.
+
+Collaborators:
+*Directory
+*Path
+*Error

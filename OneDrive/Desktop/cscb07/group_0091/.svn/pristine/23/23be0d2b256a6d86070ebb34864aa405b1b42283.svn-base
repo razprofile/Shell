@@ -1,0 +1,10 @@
+package jShell;
+
+public class Exit extends Command {
+
+	@Override
+	public void run(String[] args) {
+		Shell.getShell().setIsRunning(false);
+	}
+
+}

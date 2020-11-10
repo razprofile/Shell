@@ -1,0 +1,193 @@
+package jShell.mockClasses;
+
+import java.util.HashMap;
+import jShell.Errors.InvalidPathException;
+import jShell.interfaces.IDirectory;
+import jShell.interfaces.IFile;
+import jShell.interfaces.IFileSystem;
+import jShell.interfaces.IFileSystemNode;
+import jShell.interfaces.IPath;
+import jShell.interfaces.IShell;
+
+public class MockFileSystem implements IFileSystem{
+
+  /**
+   * This is a mock version of file system class
+   * 
+   * In this class:
+   *   - /this/is/a/valid/full/path/to/dir: represents any valid full path that ends at directory
+   *   - this/is/a/valid/relative/path/to/dir: represents any valid relative path that ends at directory
+   *   - /this/is/a/valid/full/path/to/file: represents any valid full path that ends at file
+   *   - this/is/a/valid/relative/path/to/file: represents any valid relative path that ends at file
+   *   - /this/is/a/valid/full/path/to/dir/child: represents any valid path for the new directory or file to be created
+   */
+  
+  public static final String fullPathRoot = "/";
+  public static final String workingDirFullPath = "/working";
+  public static final String validDirFullPath = "/working/childDir";
+  public static final String validFileFullPath = "/working/childFile";
+  public static final String validDirRelativePath = "childDir";
+  public static final String validFileRelativePath = "childFile";
+  
+  public static IDirectory rootDir;
+  public static IDirectory workingDir;
+  public static IDirectory childDir;
+  public static IFile childFile;
+  
+  private static HashMap<String, IFileSystemNode> paths;
+  
+  public MockFileSystem() {
+    initNodes();
+    initMapping();
+  }
+  
+  private void initNodes() {
+    rootDir = new MockDirectory("");
+    workingDir = new MockDirectory("working");
+    childDir = new MockDirectory("childDir");
+    childFile = new MockFile("childFile");
+  }
+  
+  private void initMapping() {
+    paths = new HashMap<String, IFileSystemNode>();
+    paths.put(workingDirFullPath, workingDir);
+    paths.put(validDirFullPath, childDir);
+    paths.put(validFileFullPath, childFile);
+    paths.put(validFileRelativePath, childFile);
+    paths.put(validDirRelativePath, childDir);
+    paths.put(fullPathRoot, rootDir);
+  }
+  
+  
+  @Override
+  public IDirectory getRootDir() {
+    return rootDir;
+  }
+  
+  public void setRootDir(IDirectory newRoot) {
+    rootDir = newRoot;
+  }
+
+  @Override
+  public IFileSystemNode getNodeAtFullPath(IPath path) {
+    String p = path.toString();
+    
+    if (p.length() == 0 || p.charAt(0)!='/') {
+      return null;
+    }
+    if (paths.containsKey(p)) {
+      return paths.get(p);
+    }
+    return null;
+  }
+
+  @Override
+  public IFileSystemNode getNodeAtRelativePath(IPath path) {
+    String p = path.toString();
+    
+    if (p.length() != 0 && p.charAt(0)=='/') {
+      return null;
+    }
+    if (paths.containsKey(p)) {
+      return paths.get(p);
+    }
+    return null;
+  }
+
+  @Override
+  public IFileSystemNode getNodeAtPath(IPath path) {
+
+    String p = path.toString();
+    
+    if (paths.containsKey(p)) {
+      return paths.get(p);
+    }
+    return null;
+        
+  }
+
+  @Override
+  public IFile createNewFile(IPath path) {
+    String p = path.getParentPath().toString();
+    
+    if (paths.containsKey(p) && paths.get(p) instanceof IDirectory) {
+      return new MockFile("newFile");
+    }
+    
+    return null;
+  }
+
+  @Override
+  public IDirectory createNewDirectory(IPath path) {
+    String p = path.getParentPath().toString();
+    
+    if (paths.containsKey(p) && paths.get(p) instanceof IDirectory) {
+      return new MockDirectory("newDir");
+    }
+    
+    return null;
+  }
+
+  @Override
+  public IDirectory getParent(IFileSystemNode node) {
+    
+    if (node == rootDir) {
+      return rootDir;
+    }
+    if (node == workingDir) {
+      return rootDir;
+    }
+    if (node == childDir || node == childFile) {
+      return workingDir;
+    }
+    
+    return null;
+    
+  }
+
+  @Override
+  public IFileSystemNode removeNode(IPath toDelete) throws InvalidPathException {
+    String p = toDelete.toString();
+    if (!paths.containsKey(p)) {
+      throw new InvalidPathException();
+    }
+    if (paths.get(p) == workingDir) {
+      IShell.getShell().outputToShellln("Trying to remove working directory");
+      return null;
+    }
+    
+    IShell.getShell().outputToShellln("Removed a node at path " + p);
+    return paths.get(p);
+  }
+
+  @Override
+  public IFileSystemNode moveNode(IPath pathToNode, IPath newParent) throws InvalidPathException {
+    
+    String node = pathToNode.toString();
+    String parent  = newParent.toString();
+    
+    if (!paths.containsKey(node) || !paths.containsKey(parent)) {
+      throw new InvalidPathException();
+    }
+    
+    return removeNode(pathToNode);
+
+  }
+
+  @Override
+  public IFileSystemNode copyNode(IPath pathToNode, IPath newParent) throws InvalidPathException {
+    String node = pathToNode.toString();
+    String parent  = newParent.toString();
+    
+    if (!paths.containsKey(node) || !paths.containsKey(parent)) {
+      throw new InvalidPathException();
+    }
+    
+    IShell.getShell().outputToShellln("Copying a node at path " + node + 
+        ". To location " + parent);  
+    
+    return paths.get(node);
+    
+  }
+
+}

@@ -1,0 +1,13 @@
+Class name: Path
+Parent class: none
+Subclasses: none
+
+Responsibilities:
+* Get the path of a directory or a file
+* Follow a path ending at a directory or a file
+* If path does not exist, give an error
+
+Collaborators:
+* File
+* Directory
+* Error

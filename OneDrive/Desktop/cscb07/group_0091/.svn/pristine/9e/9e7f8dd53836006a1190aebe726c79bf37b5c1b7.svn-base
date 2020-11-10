@@ -1,0 +1,93 @@
+package test;
+
+import static org.junit.Assert.*;
+import java.util.HashMap;
+import org.junit.Test;
+import jShell.Path;
+import jShell.Shell;
+import jShell.commands.Cat;
+
+public class CatTest {
+
+  Cat c = new Cat();
+  Shell s = new Shell();
+  HashMap<String, String> expectedErrors = new HashMap<String, String>();
+
+  @Test
+  public void testRun() {
+    String[] params = {"cat", "file"};
+    //assertEquals("hello\n\n\n\n", c.run(params));
+    fail("Mock Shell not implemented yet");
+  }
+  
+  @Test
+  public void testRunMultipleFiles() {
+    String[] params = {"cat", "file", "file2"};
+    //assertEquals("hello\n\n\n\nthere\n\n\n\n", c.run(params));
+    fail("Mock Shell not implemented yet");
+  }
+  
+  @Test
+  public void testRunBadFileAmongGoodOnes() {
+    String[] params = {"cat", "file", "badfile", "file2"};
+    fail("Mock Shell not implemented yet");
+  }
+  @Test
+  public void testRunAllBadFiles() {
+    String[] params = {"cat", "badfile", "badfile2"};
+    fail("Mock Shell not implemented yet");
+  }
+  
+  @Test
+  public void testRunRedirection() { //Fail for now
+    String[] params = {"cat", "file", ">", "file2"};
+    c.run(params);
+    Path p = new Path("file2");
+    assertNotNull(Shell.getShell().getFileSystem().getNodeAtPath(p)); // Check file's creation
+  }
+  
+  @Test
+  public void testRunRedirectionBadFile() {
+    String[] params = {"cat", "badfile", ">", "file2"};
+    c.run(params);
+    Path p = new Path("file2");
+    assertNull(Shell.getShell().getFileSystem().getNodeAtPath(p)); // Check file's creation
+  }
+  
+  @Test
+  public void testRunRedirectionMultipleGoodFiles() { //Fail for now
+    String[] params = {"cat", "file", "file3", ">", "file2"};
+    c.run(params);
+    Path p = new Path("file2");
+    assertNotNull(Shell.getShell().getFileSystem().getNodeAtPath(p)); // Check file's creation
+  }
+  @Test
+  public void testRunRedirectionBadFileAmongGood() { //Fail for now
+    String[] params = {"cat", "file", "badfile", ">", "file2"};
+    c.run(params);
+    Path p = new Path("file2");
+    assertNotNull(Shell.getShell().getFileSystem().getNodeAtPath(p)); // Check file's creation
+  }
+  @Test
+  public void testRunRedirectionMultipleBadFiles() { 
+    String[] params = {"cat", "badfile", "badfile2", ">", "file2"};
+    c.run(params);
+    Path p = new Path("file2");
+    assertNull(Shell.getShell().getFileSystem().getNodeAtPath(p)); // Check file's creation
+  }
+  
+  @Test
+  public void testIsValid() {
+    //Invalid commands
+    expectedErrors.put("all", "WRONGARGS");
+    String[] params = {"cat"};
+    assertEquals(expectedErrors, c.isValid(params));
+  }
+
+  @Test
+  public void testToString() {
+    // Testing toString's output
+    assertEquals("cat", c.toString());
+  }
+
+}

@@ -1,0 +1,80 @@
+package test;
+
+import static org.junit.Assert.*;
+import java.util.HashMap;
+import org.junit.Test;
+import jShell.commands.Cat;
+import jShell.mockClasses.MockShell;
+
+public class CatTest {
+
+  MockShell s = new MockShell();
+  Cat c = new Cat ();
+  HashMap<String, String> expectedErrors = new HashMap<String, String>();
+
+  @Test
+  public void testRun() { // Null pointer exceptions since the files don't exist
+    String[] params = {"cat", "file"};
+    assertEquals("hello\n\n\n\n", c.run(params));
+  }
+  
+  @Test
+  public void testRunMultipleFiles() {
+    String[] params = {"cat", "file", "file"};
+    assertEquals("hello\n\n\n\nhello\n\n\n\n", c.run(params));
+  }
+  
+  @Test
+  public void testRunBadFileAmongGoodOnes() {
+    String[] params = {"cat", "file", "badfile", "file"};
+    assertEquals("hello\n\n\n\nhello\n\n\n\n", c.run(params));
+  }
+  @Test
+  public void testRunAllBadFiles() {
+    String[] params = {"cat", "badfile", "badfile2"};
+    assertEquals("", c.run(params));
+  }
+  
+  @Test
+  public void testRunRedirection() { //Fail for now
+    String[] params = {"cat", "file", ">", "file2"};
+    assertEquals("", c.run(params));
+  }
+  
+  @Test
+  public void testRunRedirectionBadFile() {
+    String[] params = {"cat", "badfile", ">", "file2"};
+    assertEquals("", c.run(params));
+  }
+  
+  @Test
+  public void testRunRedirectionMultipleGoodFiles() { //Fail for now
+    String[] params = {"cat", "file", "file", ">", "file2"};
+    assertEquals("", c.run(params));
+  }
+  @Test
+  public void testRunRedirectionBadFileAmongGood() { //Fail for now
+    String[] params = {"cat", "file", "badfile", ">", "file2"};
+    assertEquals("", c.run(params));
+  }
+  @Test
+  public void testRunRedirectionMultipleBadFiles() { 
+    String[] params = {"cat", "badfile", "badfile", ">", "file2"};
+    assertEquals("", c.run(params));
+  }
+  
+  @Test
+  public void testIsValid() {
+    //Invalid commands
+    expectedErrors.put("all", "WRONGARGS");
+    String[] params = {"cat"};
+    assertEquals(expectedErrors, c.isValid(params));
+  }
+
+  @Test
+  public void testToString() {
+    // Testing toString's output
+    assertEquals("cat", c.toString());
+  }
+
+}

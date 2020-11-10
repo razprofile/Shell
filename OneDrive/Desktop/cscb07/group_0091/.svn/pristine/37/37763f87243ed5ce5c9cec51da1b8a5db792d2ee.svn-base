@@ -1,0 +1,13 @@
+Class name: Pwd
+Parent class (if any): Command
+Subclasses (if any): -
+
+Responsibilities:
+* print the full path to current working directory
+* check if unneeded arguments were entered
+
+Collaborators:
+* Path
+* Directory
+* Shell
+* UserData

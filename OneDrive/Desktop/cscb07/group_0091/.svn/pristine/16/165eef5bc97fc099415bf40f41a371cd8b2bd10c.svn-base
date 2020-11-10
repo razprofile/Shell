@@ -1,0 +1,48 @@
+package jShell.commands;
+
+import jShell.Errors.*;
+import jShell.fileSystem.FileSystem;
+import jShell.interfaces.IShell;
+import jShell.UserData;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+
+public class Load extends Command{
+  
+  @Override
+  public String run(String[] args) 
+      throws LoadNotFirstException, ArgsNumberException, FileNotFoundException,
+      UnknownErrorException{
+    
+    if (args.length != 2) {
+      throw new ArgsNumberException();
+    }
+    
+    try {
+      FileInputStream file = new FileInputStream(args[1]);
+      ObjectInputStream in = new ObjectInputStream(file);
+      
+      FileSystem newFS = (FileSystem)in.readObject();
+      UserData newUD = (UserData)in.readObject();
+      
+      FileSystem.setFileSystem(newFS);
+      IShell.getShell().setUserData(newUD);
+      
+      in.close();
+    } catch (IOException e) {
+      throw new FileNotFoundException(args[1]);
+    } catch (ClassNotFoundException e) {
+      throw new UnknownErrorException();
+    }
+    
+    
+    return "";
+  }
+
+  @Override
+  public String toString() {
+    return "load";
+  }
+
+}

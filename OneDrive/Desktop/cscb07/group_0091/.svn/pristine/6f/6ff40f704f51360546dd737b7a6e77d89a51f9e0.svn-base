@@ -1,0 +1,76 @@
+package test;
+
+import static org.junit.Assert.*;
+import java.util.HashMap;
+import org.junit.Test;
+import jShell.fileSystem.Path;
+import jShell.interfaces.IPath;
+import jShell.Shell;
+import jShell.Errors.*;
+import jShell.commands.Pwd;
+import jShell.mockClasses.MockFileSystem;
+import jShell.mockClasses.MockPath;
+import jShell.mockClasses.MockShell;
+import jShell.mockClasses.MockUserData;
+
+public class PwdTest {
+  
+  MockShell s = new MockShell();
+  Pwd p = new Pwd();
+  
+  
+  @Test
+  public void testtoString() {
+    assertEquals("pwd", p.toString());
+  }
+  
+  @Test(expected = ArgsNumberException.class)
+  public void testwithInvalidArgs() throws  ArgsNumberException, RedirectionException, InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException {
+    String[] params = {"pwd","a"};
+    p.run(params);
+ 
+    }
+    
+  @Test(expected = BadFileNameException.class)
+    public void testRedirectionWithInvalidFileName() throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException, ArgsNumberException, RedirectionException {
+      String[] params = {"pwd",">","!"};
+      p.run(params);
+    }
+  
+  @Test
+  public void testatWorking() throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException, ArgsNumberException, RedirectionException {
+    String[] params = {"pwd"};
+    assertEquals(p.run(params), s.getUserData().getCurPath().toString());
+  }
+  
+  @Test
+  public void testatRoot() throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException, ArgsNumberException, RedirectionException {
+   s.getUserData().setCurPath(new MockPath("/"));
+   String[] params = {"pwd"};
+   assertEquals(p.run(params), s.getUserData().getCurPath().toString());
+    
+  }
+  @Test
+  public void testatRandom() throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException, ArgsNumberException, RedirectionException {
+    s.getUserData().setCurPath(new MockPath("/some/random/path"));
+    String[] params = {"pwd"};
+    assertEquals(p.run(params), s.getUserData().getCurPath().toString());
+    
+  }
+  
+  @Test
+  public void testValidRedirectionOverWrite() throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException, ArgsNumberException, RedirectionException {
+    String[] params = {"pwd", ">","file1"};
+    assertEquals(p.run(params), "");
+  }
+  
+  @Test
+  public void testValidRedirectionAppend() throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException, ArgsNumberException, RedirectionException {
+    String[] params = {"pwd", ">>","file2"};
+    assertEquals(p.run(params), "");
+  }
+  
+  }
+  
+  
+

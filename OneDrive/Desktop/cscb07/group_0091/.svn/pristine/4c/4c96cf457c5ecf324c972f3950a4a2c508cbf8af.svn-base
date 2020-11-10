@@ -1,0 +1,10 @@
+Class name: OutputFile
+Parent class: File
+Subclasses: none
+
+Responsibilities:
+* overwrite contents of the file
+* append data to contents of the file
+
+Collaborators:
+none

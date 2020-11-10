@@ -1,0 +1,60 @@
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.Directory;
+import jShell.Path;
+import jShell.Shell;
+
+public class Rm extends Command {
+  
+  public void run(String[] args) {
+    
+    //convert the param to absolute path
+    
+    Directory pwd = (Directory) Shell.getShell().getFileSystem()
+        .getNodeAtFullPath(Shell.getShell().getUserData().getCurPath());
+    
+    //furthest down node
+    //assume args is not absolute
+    //full path to param
+    
+    Path param = new Path(args[1]);
+    
+    Shell.getShell().getFileSystem().removeDir(pwd, param);
+    
+    
+  }
+
+  @Override
+  public HashMap<String, String> isValid(String[] args) {
+    // TODO Auto-generated method stub
+ // HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+
+    // Checking that correct number of arguments is passed
+    if (args.length != 2) {
+      errors.put("all", "WRONGARGS");
+    }
+    
+    //check if user is trying delete root or trying to delete a directory
+    //that doesn't exist
+    Path path = new Path(args[1]);
+    if (!path.isValidPath() || !path.isPathToDirectory()) {
+      errors.put(args[1], "DIRNOTFOUND");
+    }
+   //trying to delete root
+    if(args[1].equals("/")) {
+      errors.put(args[1], "CANNOTDELETEROOT");
+    }
+
+    return errors;
+  }
+  
+
+  @Override
+  public String toString() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+}

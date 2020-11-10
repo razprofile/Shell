@@ -1,0 +1,159 @@
+package jShell.commands;
+
+import java.util.Collection;
+
+import jShell.Directory;
+import jShell.Error;
+import jShell.Path;
+import jShell.Shell;
+
+public class Cd extends Command {
+
+
+  public boolean isValid(String[] args) {
+    if (args.length != 2) {
+      return false;
+    }
+    return true;
+  }
+
+  /*
+   * Go dirFull method will throw an exception instead of crashing. Godir may have a problem. Godir
+   * says, i will throw an exception if there is a problem GodirFull has to take care of it, gOdiR
+   * will let parent method take care of it first one catch the problem, then handle it. the 2nd way
+   * is to delegate
+   * 
+   * Run method makes a print statement if there is any problem. One catch all error for everything
+   * 
+   */
+
+
+
+  private Directory goDirFull(String dirStr) throws NullPointerException {
+    // prepare directory for parsing
+    // split by slash to get directories
+    // set pwd to null initially
+    String[] dirArray = dirStr.split("/");
+    Directory pwd = null;
+
+    // System.out.println("the first element of split is " + dirArray[0]);
+    // absolute path case
+    // pwd starting point is the root
+    if (dirStr.startsWith("/")) {
+      pwd = Shell.getShell().getFileSystem().getRootDir();
+
+
+    }
+    // relative path case
+
+    else {
+      /*
+       * starting point is the current directory (to the relative path) get the Directory
+       * corresponding to current path
+       */
+      pwd = (Directory) Shell.getShell().getFileSystem()
+          .getNodeAtFullPath(Shell.getShell().getUserData().getCurPath());
+    }
+
+
+
+    /*
+     * loop through all the directory tokens in the string array can go either up or down by the 2nd
+     * method stop at the most bottom directory accounting for slash problem
+     **/
+
+
+    for (String dirToken : dirArray) {
+      if (!dirToken.equals("")) {
+        pwd = goDir(pwd, dirToken);
+      }
+
+    }
+    return pwd;
+
+  }
+
+
+
+  private Directory goDir(Directory curr, String dir) throws NullPointerException {
+    // 1st case, stay where you're at
+    if (dir.equals(".")) {
+
+      return curr;
+    }
+    // go up
+    else if (dir.equals("..")) {
+
+      /*
+       * Get Immediate parent of curr. curr.getPath gets the path of the current directory.
+       * getParentPath gets the full path of the current directory's parent. getNodeatfullPath takes
+       * in that path then returns a directory object
+       */
+
+      Directory parentDir = (Directory) Shell.getShell().getFileSystem()
+          .getNodeAtFullPath(curr.getPath().getParentPath());
+      // accounting for root dir case
+      if (parentDir == null) {
+        return Shell.getShell().getFileSystem().getRootDir();
+      }
+      return parentDir;
+    }
+    // go down one directory
+    // get child
+    else {
+      Directory destination = (Directory) curr.getChild(dir);
+      return destination;
+    }
+
+  }
+
+
+
+  @Override
+  public void run(String[] args) {
+
+    Error e = new Error();
+    if (args.length > 2) {
+      Shell.getShell().outputToShellln(
+          e.errorMessage("WRONGARGS") + " Please only include one directory to change to.");
+      return;
+    }
+    if (args.length == 2) {
+      // declare it here so its accessible outside of the block
+      Directory dirDestination;
+      try {
+
+
+
+        // directory that you want to
+        dirDestination = goDirFull(args[1]);
+      } catch (NullPointerException except) {
+        Shell.getShell().outputToShellln("No such file or directory");
+        return;
+      }
+      if (dirDestination == null) {
+         Shell.getShell().outputToShellln(e.errorMessage("NOCHILD"));
+        return;
+      }
+      // Shell.getShell().outputToShellln("Going into " + dirDestination.getPath());
+      // change to destionation directory
+      if (dirDestination.getPath() == null) {
+
+        // manully setting it to / path (rootDir)
+        Shell.getShell().getUserData().setCurPath(new Path("/"));
+
+
+      } else {
+        Shell.getShell().getUserData().setCurPath(dirDestination.getPath());
+      }
+
+
+
+    }
+
+
+  }
+
+
+
+}

@@ -1,0 +1,76 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+import jShell.fileSystem.Path;
+import jShell.interfaces.IDirectory;
+import jShell.interfaces.IFileSystemNode;
+import jShell.interfaces.IPath;
+
+/**
+ * Ls class handles all operations related to ls command, namely checks if 
+ * arguments are valid arguments for ls command and outputs the contents of 
+ * specified location or multiple locations in the file system tree.
+ * 
+ * @author Sasha (Oleksandr)
+ *
+ */
+
+public class Cp extends Command {
+
+  public Cp() {
+    super();
+  }
+
+  public String run(String[] args) throws InvalidPathException, ArgsNumberException, NodeExistsException {
+    if(args.length < 3) {
+      throw new ArgsNumberException();
+    }
+    IPath oldDirPath = new Path(args[1]);
+    IFileSystemNode oldDir = shell.getFileSystem()
+        .getNodeAtPath(oldDirPath);
+    IDirectory newDir = (IDirectory) shell.getFileSystem()
+        .getNodeAtPath(new Path(args[2]));
+    if(!newDir.tryAddChildren(oldDir.clone())) {
+      return "";
+    }
+    return "";
+  }
+
+  @Override
+  public String toString() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}

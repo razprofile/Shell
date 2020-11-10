@@ -1,0 +1,245 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell;
+
+import java.util.*;
+
+public class Directory extends FileSystemNode {
+  /**
+   * Directory class that instantiates a Directory object by taking a name
+   * or name and path. Stores children in a hash map. 
+   * Contains methods for adding/getting children objects and checking
+   * whether they exist in the Hash map.
+   * 
+   */
+
+  /**
+   * Hash map where the children of the Directory will be stored. 
+   * Children can be files or directories.
+   */
+  
+  private Map<String, FileSystemNode> children = new HashMap<String, FileSystemNode>();
+
+  public Directory(String name) {
+
+    setName(name);
+
+  }
+
+  public Directory(String name, Path path) {
+
+    setName(name);
+    setPath(path);
+  }
+  
+  /**
+   * This method adds children objects to the Directory object. 
+   * Children can be either directories or files
+   * 
+   * @param FileSystemNode object to be added
+   * 
+   * @return boolean value if the child has been added to Hashmap or not
+   **/
+  
+  public boolean tryAddChildren(FileSystemNode n) {
+    
+    if (ifChildExists(n.getName())) {
+      // directory already exists
+      Error e = new Error();
+      Shell.getShell().outputToShellln(e.errorMessage("EXISTS"));
+      return false;
+    }
+    children.put(n.getName(), n);
+    return true;
+  }
+  
+  /**
+   * remove a child of the parent directory 
+   * @param The FileSystemNode to be removed.
+   */
+  public void removeChild(FileSystemNode n) {
+
+    children.remove(n.getName(), n);
+    return;
+  }
+
+  /**
+   * Returns true or false for if a child exists in a directory object
+   * 
+   * @param Key to search for hashamp
+   * @return boolean value indicating whether child is in directory hashmap
+   * true for if key is in hashamp and false otherwise
+   **/
+  
+  public boolean ifChildExists(String name) {
+    
+    return children.containsKey(name);
+
+  }
+
+  /**
+   * Returns a child object provided it exists, otherwise returns null
+   * 
+   * @param String: name of the object you want to return
+   * @return FileSystemNode either the child directory or file
+   **/
+  public FileSystemNode getChild(String name) {
+    
+    if (ifChildExists(name)) {
+      return children.get(name);
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Returns all the children of a particular Directory object. 
+   * Empty Collection if a directory has no children.
+   * 
+   * @return Collection of FileSystemNode objects, 
+   * either the child directories or files
+   */
+
+  public Collection<FileSystemNode> getChildren() {
+    return children.values();
+
+  }
+
+  @Override
+  public FileSystemNode clone() {
+    Directory temp = new Directory(this.getName(), this.getPath());
+     this.children.values().forEach(x -> temp.tryAddChildren(x.clone()));
+    return temp;
+  }
+
+  public  boolean removeDir(String name) {
+    //check if directory exists and then remove it
+    if (ifChildExists(name)) {
+      children.remove(name);
+      return true;
+    }
+    //doesn't exist
+    else {
+      return false;
+    }
+    
+  }
+
+  /* public static void main(String[] args) { 
+  
+    //TESTING FOR DIRECTORY CLASS
+  
+  
+    //making shell
+    Shell s = new Shell();
+    //making Directory
+    Directory d1 = new Directory("dir1"); 
+    Path p1 = new Path("/dir1/dir2");
+    Directory d2 = new Directory("dir2", p1);
+   
+   
+   //adding children
+   d1.tryAddChildren(d2); 
+   Directory d3 = new Directory("dir3!");
+   d1.tryAddChildren(d3);
+   
+   
+   Path p2 = new Path("/dir1/dir2/file2");
+   
+   //making files to add to directories
+   File f = new File("file1"); 
+   File f_two = new File("file2", p2);
+   Path p3 = new Path("/dir1/dir2/file3"); 
+   File f_three = new File("file3", p3);
+   
+   
+   //adding files
+   d1.tryAddChildren(f); 
+   d1.tryAddChildren(f_two);
+   d1.tryAddChildren(f_three); 
+   //setting contents for file
+   f_three.setContents("these are the contents");
+   
+   //printing out whether methods give expected behavior
+  
+   //prints out true
+   System.out.println(d1.ifChildExists(f_three.getName())); 
+  
+   //print out true
+   System.out.println(d1.ifChildExists(d2.getName()));
+   
+   //prints out memory location of d2 object
+   System.out.println(d1.getChild(d2.getName()));
+   
+   //prints out path where d2 is stored
+   System.out.println(d2.getPath()); 
+   
+   
+   //testing out methods on file
+   
+   //prints out path where file 2 is stored
+   System.out.println(f_two.getPath());
+   
+   //prints out path where file 3 is stored
+   System.out.println(f_three.getPath()); 
+   
+   //prints out name of dir2
+   System.out.println(d2.getName());
+   
+  //prints out contents of file3
+   System.out.println(f_three.getContents()); 
+   
+   
+   File f_four = new File("file3",p3);
+   
+   //give an error when you try adding a duplicate file
+   
+   d1.tryAddChildren(f_four);
+   Directory d4 = new Directory("dir4"); 
+   d3.tryAddChildren(d4);
+   
+   //getting all the children for d1,d2,d3
+   
+   //prints out all the directories/file objects in an 
+   //array for dir1,dir2,dir3
+   System.out.println(d1.getChildren());
+   System.out.println(d3.getChildren());
+   System.out.println(d2.getChildren());
+   
+   //checking if d4 is a child of d1
+   
+   //prints out false
+   System.out.println(d1.ifChildExists(d4.getName()));
+  } */
+
+
+}
+

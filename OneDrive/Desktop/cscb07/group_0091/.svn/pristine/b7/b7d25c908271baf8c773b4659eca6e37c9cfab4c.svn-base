@@ -1,0 +1,13 @@
+package jShell.errors;
+
+import java.util.Formatter;
+
+public class MoveDirException extends Error {
+
+  private static final String errorTemplate =
+      "Cannot move a directory into itself.";
+
+  public MoveDirException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

@@ -1,0 +1,8 @@
+package jShell;
+
+public class Command {
+
+	public void run(String[] args) {
+		Shell.getShell().OutputToShell("Default command");
+	}
+}

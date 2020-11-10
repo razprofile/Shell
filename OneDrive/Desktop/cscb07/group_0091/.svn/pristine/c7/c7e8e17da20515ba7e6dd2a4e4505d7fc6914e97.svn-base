@@ -1,0 +1,16 @@
+Class name: FileSystem
+Parent class: none
+Subclasses: none
+
+Responsibilities:
+* Add new directory to the file system tree
+* Add new file to the file system tree
+* Check if file exists in the file system tree
+* Check if directory exists in the file system tree
+* Delete file system tree
+
+Collaborators:
+* File
+* Directory
+* Path
+* Error

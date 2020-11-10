@@ -1,0 +1,48 @@
+package test;
+
+import static org.junit.Assert.*;
+import java.util.HashMap;
+import org.junit.Test;
+import jShell.Errors.ArgsException;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.BadStringException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.commands.Echo;
+import jShell.mockClasses.MockShell;
+
+public class EchoTest {
+  
+  MockShell s = new MockShell();
+  Echo e = new Echo();
+  HashMap<String, String> expectedErrors = new HashMap<String, String>();
+
+  @Test
+  public void testRun() throws BadStringException, ArgsException, ArgsNumberException, RedirectionOperatorsException {
+    String[] params = {"echo", "\"hello\""};
+    assertEquals("Basic string", "hello", e.run(params));
+    String[] redirParams = {"echo", "\"hello\"", ">", "file"};
+    assertEquals("Redirection to file", "", e.run(redirParams));
+    String[] params2 = {"echo", "\"hello", "there\""};
+    assertEquals("Basic multiword string", "hello there", e.run(params2));
+    String[] redirParams2 = {"echo", "\"hello", "there\"", ">>", "file"};
+    assertEquals("Redirection to file", "", e.run(redirParams2));
+    String[] emptyParams = {"echo", "\"", "\""};
+    assertEquals("Empty string but quotes on it", " ", e.run(emptyParams));
+  }
+  
+  @Test(expected = BadStringException.class)
+  public void testRunExceptions() throws BadStringException, ArgsException, ArgsNumberException, RedirectionOperatorsException {
+    String[] quotesInString = {"echo", "\"hello", "th\"ere\""};
+    assertEquals("Quotes within a string", "", e.run(quotesInString));
+    String[] noClosingQuotes = {"echo", "\"hello"};
+    assertEquals("No closing quotes", "", e.run(noClosingQuotes));
+    String[] noStartingQuotes = {"echo", "hello\""};
+    e.run(noStartingQuotes);
+  }
+
+  @Test
+  public void testToString() {
+    assertEquals("echo", e.toString());
+  }
+
+}

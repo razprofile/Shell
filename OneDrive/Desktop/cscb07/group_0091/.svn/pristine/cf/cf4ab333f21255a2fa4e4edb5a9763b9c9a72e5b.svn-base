@@ -1,0 +1,27 @@
+package jShell;
+import jShell.interfaces.IUrlDataFetcher;
+import java.net.*;
+import java.io.*;
+import jShell.Errors.InvalidURLException;
+
+public class UrlDataFetcher implements IUrlDataFetcher {
+
+  @Override
+  public String getUrlData(String path) throws InvalidURLException {
+    // TODO Auto-generated method stub
+    
+    try {
+      URL url = new URL(path);
+      String contents = "";
+      BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
+      for (String line; (line = reader.readLine()) != null;) {
+        contents += line + "\n";
+     }
+      return contents;
+    }
+      catch(Exception e) {
+        throw new InvalidURLException(path);
+      }
+
+}
+}

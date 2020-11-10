@@ -1,0 +1,10 @@
+Class name: FileSystemNode
+Parent class: 
+Subclasses: Directory, File
+
+Responsibilities:
+*Provide base functionality for its subclasses,such as different ways for instantiating subclasses
+* Get name and get path of FileSystemNode object 
+
+Collaborators:
+* None

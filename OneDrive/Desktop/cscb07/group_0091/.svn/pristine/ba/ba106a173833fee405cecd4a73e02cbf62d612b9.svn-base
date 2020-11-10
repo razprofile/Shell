@@ -1,0 +1,50 @@
+package jShell.commands;
+
+import jShell.Error;
+import jShell.File;
+import jShell.FileSystem;
+import jShell.FileSystemNode;
+import jShell.Path;
+import jShell.Shell;
+/**
+ * A class to implement the Pushd command 
+ * (Saves the current working directory by pushing onto directory stack 
+ * and then changes the new current working directory to DIR).
+ * @author Raz 
+ */
+public class Pushd extends Command {
+
+	@Override
+	public void run(String[] args) {
+		// Path of the directory to be created
+		Path path = new Path(args[1]);
+		Error e = new Error();
+		
+		 // Checking if given location corresponds to a valid location at current file
+		 // If it is, add args[1] to stack
+		 // Else, print the corresponding error message.
+		if (!path.isValidFullPath()) {
+			if (!path.isValidRelativePath()) {
+				Shell.getShell().outputToShellln(e.errorMessage("PATHNOTFOUND"));
+				return;
+			}
+			Shell.getShell().getUserData().getPathStack().add(Path.convertRelativeToFull(new Path(args[1])));
+			return;
+		}
+		Shell.getShell().getUserData().getPathStack().add(new Path(args[1]));
+	}
+
+	/**
+	 * Inherited method that tests the incoming arguments for validity.
+	 * 
+	 * @param args : the list of user-given arguments for this command
+	 * @return A boolean representing the validity of the arguments
+	 */
+	public boolean isValid(String[] args) {
+		if (args.length != 2) {
+			return false;
+		}
+		return true;
+	}
+
+}

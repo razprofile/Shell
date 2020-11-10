@@ -1,0 +1,173 @@
+package jShell.mockClasses;
+
+import jShell.fileSystem.File;
+import jShell.interfaces.IDirectory;
+import jShell.interfaces.IFile;
+import jShell.interfaces.IFileSystem;
+import jShell.interfaces.IFileSystemNode;
+import jShell.interfaces.IPath;
+import jShell.interfaces.IShell;
+
+public class MockFileSystem implements IFileSystem{
+
+  /**
+   * This is a mock version of file system class
+   * 
+   * In this class:
+   *   - /this/is/a/valid/full/path/to/dir: represents any valid full path that ends at directory
+   *   - this/is/a/valid/relative/path/to/dir: represents any valid relative path that ends at directory
+   *   - /this/is/a/valid/full/path/to/file: represents any valid full path that ends at file
+   *   - this/is/a/valid/relative/path/to/file: represents any valid relative path that ends at file
+   *   - /this/is/a/valid/full/path/to/dir/child: represents any valid path for the new directory or file to be created
+   */
+  
+  
+  @Override
+  public IDirectory getRootDir() {
+    return new MockDirectory();
+  }
+
+  @Override
+  public IFileSystemNode getNodeAtFullPath(IPath path) {
+    if (path.toString().equals("/this/is/a/valid/full/path/to/dir")) {
+      IShell.getShell().outputToShell("Getting reference to directory");
+      return new MockDirectory();
+    }
+    
+    if (path.toString().equals("/this/is/a/valid/full/path/to/file")) {
+      IShell.getShell().outputToShell("Getting reference to file");
+      return new MockFile();
+    }
+    
+    IShell.getShell().outputToShell("Failure getting reference to node");
+    
+    return null;
+    
+  }
+
+  @Override
+  public IFileSystemNode getNodeAtRelativePath(IPath path) {
+    if (path.toString().equals("this/is/a/valid/relative/path/to/dir")) {
+      IShell.getShell().outputToShell("Getting reference to directory");
+      return new MockDirectory();
+    }
+    
+    if (path.toString().equals("this/is/a/valid/relative/path/to/file")) {
+      IShell.getShell().outputToShell("Getting reference to file");
+      return new MockFile();
+    }
+    
+    IShell.getShell().outputToShell("Failure getting reference to node");
+    
+    return null;
+  }
+
+  @Override
+  public IFileSystemNode getNodeAtPath(IPath path) {
+    // TODO Auto-generated method stub;
+    if (path.toString().equalsIgnoreCase("file")) {
+    File f = new File("file");
+    f.setContents("hello");
+    return f;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public IFile createNewFile(IPath path) {
+    if (path.toString().equals("/this/is/a/valid/full/path/to/dir/child")) {
+      IShell.getShell().outputToShell("Successfully created new file");
+      return new MockFile();
+    }
+    
+    IShell.getShell().outputToShell("Failure creating new file");
+    return null;
+  }
+
+  @Override
+  public IDirectory createNewDirectory(IPath path) {
+    if (path.toString().equals("/this/is/a/valid/full/path/to/dir/child")) {
+      IShell.getShell().outputToShell("Successfully created new directory");
+      return new MockDirectory();
+    }
+    
+    IShell.getShell().outputToShell("Failure creating new directory");
+    return null;
+  }
+
+  @Override
+  public IDirectory getParent(IFileSystemNode node) {
+    IShell.getShell().outputToShell("Returning reference to parent directory");
+    return new MockDirectory();
+  }
+
+  @Override
+  public IFileSystemNode removeNode(IPath toDelete) {
+    if (toDelete.toString().equals("/this/is/a/valid/full/path/to/dir")
+        || toDelete.toString().equals("this/is/a/valid/relative/path/to/dir")) {
+      IShell.getShell().outputToShell("Removing directory at path " + toDelete);
+      return new MockDirectory();
+    }
+    
+    if (toDelete.toString().equals("/this/is/a/valid/full/path/to/file")
+        || toDelete.toString().equals("this/is/a/valid/relative/path/to/file")) {
+      IShell.getShell().outputToShell("Removing file at path " + toDelete);
+      return new MockFile();
+    }
+    
+    IShell.getShell().outputToShell("Failure removing node");
+    return null;
+  }
+
+  @Override
+  public IFileSystemNode moveNode(IPath pathToNode, IPath newParent) {
+    if ((pathToNode.toString().equals("/this/is/a/valid/full/path/to/dir")
+        ||pathToNode.toString().equals("this/is/a/valid/relative/path/to/dir")) 
+        && (newParent.toString().equals("/this/is/a/valid/full/path/to/dir")
+        || newParent.toString().equals("this/is/a/valid/relative/path/to/dir"))) {
+      IShell.getShell().outputToShell("Moving directory at " 
+        + pathToNode.toString() + " to " + newParent);
+      return new MockDirectory();
+    }
+    
+    if ((pathToNode.toString().equals("/this/is/a/valid/full/path/to/file")
+        ||pathToNode.toString().equals("this/is/a/valid/relative/path/to/file"))
+        && (newParent.toString().equals("/this/is/a/valid/full/path/to/dir")
+        || newParent.toString().equals("this/is/a/valid/relative/path/to/dir"))) {
+      IShell.getShell().outputToShell("Moving file at " 
+          + pathToNode.toString() + " to " + newParent);
+      return new MockFile();
+    }
+    
+    IShell.getShell().outputToShell("Failure moving node");
+    
+    return null;
+  }
+
+  @Override
+  public IFileSystemNode copyNode(IPath pathToNode, IPath newParent) {
+    if ((pathToNode.toString().equals("/this/is/a/valid/full/path/to/dir")
+        ||pathToNode.toString().equals("this/is/a/valid/relative/path/to/dir")) 
+        && (newParent.toString().equals("/this/is/a/valid/full/path/to/dir")
+        || newParent.toString().equals("this/is/a/valid/relative/path/to/dir"))) {
+      IShell.getShell().outputToShell("Copying directory at " 
+          + pathToNode.toString() + " to " + newParent);
+      return new MockDirectory();
+    }
+    
+    if ((pathToNode.toString().equals("/this/is/a/valid/full/path/to/file")
+        ||pathToNode.toString().equals("this/is/a/valid/relative/path/to/file"))
+        && (newParent.toString().equals("/this/is/a/valid/full/path/to/dir")
+        || newParent.toString().equals("this/is/a/valid/relative/path/to/dir"))) {
+      IShell.getShell().outputToShell("Copying file at " 
+          + pathToNode.toString() + " to " + newParent);
+      return new MockFile();
+    }
+    
+    IShell.getShell().outputToShell("Failure copying node");
+    
+    return null;
+  }
+
+}

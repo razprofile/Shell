@@ -1,0 +1,42 @@
+package jShell.mockClasses;
+
+import jShell.interfaces.*;
+
+public class MockFile implements IFile{
+  
+  @Override
+  public String getName() {
+    return "mockFile";
+  }
+
+  @Override
+  public void setName(String name) {
+  }
+
+  @Override
+  public IPath getPath() {
+    return new MockPath("this/is/a/path/to/mockFile");
+  }
+
+  @Override
+  public IFileSystemNode clone() {
+    return new MockFile();
+  }
+
+  @Override
+  public boolean ifChildExists(String name) {
+    return false;
+  }
+
+  @Override
+  public void setContents(String contents) {
+  }
+
+  @Override
+  public String getContents() {
+    return "CONTENTS";
+  }
+
+ 
+  
+}

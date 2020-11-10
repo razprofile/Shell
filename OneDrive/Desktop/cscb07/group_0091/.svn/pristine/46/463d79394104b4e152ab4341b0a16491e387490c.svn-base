@@ -1,0 +1,48 @@
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.Shell;
+
+public class Pwd extends Command {
+
+  @Override
+  public HashMap<String, String> isValid(String[] args) {
+    //HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+    
+    // Checking that correct number of arguments is passed
+    if (args.length != 1) {
+      errors.put("all", "WRONGARGS");
+    }
+
+    return errors;
+  }
+
+  /**
+   * Prints the full path to current working directory.
+   */
+  public void run(String args[]) {
+    // checking if the arguments entered are valid
+    if (isValid(args).isEmpty()) {
+      // just get current path and print in
+      Shell.getShell().outputToShellln(Shell.getShell().getUserData().getCurPath().toString());
+
+    }
+
+    /*
+     * Print path to current working directory. To be updated, once UserData and Path classes are
+     * done.
+     */
+
+    // Shell.getShell()
+    // .outputToShellln("Printing the path to current working directory from
+    // UserData");
+  }
+
+  @Override
+  public String toString() {
+
+    return "pwd";
+
+  }
+}

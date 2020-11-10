@@ -1,0 +1,15 @@
+Class name: Ls
+Parent class (if any): Command
+Subclasses (if any): -
+
+Responsibilities:
+* check validity of given arguments
+* print the contents of the current directory
+* print the contents of directory at specified location
+* print the path to the file at specified location
+
+Collaborators:
+* Directory
+* Path
+* FileSystem
+* FileSystemNode

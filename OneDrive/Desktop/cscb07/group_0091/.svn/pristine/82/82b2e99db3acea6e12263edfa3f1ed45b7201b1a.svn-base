@@ -1,0 +1,1459 @@
+package jShell;
+
+import java.util.*;
+
+// import java.util.*;
+
+/**
+ * FileSystem class is used to store file system tree, perform basic traversing 
+ * operations on it and create new files and directories.
+ * 
+ * @author Sasha (Oleksandr)
+ *
+ */
+
+public class FileSystem {
+
+  private Directory rootDir;
+
+  /**
+   * Constructor for file system object
+   */
+  public FileSystem() {
+
+    Path rootPath = new Path("/");
+    this.rootDir = new Directory("", rootPath);
+  }
+
+  /**
+   * Constructor for file system object, if root directory is given
+   * 
+   * @param root Root directory
+   */
+  public FileSystem(Directory root) {
+
+    this.rootDir = root;
+  }
+
+  /**
+   * Get reference to root directory
+   * 
+   * @return Reference to root directory
+   */
+  public Directory getRootDir() {
+
+    return this.rootDir;
+  }
+
+  /**
+   * Assuming pass is a valid full path ending with a directory or file, get 
+   * the reference to the bottom directory or file
+   * 
+   * @param path Full path
+   * @return The reference to the node at full path
+   */
+  public FileSystemNode getNodeAtFullPath(Path path) {
+
+    // If path is empty or does not start with a slash, it is not a valid 
+    // full path
+    if (path.toString().isEmpty() || path.toString().charAt(0) != '/') {
+      return null;
+    }
+
+    // Sequence of locations to be processed
+    String[] sequenceOfLocations = path.getSequence();
+
+    // Iterator variable for nodes being processed
+    FileSystemNode currNode = this.rootDir;
+
+    // Iterating through the sequence of locations
+    for (String nodeName : sequenceOfLocations) {
+      if (nodeName.equals("..")) {
+        // Go up the file system tree
+        currNode = this.getParent(currNode);
+      } else if (!nodeName.equals(".")) {
+        if (currNode.ifChildExists(nodeName)) {
+          // If node has a child with given name, it must be a directory
+          currNode = ((Directory) currNode).getChild(nodeName);
+        } else {
+          // If node doesn't have a child with given name, path is invalid
+          return null;
+        }
+      }
+    }
+
+    return currNode;
+
+  }
+
+  /**
+   * Get the reference to the bottom directory or file, assuming path is a valid
+   * relative path ending with a directory or file,
+   * 
+   * @param path Relative path
+   * @return The reference to the node at full path
+   */
+  public FileSystemNode getNodeAtRelativePath(Path path) {
+
+    // Empty path is considered to be a valid relative path pointing to the 
+    // current directory
+    if (path.toString().isEmpty()) {
+      return Shell.getShell().getUserData().getCurDir();
+    }
+
+    // If path starts with a slash, it must be a full path, not a relative path
+    if (path.toString().charAt(0) == '/') {
+      return null;
+    }
+
+    // Get full path from relative path pointing to the same location in the 
+    // file tree
+    Path fullPath = Path.convertRelativeToFull(path);
+    return this.getNodeAtFullPath(fullPath);
+  }
+
+  /**
+   * Get the reference to the bottom directory or file, assuming path is 
+   * valid relative or full path
+   * 
+   * @param path
+   * @return The reference to the node at the bottom of path
+   */
+  public FileSystemNode getNodeAtPath(Path path) {
+
+    if (path.isValidFullPath()) {
+      return this.getNodeAtFullPath(path);
+    }
+
+    if (path.isValidRelativePath()) {
+      return this.getNodeAtRelativePath(path);
+    }
+
+    return null;
+  }
+
+  /**
+   * Assuming pass is a valid full path ending with a directory, add the 
+   * specified node to the contents of bottom directory
+   * 
+   * @param node File or Directory object to be added
+   * @param path Location of the directory, which contents are being modified
+   */
+  private void addToExistingLocationAtPath(FileSystemNode node, Path path) {
+
+    // Getting reference to the directory begin updated with the node
+    Directory d = (Directory) this.getNodeAtPath(path);
+
+    Path regularForm = Path.getRegularForm(path);
+
+    Path pathForNode = Path.appendNodeName(regularForm, node.getName());
+
+    node.setPath(pathForNode);
+    d.tryAddChildren(node);
+
+  }
+
+  /**
+   * Creates and returns a file given by the path (either relative or full 
+   * path). If parent path does not exist or name is contains invalid 
+   * characters, return null.
+   * 
+   * @param path Path pointing at the file to be created
+   * @return Reference to the newly created file
+   */
+  public File createNewFile(Path path) {
+
+    // Location for the file to be inserted
+    Path parentPath = path.getParentPath();
+    String fileName = path.getBottomName();
+
+    // If name is invalid, don't create new file
+    if (!File.nameChecker(fileName)) {
+      return null;
+    }
+
+    File newFile = new File(fileName);
+    if (parentPath.isValidPath()) {
+      this.addToExistingLocationAtPath(newFile, parentPath);
+      return newFile;
+    }
+
+    return null;
+
+  }
+
+  /**
+   * Creates and returns a directory given by the path (either relative or full 
+   * path). If parent path does not exist or name is contains invalid 
+   * characters, return null.
+   * 
+   * @param path Path pointing to the directory to be created.
+   * @return reference to newly created directory
+   */
+  public Directory createNewDirectory(Path path) {
+
+    // Location for the Directory to be inserted
+    Path parentPath = path.getParentPath();
+    String dirName = path.getBottomName();
+
+    // If name is invalid, don't create new directory
+    if (!Directory.nameChecker(dirName)) {
+      return null;
+    }
+
+    Directory newDir = new Directory(dirName);
+    if (parentPath.isValidPath()) {
+      this.addToExistingLocationAtPath(newDir, parentPath);
+      return newDir;
+    }
+
+    return null;
+  }
+
+  /**
+   * This method returns a parent of specified node, assuming that node is 
+   * part of current file tree. If node is root directory, return 
+   * root directory.
+   * 
+   * @param dir Directory in file system
+   * @return Parent of dir
+   */
+  public Directory getParent(FileSystemNode node) {
+
+    Path pathToNode = node.getPath();
+    Path pathToParent = pathToNode.getParentPath();
+    Directory parent = (Directory) this.getNodeAtFullPath(pathToParent);
+    return parent;
+
+  }
+  
+  @Override
+  /**
+   * Method that returns contents of the file system tree represented as a string.
+   * 
+   * @return string representation of file system tree
+   */
+  public String toString() {
+	  
+	  //The string that precedes every new level of the file tree
+	  String indentation = "\t";
+	  
+	  //The string that precedes first level of the file tree (root directory)
+	  String initialPrefix = "";
+	  
+	  return this.toStringRecursive(rootDir, indentation , initialPrefix) ;
+  }
+  
+  private String toStringRecursive(FileSystemNode startingNode, String indentation, String initialPrefix) {
+	  String result = "";
+	  String prefix = initialPrefix;
+	  FileSystemNode node = startingNode;
+	  
+	  if (node == rootDir) {
+		  result += prefix + "/" + "\n";
+	  }else {
+		  result += prefix + node.getName() + "\n";
+	  }
+	  
+	  if (node instanceof Directory) {
+		  for (FileSystemNode child : ((Directory) node).getChildren()) {
+			  result+=this.toStringRecursive(child, indentation, prefix + indentation);
+		  }
+	  }
+	  
+	  return result;
+	  
+  }
+  
+  /**
+   * Remove the node at specified path from the file tree and return the reference to it. 
+   * 
+   * @param toDelete Path for a node to be deleted
+   * @return reference to the node being deleted; null, if operation is unsuccessful.
+   */
+  public FileSystemNode removeNode(Path toDelete) {
+    
+	//Getting reference to the node.
+	FileSystemNode node = this.getNodeAtPath(toDelete);
+	if (node == null) {
+      return null;
+	}
+	
+	//Getting reference to the parent directory
+	Directory parent = this.getParent(node);
+	
+	//Removing node from children of parent directory
+	parent.removeChild(node.getName());
+	
+	//In the subtree starting with node, set all paths of nodes to null
+	this.setPathsToNullRecursively(node);
+	
+	return node;
+	
+  }
+  
+  /**
+   * Method to move the node from old location to the children of given directory. If new 
+   * new parent is a successor of node being moved, do not move the node.
+   * 
+   * @param pathToNode Path to node to be moved
+   * @param newParent Path to new parent of node being moved
+   * @return reference to the node, if operation succeeds; null otherwise
+   */
+  public FileSystemNode moveNode(Path pathToNode, Path newParent) {
+	//Checking if paths are valid and newParent points to directory
+	if (!pathToNode.isValidPath() || !newParent.isValidPath() || !newParent.isPathToDirectory()) {
+	  return null;
+	}
+	  
+	//If new parent is a successor of the node, return null  
+	if (Path.isSuccessor(pathToNode, newParent)) {
+      return null;
+	}
+	
+	//Getting references to the node and new parent
+	FileSystemNode node = this.getNodeAtPath(pathToNode);
+	FileSystemNode parent = this.getNodeAtPath(newParent);
+	if (!(parent instanceof Directory)) {
+	  //New parent must be a directory
+	  return null;
+	}
+	
+	//If parent already has a child with given name, don't move the node
+	if (((Directory) parent).ifChildExists(node.getName())) {
+	  return null;
+	}
+	
+	//To move the node, first we remove it from file system tree, and then add it to new location
+	node = this.removeNode(pathToNode);
+	((Directory) parent).tryAddChildren(node);
+	
+	//Update paths to nodes in a moved subtree
+	this.fixPathsRecursively(node, Path.appendNodeName(parent.getPath(), node.getName()));
+	
+	return node;
+  }
+  
+  /** 
+   * Method to iterate through all successors of node (if any) and node itself
+   * and set their paths to null
+   * 
+   * @param node
+   */
+  private void setPathsToNullRecursively(FileSystemNode node) {
+	node.setPath(null);
+	if (node instanceof Directory) {
+	  for (FileSystemNode child : ((Directory) node).getChildren()) {
+		this.setPathsToNullRecursively(child);
+	  }
+	}
+  }
+  
+  /**
+   * Method to iterate through all successors of the node (if any) and set fix paths
+   * to reflect their location in the file system tree
+   * 
+   * @param node Initial node
+   * @param pathForNode Path for the node node
+   */
+  private void fixPathsRecursively(FileSystemNode node, Path pathForNode) {
+	node.setPath(pathForNode);
+	
+	if (node instanceof Directory) {
+	  for (FileSystemNode child : ((Directory) node).getChildren()) {
+		Path pathForChild = Path.appendNodeName(pathForNode, child.getName());
+	    this.fixPathsRecursively(child, pathForChild);
+	  }
+	}
+  }
+  
+  /**
+   * Method to copy the node from old location to the children of given directory
+   * 
+   * @param pathToNode Path to node being copied
+   * @param newParent Path to new parent of node being copied
+   * @return the reference to node copied; null, if operation fails
+   */
+  public FileSystemNode copyNode(Path pathToNode, Path newParent) {
+	  //Checking if paths are valid and newParent points to directory
+	  if (!pathToNode.isValidPath() || !newParent.isValidPath() || !newParent.isPathToDirectory()) {
+		return null;
+      }
+		
+	  Directory parentDir = (Directory) this.getNodeAtPath(newParent);
+	  
+	  FileSystemNode node = this.getNodeAtPath(pathToNode);
+	  //If parent already has a child with given name, don't copy the node
+      if (parentDir.ifChildExists(node.getName())) {
+		return null;
+	  }
+	  
+	  Path initialPath = Path.appendNodeName(newParent, node.getName());
+	  
+	  //Creating a copy of subtree rooted at node
+	  FileSystemNode copyOfNode = this.getCopyOfSubtree(node, initialPath);
+	  
+	  parentDir.tryAddChildren(copyOfNode);
+	  return null;
+	  
+  }
+  
+  /**
+   * Method to create a copy of subtree with root at given node. Sets paths of new root
+   * to initialPath
+   * 
+   * @param oldRoot Reference to the root of the subtree being copied
+   * @param initialPath Path of new root
+   * @return reference to the root of copied tree
+   */
+  private FileSystemNode getCopyOfSubtree(FileSystemNode oldRoot, Path initialPath) {
+	if (!(oldRoot instanceof Directory)) {
+      File copyRoot = new File(oldRoot.getName());
+      copyRoot.setContents(((File) oldRoot).getContents());
+      copyRoot.setPath(initialPath);
+      return copyRoot;
+	}
+	
+	Directory copyRoot = new Directory(oldRoot.getName());
+    copyRoot.setPath(initialPath);
+	for (FileSystemNode child : ((Directory) oldRoot).getChildren()) {
+	  Path initialPathForChild = Path.appendNodeName(initialPath, child.getName());
+	  FileSystemNode copyChild = this.getCopyOfSubtree(child, initialPathForChild);
+	  copyRoot.tryAddChildren(copyChild);
+	}
+	
+	return copyRoot;
+  }
+  
+  /*
+  public static void main(String[] args) {
+
+    // TESTING TESTING TESTING
+    new Shell();
+    FileSystem fs = Shell.getShell().getFileSystem();
+    Directory root = Shell.getShell().getFileSystem().getRootDir();
+
+    Path fullPathToA = new Path("/a");
+    Path relativePathToA = new Path("a");
+    Path fullPathToB = new Path("/a/b");
+    Path fullPathToC = new Path("/a/b/c");
+    Path relativePathToC = new Path("a/b/c");
+    Path relativePathToB = new Path("a/b");
+
+    Path fullPathToFile1 = new Path("/file1");
+    Path relativePathToFile1 = new Path("file1");
+    Path fullPathToFile2 = new Path("/a/b/file2");
+    Path relativePathToFile2 = new Path("a/b/file2");
+
+    Path pathToDWithDots = new Path("/../a/b/d");
+    Path pathToEWithDots = new Path("/a/../a/b/e");
+    Path pathToFEndingWithSlash = new Path("/a/b/f/");
+
+    Path pathToFile3WithDots = new Path("/../a/b/file3");
+    Path pathToFile4WithDots = new Path("/a/../a/b/file4");
+    Path pathToFile5WithSlash = new Path("/a/b/file5/");
+
+
+
+    int testNum = 1;
+
+
+    System.out.println("TESTING createNewDirectory():\n");
+
+    // #1
+    System.out
+        .print("Test #" + testNum + ". Creating a directory at full path /a. ");
+    Directory a = fs.createNewDirectory(fullPathToA);
+    if (a.getPath().equals(fullPathToA) && root.ifChildExists("a")) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #2
+    System.out.print("Test #" + testNum
+        + ". Creating a directory at path relative path a/b. ");
+    Directory b = fs.createNewDirectory(relativePathToB);
+    if (b.getPath().equals(fullPathToB) && a.ifChildExists("b")) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #3
+    System.out.print(
+        "Test #" + testNum + ". Creating a directory at full path /a/b/c. ");
+    Directory c = fs.createNewDirectory(fullPathToC);
+    if (c.getPath().equals(fullPathToC) && b.ifChildExists("c")) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #4
+    System.out.print(
+        "Test #" + testNum + ". Creating a directory at full path /../a/b/d. ");
+    Directory d = fs.createNewDirectory(pathToDWithDots);
+    if (d.getPath().equals(new Path("/a/b/d")) && b.ifChildExists("d")) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #5
+    System.out.print("Test #" + testNum
+        + ". Creating a directory at full path /a/../a/b/e. ");
+    Directory e = fs.createNewDirectory(pathToEWithDots);
+    if (e.getPath().equals(new Path("/a/b/e")) && b.ifChildExists("e")) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #6
+    System.out.print(
+        "Test #" + testNum + ". Creating a directory at full path /a/b/f. ");
+    Directory f = fs.createNewDirectory(pathToFEndingWithSlash);
+    if (f.getPath().equals(new Path("/a/b/f")) && b.ifChildExists("f")) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTESTING createNewFile():\n");
+
+    // #7
+    System.out
+        .print("Test #" + testNum + ". Creating a file at full path /file1. ");
+    File f1 = fs.createNewFile(fullPathToFile1);
+    if (f1.getPath().equals(new Path("/file1"))
+        && root.ifChildExists("file1")) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #8
+    System.out.print(
+        "Test #" + testNum + ". Creating a file at relative path a/b/file2. ");
+    File f2 = fs.createNewFile(relativePathToFile2);
+    if (f2.getPath().equals(new Path("/a/b/file2"))
+        && b.ifChildExists("file2")) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #9
+    System.out
+        .print("Test #" + testNum + ". Creating a file path /../a/b/file3. ");
+    File f3 = fs.createNewFile(pathToFile3WithDots);
+    if (f3.getPath().equals(new Path("/a/b/file3"))
+        && b.ifChildExists("file3")) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #10
+    System.out.print("Test #" + testNum
+        + ". Creating a directory at full path /a/../a/b/file4.");
+    File f4 = fs.createNewFile(pathToFile4WithDots);
+    if (f4.getPath().equals(new Path("/a/b/file4"))
+        && b.ifChildExists("file4")) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #11
+    System.out.print("Test #" + testNum
+        + ". Creating a directory at full path /a/b/file5/. ");
+    File f5 = fs.createNewFile(pathToFile5WithSlash);
+    if (f5.getPath().equals(new Path("/a/b/file5"))
+        && b.ifChildExists("file5")) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTESTING getNodeAtFullPath(): \n");
+
+    // #12
+    System.out.print("Test #" + testNum + ". Getting a node at full path / ");
+    if (fs.getNodeAtFullPath(new Path("/")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #13
+    System.out.print("Test #" + testNum + ". Getting a node at full path /a ");
+    if (fs.getNodeAtFullPath(new Path("/a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #14
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /a/b ");
+    if (fs.getNodeAtFullPath(new Path("/a/b")) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #15
+    System.out.print("Test #" + testNum + ". Getting a node at full path /.. ");
+    if (fs.getNodeAtFullPath(new Path("/..")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+    // #16
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /../a ");
+    if (fs.getNodeAtFullPath(new Path("/../a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #17
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /a/../a ");
+    if (fs.getNodeAtFullPath(new Path("/a/../a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #18
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /a/b/.. ");
+    if (fs.getNodeAtFullPath(new Path("/a/b/..")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #19
+    System.out.print("Test #" + testNum + ". Getting a node at full path  /. ");
+    if (fs.getNodeAtFullPath(new Path("/.")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #20
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /./a ");
+    if (fs.getNodeAtFullPath(new Path("/./a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #21
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /a/./b ");
+    if (fs.getNodeAtFullPath(new Path("/a/./b")) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #22
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /a/. ");
+    if (fs.getNodeAtFullPath(new Path("/a/.")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+    // #23
+    System.out.print("Test #" + testNum + ". Getting a node at full path /a/ ");
+    if (fs.getNodeAtFullPath(new Path("/a/")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #24
+    System.out.print(
+        "Test #" + testNum + ". Getting a node at full path /a/b/file2/ ");
+    if (fs.getNodeAtFullPath(new Path("/a/b/file2/")) == f2) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #25
+    System.out.print("Test #" + testNum
+        + ". Trying to get a node at invalid path /doesNotExist ");
+    if (fs.getNodeAtFullPath(new Path("/doesNotExist/")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #26
+    System.out.print("Test #" + testNum
+        + ". Trying to get a node at invalid path /a/doesNotExist ");
+    if (fs.getNodeAtFullPath(new Path("/a/doesNotExist")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #27
+    System.out.print("Test #" + testNum
+        + ". Trying to get a node at invalid path /a/b/doesNotExist ");
+    if (fs.getNodeAtFullPath(new Path("/a/b/doesNotExist")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #28
+    System.out
+        .print("Test #" + testNum + ". Trying to get a node at invalid path "
+            + "/a/doesNotExist/anotherDoesNotExist ");
+    if (fs.getNodeAtFullPath(
+        new Path("/a/doesNotExist/anotherDoesNotExist")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #29
+    System.out.print(
+        "Test #" + testNum + ". Trying to get a node at relative path a/b ");
+    if (fs.getNodeAtFullPath(new Path("a/b")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTESTING getNodeAtRelativePath(): \n");
+
+    // #30
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path . ");
+    if (fs.getNodeAtRelativePath(new Path(".")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #31
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path a ");
+    if (fs.getNodeAtRelativePath(new Path("a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #32
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path a/b. ");
+    if (fs.getNodeAtRelativePath(new Path("a/b")) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #33
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path .. ");
+    if (fs.getNodeAtRelativePath(new Path("..")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+    // #34
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path ../a ");
+    if (fs.getNodeAtRelativePath(new Path("../a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #35
+    System.out.print(
+        "Test #" + testNum + ". Getting a node at relative path a/../a ");
+    if (fs.getNodeAtRelativePath(new Path("a/../a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #36
+    System.out.print(
+        "Test #" + testNum + ". Getting a node at relative path a/b/.. ");
+    if (fs.getNodeAtRelativePath(new Path("a/b/..")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #37
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path /./a ");
+    if (fs.getNodeAtRelativePath(new Path("./a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #38
+    System.out.print(
+        "Test #" + testNum + ". Getting a node at relative path /a/./b ");
+    if (fs.getNodeAtRelativePath(new Path("a/./b")) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #39
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path /a/. ");
+    if (fs.getNodeAtRelativePath(new Path("a/.")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+    // #40
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path a/ ");
+    if (fs.getNodeAtRelativePath(new Path("a/")) == a) {
+      System.out.println(" Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #41
+    System.out.print("Test #" + testNum
+        + ". Trying to get a node at invalid path doesNotExist ");
+    if (fs.getNodeAtRelativePath(new Path("doesNotExist")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #42
+    System.out.print("Test #" + testNum
+        + ". Trying to get a node at invalid path a/doesNotExist ");
+    if (fs.getNodeAtRelativePath(new Path("a/doesNotExist")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #43
+    System.out.print("Test #" + testNum
+        + ". Trying to get a node at invalid path a/b/doesNotExist ");
+    if (fs.getNodeAtRelativePath(new Path("a/b/doesNotExist")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #44
+    System.out
+        .print("Test #" + testNum + ". Trying to get a node at invalid path "
+            + "a/doesNotExist/anotherDoesNotExist ");
+    if (fs.getNodeAtRelativePath(
+        new Path("a/doesNotExist/anotherDoesNotExist")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #45
+    System.out.print(
+        "Test #" + testNum + ". Trying to get a node at full path /a/b ");
+    if (fs.getNodeAtRelativePath(new Path("/a/b")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTESTING getNodeAtPath(): \n");
+
+    // #46
+    System.out.print("Test #" + testNum + ". Getting a node at full path / ");
+    if (fs.getNodeAtPath(new Path("/")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #47
+    System.out.print("Test #" + testNum + ". Getting a node at full path /. ");
+    if (fs.getNodeAtPath(new Path("/.")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #48
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path . ");
+    if (fs.getNodeAtPath(new Path(".")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #49
+    System.out.print("Test #" + testNum + ". Getting a node at full path /a ");
+    if (fs.getNodeAtPath(new Path("/a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #50
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path a ");
+    if (fs.getNodeAtPath(new Path("a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #51
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /a/b ");
+    if (fs.getNodeAtPath(new Path("/a/b")) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #52
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path a/b ");
+    if (fs.getNodeAtPath(new Path("a/b")) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #53
+    System.out.print(
+        "Test #" + testNum + ". Getting a node at full path /a/b/file2 ");
+    if (fs.getNodeAtPath(new Path("/a/b/file2")) == f2) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #54
+    System.out.print(
+        "Test #" + testNum + ". Getting a node at relative path a/b/file2 ");
+    if (fs.getNodeAtPath(new Path("a/b/file2")) == f2) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #55
+    System.out.print("Test #" + testNum + ". Getting a node at full path /.. ");
+    if (fs.getNodeAtPath(new Path("/..")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #56
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path .. ");
+    if (fs.getNodeAtPath(new Path("..")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #57
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /../.. ");
+    if (fs.getNodeAtPath(new Path("/../..")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #58
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path ../.. ");
+    if (fs.getNodeAtPath(new Path("../..")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #59
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /a/.. ");
+    if (fs.getNodeAtPath(new Path("/a/..")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #60
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path a/.. ");
+    if (fs.getNodeAtPath(new Path("a/..")) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #61
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /a/../a ");
+    if (fs.getNodeAtPath(new Path("/a/../a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #62
+    System.out.print(
+        "Test #" + testNum + ". Getting a node at relative path a/../a ");
+    if (fs.getNodeAtPath(new Path("a/../a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #63
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /../a ");
+    if (fs.getNodeAtPath(new Path("/../a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #64
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path ../a ");
+    if (fs.getNodeAtPath(new Path("../a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #65
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /./a ");
+    if (fs.getNodeAtPath(new Path("/./a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #66
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path ./a ");
+    if (fs.getNodeAtPath(new Path("./a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #67
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /a/./b ");
+    if (fs.getNodeAtPath(new Path("/a/./b")) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #68
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path a/./b ");
+    if (fs.getNodeAtPath(new Path("a/./b")) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #69
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /./a ");
+    if (fs.getNodeAtPath(new Path("/./a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #70
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path ./a ");
+    if (fs.getNodeAtPath(new Path("./a")) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #71
+    System.out
+        .print("Test #" + testNum + ". Getting a node at full path /a/b/ ");
+    if (fs.getNodeAtPath(new Path("/a/b/")) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #72
+    System.out
+        .print("Test #" + testNum + ". Getting a node at relative path a/b/ ");
+    if (fs.getNodeAtPath(new Path("a/b/")) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #73
+    System.out.print("Test #" + testNum
+        + ". Trying to get a node at invalid full path /a/b/doesNotExist ");
+    if (fs.getNodeAtPath(new Path("/a/b/doesNotExist")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #74
+    System.out.print("Test #" + testNum
+        + ". Trying to get a node at invalid relative path a/b/doesNotExist ");
+    if (fs.getNodeAtPath(new Path("a/b/doesNotExist")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #75
+    System.out.print("Test #" + testNum
+        + ". Trying to get a node at invalid full path /doesNotExist/.. ");
+    if (fs.getNodeAtPath(new Path("/doesNotExist/..")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #76
+    System.out.print("Test #" + testNum
+        + ". Trying to get a node at invalid relative path doesNotExist/.. ");
+    if (fs.getNodeAtPath(new Path("doesNotExist/..")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #77
+    System.out.print(
+        "Test #" + testNum + ". Trying to get a node at invalid full path "
+            + "/a/doesNotExist/anotherDoesNotExist ");
+    if (fs.getNodeAtPath(
+        new Path("/a/doesNotExist/anotherDoesNotExist")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #78
+    System.out.print(
+        "Test #" + testNum + ". Trying to get a node at invalid relative path "
+            + "/a/doesNotExist/anotherDoesNotExist ");
+    if (fs.getNodeAtPath(
+        new Path("a/doesNotExist/anotherDoesNotExist")) == null) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTESTING getParent(): \n");
+
+    // #79
+    System.out.print("Test #" + testNum + ". Getting parent of root ");
+    if (fs.getParent(root) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #80
+    System.out.print("Test #" + testNum + ". Getting parent of a ");
+    if (fs.getParent(a) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #81
+    System.out.print("Test #" + testNum + ". Getting parent of b ");
+    if (fs.getParent(b) == a) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #82
+    System.out.print("Test #" + testNum + ". Getting parent of c ");
+    if (fs.getParent(c) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #83
+    System.out.print("Test #" + testNum + ". Getting parent of d ");
+    if (fs.getParent(d) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #84
+    System.out.print("Test #" + testNum + ". Getting parent of file1 ");
+    if (fs.getParent(f1) == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #85
+    System.out.print("Test #" + testNum + ". Getting parent of file2 ");
+    if (fs.getParent(f2) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    // #86
+    System.out.print("Test #" + testNum + ". Getting parent of file4 ");
+    if (fs.getParent(f3) == b) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTESTING getRootDir(): \n");
+
+    // #87
+    System.out.print("Test #" + testNum + ". Getting root directory ");
+    if (fs.getRootDir() == root) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nCongratulations! Class passed all tests!");
+  }
+  */
+}

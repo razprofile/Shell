@@ -1,0 +1,13 @@
+Class name: Mkdir
+Parent class (if any): Command
+Subclasses (if any): -
+
+Responsibilities:
+* create a new directory with a given name in the current directory
+* create a new diretory with a given name at specified location
+* check if directory already exists in the file tree
+
+Collaborators:
+* Directory
+* Path
+* FileSystem

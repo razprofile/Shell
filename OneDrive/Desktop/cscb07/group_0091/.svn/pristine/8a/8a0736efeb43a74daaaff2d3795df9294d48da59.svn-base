@@ -1,0 +1,22 @@
+Class name: Command
+Parent class: none
+Subclasses: Exit, Mkdir, Cd, Ls, Pwd, 
+Mv, Cp, Cat, GetURL, Echo
+
+Responsibilities:
+* Checking if specified command exists
+* Validating the arguments of the command entered
+
+Collaborators:
+* Exit
+* Mkdir
+* Cd
+* Ls
+* Pwd
+* Mv
+* Cp
+* Cat
+* GetURL
+* Echo
+* Error
+* History

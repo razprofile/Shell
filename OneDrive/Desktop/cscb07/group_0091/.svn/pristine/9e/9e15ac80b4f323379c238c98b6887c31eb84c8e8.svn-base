@@ -1,0 +1,56 @@
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import jShell.Error;
+
+public class ErrorTest {
+  
+  Error e = new Error();
+
+  @Test
+  public void testError() { //Test to make sure the dictionary initialized
+    assertNotNull("Class initialized correctly", e);
+  }
+
+  @Test
+  public void testErrorMessage() {
+    String output1 = "Error: Incorrect command entered.";
+    assertEquals("Check that the right message came back", output1, e.errorMessage("NOCOMMAND"));
+    String output2 = "Error: Incorrect number of arguments.";
+    assertEquals("Check that the right message came back", output2, e.errorMessage("WRONGARGS"));
+    String output3 = "Error: Argument type is incorrect.";
+    assertEquals("Check that the right message came back", output3, e.errorMessage("INVALIDARGS"));
+    String output4 = "Error: Please enter a correctly formatted string (Begins and ends with double quotes, no double quotes within).";
+    assertEquals("Check that the right message came back", output4, e.errorMessage("BADSTRING"));
+    String output5 = "Error: File or directory already exists.";
+    assertEquals("Check that the right message came back", output5, e.errorMessage("EXISTS"));
+    String output6 = "Error: The file or path you specified could not be found.";
+    assertEquals("Check that the right message came back", output6, e.errorMessage("NOCHILD"));
+    String output7 = "Error: Invalid path name.";
+    assertEquals("Check that the right message came back", output7, e.errorMessage("BADPATH"));
+    String output8 = "Error: Invalid file name.";
+    assertEquals("Check that the right message came back", output8, e.errorMessage("BADFILENAME"));
+    String output9 = "Error: Invalid directory name.";
+    assertEquals("Check that the right message came back", output9, e.errorMessage("BADDIRNAME"));
+    String output10 = "Error: Path not found.";
+    assertEquals("Check that the right message came back", output10, e.errorMessage("PATHNOTFOUND"));
+    String output11 = "Error: Directory not found.";
+    assertEquals("Check that the right message came back", output11, e.errorMessage("DIRNOTFOUND"));
+    String output12 = "Error: File not found.";
+    assertEquals("Check that the right message came back", output12, e.errorMessage("FILENOTFOUND"));
+    String output13 = "Error: There are no directories in the stack to be popped.";
+    assertEquals("Check that the right message came back", output13, e.errorMessage("EMPTYSTACK"));
+    String output14 = "Invalid characters in file names are: / . ! @ # $ % ^ & * ( ) { } ~ | < > ?";
+    assertEquals("Check that the right message came back", output14, e.errorMessage("REMINDER"));
+    String output15 = "Error: Please Enter a non-negative number.";
+    assertEquals("Check that the right message came back", output15, e.errorMessage("LESSTHANZERO"));
+    String output16 = "Error: Arguments for redirection are invalid.";
+    assertEquals("Check that the right message came back", output16, e.errorMessage("BADREDIR"));
+    String output17= "Error: Cannot Delete the root directory.";
+    assertEquals("Check that the right message came back", output17, e.errorMessage("CANNOTDELETEROOT"));
+    String output18 = "Error: Cannot delete current working directory.";
+    assertEquals("Check that the right message came back", output18, e.errorMessage("WORKINGDIR"));
+  }
+
+}

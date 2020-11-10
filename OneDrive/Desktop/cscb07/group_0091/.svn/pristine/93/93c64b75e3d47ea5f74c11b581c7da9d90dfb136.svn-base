@@ -1,0 +1,101 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.InvalidURLException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.commands.Curl;
+import jShell.mockClasses.MockFile;
+import jShell.mockClasses.MockShell;
+import jShell.mockClasses.MockUrlDataFetcher;
+
+public class CurlTest {
+
+  MockFile f = new MockFile();
+  MockUrlDataFetcher mdf = new MockUrlDataFetcher();
+  Curl c = new Curl(mdf);
+  MockShell s = new MockShell();
+
+
+
+  @Test(expected = ArgsNumberException.class)
+  public void testTooManyArgs() throws ArgsNumberException, InvalidURLException, 
+  BadFileNameException, InvalidPathException, NodeExistsException, 
+  RedirectionOperatorsException, FileNotFoundException {
+    String[] params = {"curl", "http://www.sampleurl.com", "3"};
+    c.run(params);
+
+  }
+
+  @Test(expected = InvalidURLException.class)
+  public void testInValidURLDataFetcher() throws InvalidURLException {
+    String param = "http://www.cs.toronto.edu/~trebla/CSCB09-2019-Summer/lab02/words.htmlxt";
+    mdf.getUrlData(param);
+  }
+
+  @Test
+  public void testValidURLDataFetcher() throws InvalidURLException {
+    String param = "http://www.sampleurl.com/some.txt";
+    assertEquals("these are the contents of the url", mdf.getUrlData(param));
+  }
+
+
+  @Test
+  public void testToString() {
+    assertEquals("curl", c.toString());
+  }
+
+  @Test
+  public void testAddtoCurrDirectory() throws ArgsNumberException, 
+  InvalidURLException, BadFileNameException, InvalidPathException, 
+  NodeExistsException, RedirectionOperatorsException, FileNotFoundException {
+    String params[] = {"curl", "http://www.sampleurl.com/curlFile.txt"};
+    c.run(params);
+    assertEquals(s.getLastOutput(), "Adding " + "curlFile" + "\n");
+  }
+
+  @Test
+  public void testOverwrite() throws ArgsNumberException, InvalidURLException, 
+  BadFileNameException, InvalidPathException, NodeExistsException, 
+  RedirectionOperatorsException, FileNotFoundException {
+    String params[] = {"curl", "http://www.sampleurl.com/childFile.txt"};
+    c.run(params);
+    assertEquals(s.getLastOutput(), "Redirecting output for overwriting:"
+        + mdf.getUrlData(params[1]) + "\n to file with name: " + "childFile");
+  }
+}

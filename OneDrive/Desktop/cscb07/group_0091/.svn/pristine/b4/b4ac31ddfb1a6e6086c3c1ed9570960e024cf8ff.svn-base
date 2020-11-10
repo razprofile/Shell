@@ -1,0 +1,9 @@
+package jShell.commands;
+
+public abstract class Command {
+
+	public abstract void run(String args[]);
+
+	public abstract boolean isValid(String[] args);
+	
+}

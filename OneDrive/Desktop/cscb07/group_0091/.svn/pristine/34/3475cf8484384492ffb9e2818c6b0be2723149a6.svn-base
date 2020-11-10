@@ -1,0 +1,81 @@
+package jShell;
+
+public class File {
+  private String filename;
+  private String contents; //Since the only "files" we are handling are .txt
+  
+  /*
+   * Responsibilities not included in this class:
+   * 
+   * check if file exists: it doesn't really make much sense for a file
+   * to see if itself exists, since if it can run that function to check, then
+   * it definitely exists. This responsibility should be handled by the shell
+   * itself or by another intermediate class.
+   * 
+   * Delete file: Unsure if this one belongs here, a file being used to delete
+   * another file (or even self-delete) seems absurd.
+   */
+  public File(String filename) {
+    setFileName(filename);
+  }
+  
+  public String getFileName() {
+    /**
+     * Prints out the name of this particular file
+     * 
+     * @return the name of the file
+     */
+    return filename;
+  }
+  
+  public void setFileName(String filename) {
+    /**
+     * Sets the filename of this file object
+     * 
+     * @param filename the name of the file to be created
+     */
+    boolean invalid = false;
+    String spaceChecker[] = filename.trim().split("\\s+");
+    if (spaceChecker.length > 1) {
+      //temporary error message for testing
+      System.out.println("Error: Invalid filename -- included a space.");
+    }
+      // Check for invalid symbols in the name
+      String invalidChar[] = {"/", ".", "!", "@", "#", "$", "%", "^", "&", "*",
+          "(", ")", "{", "}", "~", "|", "<", ">", "?"};
+      String symbolChecker[] = filename.split("");
+      for (String currentChar : symbolChecker) {
+        for (int i = 0; i < invalidChar.length; i++) {
+          if (currentChar.equals(invalidChar[i]) == true) {
+            //Temporary error message
+            System.out.println("Error: Invalid filename -- included " + 
+            invalidChar[i]);
+            invalid = true;
+          }
+        }
+      }
+      if (invalid == false) {
+        this.filename = filename;
+      }
+    }
+  
+  public void setContents(String contents) {
+    /**
+     * Populates the contents of this file with whatever
+     * text the user desires
+     * 
+     * @param contents the text to be added to the file
+     */
+    this.contents = contents;
+  }
+  
+  public String getContents() {
+    /**
+     * Opens and returns the contents of this file
+     * 
+     * @return the contents of the file
+     */
+    return contents;
+  }
+  
+}

@@ -1,0 +1,97 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+
+import jShell.interfaces.*;
+
+import java.util.HashMap;
+import jShell.Path;
+
+/**
+ * A class to implement the Pushd command (Saves the current working directory by pushing onto
+ * directory stack and then changes the new current working directory to DIR).
+ * 
+ * @author Raz
+ */
+public class Pushd extends Command {
+	
+  public Pushd(IShell shell) {
+	super(shell);
+  }
+  
+  @Override
+  public String run(String[] args) {
+    IError e = shell.getError();
+    // Checking if given location corresponds to a valid location at current file
+    // If it is, add args[1] to stack
+    // Else, print the corresponding error message.
+    IPath pushPath = new Path(args[1]);
+    if (!pushPath.isValidFullPath()) {
+      if (!pushPath.isValidRelativePath()) {
+        shell.outputToShell(e.errorMessage("PATHNOTFOUND"));
+        return "\n";
+      }
+      pushPath = (new Path(args[1])).convertRelativeToFull();
+    }
+    shell.getUserData().getPathStack().add(pushPath);
+    shell.getUserData().setCurPath(pushPath);
+    return "";
+  }
+
+  @Override
+  public HashMap<String, String> isValid(String[] args) {
+
+    // HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+
+    // Checking that correct number of arguments is specified
+    if (args.length != 2) {
+      errors.put("all", "WRONGARGS");
+      return errors;
+    }
+
+    IPath path = new Path(args[1]);
+    // Checking that specified path exists and is a path to directory
+    if (!path.isValidPath() || !path.isPathToDirectory()) {
+      errors.put(args[1], "DIRNOTFOUND");
+    }
+
+    return errors;
+  }
+
+  @Override
+  public String toString() {
+
+    return "pushd";
+
+  }
+
+}

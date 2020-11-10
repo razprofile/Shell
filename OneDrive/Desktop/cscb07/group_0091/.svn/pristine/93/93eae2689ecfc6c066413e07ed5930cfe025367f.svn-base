@@ -1,0 +1,78 @@
+package jShell.mockClasses;
+
+import jShell.File;
+import jShell.interfaces.IDirectory;
+import jShell.interfaces.IFile;
+import jShell.interfaces.IFileSystem;
+import jShell.interfaces.IFileSystemNode;
+import jShell.interfaces.IPath;
+
+public class MockFileSystem implements IFileSystem{
+
+  @Override
+  public IDirectory getRootDir() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IFileSystemNode getNodeAtFullPath(IPath path) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IFileSystemNode getNodeAtRelativePath(IPath path) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IFileSystemNode getNodeAtPath(IPath path) {
+    // TODO Auto-generated method stub;
+    if (path.toString().equalsIgnoreCase("file")) {
+    File f = new File("file");
+    f.setContents("hello");
+    return f;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public IFile createNewFile(IPath path) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IDirectory createNewDirectory(IPath path) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IDirectory getParent(IFileSystemNode node) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IFileSystemNode removeNode(IPath toDelete) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IFileSystemNode moveNode(IPath pathToNode, IPath newParent) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IFileSystemNode copyNode(IPath pathToNode, IPath newParent) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+}

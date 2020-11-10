@@ -1,0 +1,17 @@
+package jShell;
+
+public class Directory {
+
+	private String workingDirectory;
+
+	public String getWorkingDirectory() {
+		return workingDirectory;
+	}
+
+	public void setWorkingDirectory(String workingDirectory) {
+		this.workingDirectory = workingDirectory;
+	}
+	
+	
+
+}

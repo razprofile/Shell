@@ -1,0 +1,72 @@
+package jShell;
+
+import java.util.*;
+
+
+
+public class Directory {
+
+
+  private String directoryName;
+
+
+
+  // create directory map to store child Directory objects
+  private Map<String, Directory> childDirectories = new HashMap<String, Directory>();
+
+  // create file map to store child file Objects
+  private Map<String, File> childFiles = new HashMap<String, File>();
+
+  public Directory(String name) {
+
+
+    directoryName = name;
+
+  }
+
+  public void setNameofDir(String name) {
+
+    this.directoryName = name;
+
+
+  }
+
+  public String getNameofDir() {
+
+    return directoryName;
+  }
+
+
+  
+
+  public void addchildFile(String name, File f) {
+    /**
+     * method for adding files to a singular directory
+     * @param name: the name of file to be created
+     *  
+     *  */
+    childFiles.put(name, f);
+  }
+  
+  
+  
+  public void addchildDir(String name) {
+    /**
+     * 
+     * method for adding child (subdirs) to child directory object.
+     * @param name: the directory name for creation.
+     * 
+     * 
+     *  */
+    
+    Directory d = new Directory(name);
+    
+    //place subdirectory in directory map
+    childDirectories.put(name, d);
+   
+    
+  }
+  
+
+
+}

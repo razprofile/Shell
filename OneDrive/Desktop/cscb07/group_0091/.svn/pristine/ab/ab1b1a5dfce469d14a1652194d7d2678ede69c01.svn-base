@@ -1,0 +1,120 @@
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.File;
+import jShell.FileSystem;
+import jShell.FileSystemNode;
+import jShell.Path;
+import jShell.Shell;
+import jShell.Error;
+
+/**
+ * The Cat class holds all of the functions related to the Cat command. It
+ * inherits some basic methods from the Command class in order to function
+ * properly within the Shell system as a whole.
+ * 
+ * Cat concatenates the contents of any number of given files together in the
+ * shell, separated by three line breaks each. Cat can identify files in local,
+ * relative or full paths
+ * 
+ * @author Kevin Meharchand
+ *
+ */
+public class Cat extends Command {
+
+	/**
+	 * The overridden run method inherited from the Command class. Attempts to
+	 * locate files in the overall shell File System one at a time, returning an
+	 * appropriate error if the file cannot be found.
+	 */
+	@Override
+	public void run(String[] args) {
+
+		File[] files = new File[args.length - 1]; // Array to hold all of the files
+		FileSystemNode temp; // Holds the current file to be added to the file array
+		FileSystem f = Shell.getShell().getFileSystem();
+		Path p;
+		for (int i = 0; i < args.length; i++) {
+			if (i > 0) { // Skip the first argument (the command call)
+				/*
+				 * User can pass in either a full path, a relative path, or a file name which
+				 * assumes they're using their local directory
+				 */
+				p = new Path(args[i]);
+				temp = f.getNodeAtPath(p);
+				if (!(temp == null)) {
+					// If file exists, retrieve it
+					files[i - 1] = (File) temp; // Store it in the files array
+				} else {
+					return;
+				}
+			}
+		}
+		// File(s) has been retrieved
+		printContents(files, Shell.getShell());
+	}
+
+	@Override
+	public HashMap<String, String> isValid(String[] args) {
+
+		// HashMap to map every argument by an error it caused
+		HashMap<String, String> errors = new HashMap<String, String>();
+
+		// No files provided
+		if (args.length == 1) {
+			errors.put("all", "WRONGARGS");
+			return errors;
+		}
+
+		// Checking that every argument is a valid path to a file
+		for (int i = 1; i < args.length; i++) {
+			Path p = new Path(args[i]);
+
+			if (!p.isValidPath() || p.isPathToDirectory()) {
+				errors.put(args[i], "FILENOTFOUND");
+			}
+		}
+
+		return errors;
+	}
+
+	/**
+	 * Prints out the contents of each file provided in the files array, with three
+	 * line breaks between each.
+	 * 
+	 * @param files : the array of files to be printed to the shell
+	 * @param s     : The shell that the contents of the file will be printed to.
+	 */
+	private void printContents(File[] files, Shell s) {
+
+		// Loop through the entire array
+		for (File current : files) {
+			// Get the contents of the file and print to the shell
+			s.outputToShellln(current.getContents());
+			// Add three line breaks between files
+			s.outputToShellln("");
+			s.outputToShellln("");
+			s.outputToShellln("");
+		}
+	}
+
+	@Override
+	public String toString() {
+
+		return "cat";
+
+	}
+	/*
+	 * public static void main (String[] args) { // Real testing hours. Shell s =
+	 * new Shell(); Cat c = new Cat(); Echo e = new Echo(); String[] test = {"echo",
+	 * "\"test\"", ">", "file"}; e.run(test); String[] catTest = {"cat", "file"};
+	 * //Reading one file c.run(catTest); String[] test2 = {"echo", "\"test2\"",
+	 * ">", "file2"}; e.run(test2); String[] catTest2 = {"cat", "file", "file2"};
+	 * //Reading more than one file c.run(catTest2); /* These test cases have also
+	 * been performed on files located at relative and full paths. They have worked
+	 * perfectly for those too. Those cases are not included here as many shell
+	 * components are in use to form the fully functioning file system.
+	 * 
+	 * }
+	 */
+}

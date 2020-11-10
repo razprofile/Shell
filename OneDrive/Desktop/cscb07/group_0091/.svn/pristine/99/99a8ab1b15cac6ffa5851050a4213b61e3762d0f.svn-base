@@ -1,0 +1,77 @@
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import org.junit.Before;
+import jShell.mockClasses.MockShell;
+import jShell.commands.Mkdir;
+
+public class MkdirTest {
+
+  MockShell shell;
+  Mkdir mkdir;
+  
+  @Before
+  public void init() {
+    shell = new MockShell();
+    mkdir = new Mkdir();
+  }
+  
+  
+  @Test
+  public void testIsValidWithNoArguments() {
+    String[] arguments = {"mkdir"};
+    assertEquals("Ene error is returned", mkdir.isValid(arguments).size(), 1);
+    assertEquals("Invalid arguments type of error is returned", 
+        mkdir.isValid(arguments).get("all"), "WRONGARGS");
+  }
+  
+  @Test
+  public void testIsValidWithOneArugment() {
+    String[] arguments = {"mkdir", "dir"};
+    assertEquals("No errors are returned", mkdir.isValid(arguments).size(), 0);
+  }
+  
+  @Test
+  public void testIsValidWithMultipleArguments() {
+    String[] arguments = {"mkdir", "dir1", "dir2", "dir2/dir3"};
+    assertEquals("No errors are returned", mkdir.isValid(arguments).size(), 0);
+  }
+  
+  @Test
+  public void testRunDirectoryExist() {
+    String[] arguments1 = {"mkdir", "/this/is/a/valid/full/path/to/dir"};
+    mkdir.run(arguments1);
+    assertTrue(shell.getLastOutput().endsWith("EXISTS"));
+    
+    String[] arguments2 = {"mkdir", "this/is/a/valid/relative/path/to/dir"};
+    mkdir.run(arguments2);
+    assertTrue(shell.getLastOutput().endsWith("EXISTS"));
+    
+    String[] arguments3 = {"mkdir", "/this/is/a/valid/full/path/to/file"};
+    mkdir.run(arguments3);
+    assertTrue(shell.getLastOutput().endsWith("EXISTS"));
+    
+    String[] arguments4 = {"mkdir", "this/is/a/valid/relative/path/to/file"};
+    mkdir.run(arguments4);
+    assertTrue(shell.getLastOutput().endsWith("EXISTS"));
+  }
+  
+  @Test
+  public void testRunInvalidPath() {
+    String[] arguments = {"mkdir", "/this/path/points/to/invalid/dir"};
+    mkdir.run(arguments);
+    assertTrue(shell.getLastOutput().endsWith("PATHNOTFOUND"));
+  }
+  
+  @Test
+  public void testRunValidPath() {
+    String[] arguments = {"mkdir", "/this/is/a/valid/full/path/to/dir/child"};
+    mkdir.run(arguments);
+    //System.out.println(shell.getLastOutput());
+    assertEquals(shell.getLastOutput(),"Successfully created new directory");
+  }
+  
+  
+  
+}

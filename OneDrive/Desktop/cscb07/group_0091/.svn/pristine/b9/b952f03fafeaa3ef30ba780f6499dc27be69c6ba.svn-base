@@ -1,0 +1,898 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.FileSystemNode;
+import jShell.Path;
+import jShell.Shell;
+import jShell.FileSystem;
+
+/**
+ * Mkdir class handles all operations related to mkdir command, namely, checks 
+ * if the arguments are valid arguments for mkdir command and creates a 
+ * directory at specified location in the file system tree.
+ * 
+ * @author Sasha (Oleksandr)
+ *
+ */
+
+public class Mkdir extends Command {
+
+  /**
+   * Create a new directory at a given path, assuming given path is valid and 
+   * exists
+   * 
+   * @param args Arguments for command
+   */
+  @Override
+  public void run(String args[]) {
+
+    // Path of the directory to be created
+    Path path = new Path(args[1]);
+
+    // Creating a new directory
+    Shell.getShell().getFileSystem().createNewDirectory(path);
+
+  }
+
+
+  /**
+   * Return a mapping of invalid arguments to the errors they cause, if any.
+   * 
+   * @param args Arguments for the command
+   * @return Hashmap of invalid arguments and error codes if error occurred; 
+   *         empty hashmap if no error occurred
+   */
+  @Override
+  public HashMap<String, String> isValid(String args[]) {
+
+    // HashMap to map every argument to an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+
+    // Checking if exactly two arguments are passed
+    if (args.length != 2) {
+      errors.put("all", "WRONGARGS");
+      return errors;
+    }
+
+    Path path = new Path(args[1]);
+
+    // Checking if path contains two or more consecutive slashes
+    if (!path.doubleSlashChecker()) {
+      errors.put(args[1], "BADPATH");
+      return errors;
+    }
+
+    // Checking if directory with given name already exists
+    if (path.isValidPath()) {
+      errors.put(args[1], "EXISTS");
+      return errors;
+    }
+
+    // Getting the location of the directory that is being modified
+    Path location = path.getParentPath();
+
+    // Checking if given location corresponds to a valid location in current 
+    // file tree
+    if (!location.isValidPath()) {
+      errors.put(location.toString(), "PATHNOTFOUND");
+      return errors;
+    }
+
+    // Checking if given location corresponds to a location of a directory, 
+    // not a file
+    if (!location.isPathToDirectory()) {
+      errors.put(location.toString(), "DIRNOTFOUND");
+      return errors;
+    }
+
+    // Checking if the name of directory being created is valid name
+    String name = path.getBottomName();
+    if (!FileSystemNode.nameChecker(name)) {
+      errors.put(name, "BADDIRNAME");
+      return errors;
+    }
+
+    return errors;
+  }
+
+  /**
+   * Return the name of the command
+   * 
+   * @return The name of the command, i.e. mkdir
+   */
+  @Override
+  public String toString() {
+
+    return "mkdir";
+
+  }
+
+  /*
+  public static void main(String[] args) {
+
+    // TESTING TESTING TESTING
+
+    // Creating shell and mock file system
+    Shell shell = new Shell();
+    FileSystem f = shell.getFileSystem();
+    Mkdir mkdir = new Mkdir();
+    String[] arguments;
+
+    // Adding files and directories to the mock file system
+    f.createNewDirectory(new Path("/dir1"));
+    f.createNewDirectory(new Path("/dir2"));
+    f.createNewDirectory(new Path("/dir1/a"));
+    f.createNewDirectory(new Path("/dir1/b"));
+    f.createNewDirectory(new Path("/dir2/c"));
+    f.createNewDirectory(new Path("/dir1/a/d"));
+    f.createNewFile(new Path("/file1"));
+    f.createNewFile(new Path("/dir1/file2"));
+    f.createNewFile(new Path("dir1/a/file3"));
+
+    // Print the way mock file system looks like
+    System.out.println("Printing all items in the file system:");
+    System.out.println("/");
+    System.out.println("/dir1");
+    System.out.println("/dir2");
+    System.out.println("/file1");
+    System.out.println("/dir1/a");
+    System.out.println("/dir1/b");
+    System.out.println("/dir1/file2");
+    System.out.println("/dir2/c");
+    System.out.println("/dir1/a/d");
+    System.out.println("/dir1/a/file3");
+    System.out.println("\n\n");
+
+
+
+    // PART 1. TESTING INPUTS THAT SHOULD RETURN AN ERROR
+    System.out.println("TESTING POSSIBLE ERRORS \n");
+    
+    // #0
+    System.out.println("Test #0. Attempt to call mkdir with no arguments: ");
+    arguments = (new String("mkdir ")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("WRONGARGS")) {
+      System.out.println("Failed test #0");
+      return;
+    } else {
+      System.out.println("Passed test #0");
+    } ;
+
+    // #1
+    System.out.println(
+        "Test #1. Attempt to create directory at root location (using full "
+            + "path): ");
+    arguments = (new String("mkdir /")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #1");
+      return;
+    } else {
+      System.out.println("Passed test #1");
+    } ;
+
+    // #2
+    System.out.println(
+        "Test #2. Attempt to create existing directory on first level of"
+            + " file tree (using full path): ");
+    arguments = (new String("mkdir /dir1")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #2");
+      return;
+    } else {
+      System.out.println("Passed test #2");
+    } ;
+
+    // #3
+    System.out.println(
+        "Test #3. Attempt to create existing directory on second level "
+            + "of file tree (using full path): ");
+    arguments = (new String("mkdir /dir1/a")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #3");
+      return;
+    } else {
+      System.out.println("Passed test #3");
+    } ;
+
+    // #4
+    System.out.println(
+        "Test #4. Attempt to create directory at the location of existing file "
+        + "(using full path): ");
+    arguments = (new String("mkdir /file1")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #4");
+      return;
+    } else {
+      System.out.println("Passed test #4");
+    } ;
+
+    // #5
+    System.out
+        .println("Test #5. Attempt to create directory at the location of "
+            + "existing file at second level (using full path): ");
+    arguments = (new String("mkdir /dir1/file2")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #5");
+      return;
+    } else {
+      System.out.println("Passed test #5");
+    } ;
+
+
+    // #6
+    System.out.println(
+        "Test #6. Attempt to create directory at the location of existing file "
+            + "at higher level (using full path): ");
+    arguments = (new String("mkdir /dir1/a/file3")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #6");
+      return;
+    } else {
+      System.out.println("Passed test #6");
+    } ;
+
+    // #7
+    System.out.println(
+        "Test #7. Attempt to create existing directory on the third level "
+        + "(using full path): ");
+    arguments = (new String("mkdir /dir1/a/d")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #7");
+      return;
+    } else {
+      System.out.println("Passed test #7");
+    } ;
+
+    // #8
+    System.out.println(
+        "Test #7. Attempt to create directory at non-exiting path (using "
+        + "full path): ");
+    arguments =
+        (new String("mkdir /dirThatDoesNotExist/anotherDir")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("PATHNOTFOUND")) {
+      System.out.println("Failed test #8");
+      return;
+    } else {
+      System.out.println("Passed test #8");
+    } ;
+
+    // #9
+    System.out.println("Test #9. Attempt to create directory at"
+        + " non-exiting path at deeper level (using full path): ");
+    arguments = (new String(
+        "mkdir /dir1/dirThatDoesNotExist/anotherDirThatDoesNotExist/dir"))
+            .split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("PATHNOTFOUND")) {
+      System.out.println("Failed test #9");
+      return;
+    } else {
+      System.out.println("Passed test #9");
+    } ;
+
+    // #10
+    System.out
+        .println("Test #10. Attempt to create directory at non-exiting path "
+            + "at deeper level (using full path): ");
+    arguments = (new String(
+        "mkdir /dir1/dirThatDoesNotExist/anotherDirThatDoesNotExist/dir"))
+            .split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("PATHNOTFOUND")) {
+      System.out.println("Failed test #10");
+      return;
+    } else {
+      System.out.println("Passed test #10");
+    } ;
+
+
+    // #11
+    System.out.println("Test #11. Attempt to create existing directory"
+        + "on first level of file tree (using relative path): ");
+    arguments = (new String("mkdir dir1")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #11");
+      return;
+    } else {
+      System.out.println("Passed test #11");
+    } ;
+
+    // #12
+    System.out.println("Test #12. Attempt to create existing directory "
+        + "on the second level of file tree (using relative path): ");
+    arguments = (new String("mkdir dir1/a")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #12");
+      return;
+    } else {
+      System.out.println("Passed test #12");
+    } ;
+
+    // #13
+    System.out.println(
+        "Test #12. Attempt to create directory at the location of existing file"
+        + "(using relative path): ");
+    arguments = (new String("mkdir file1")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #13");
+      return;
+    } else {
+      System.out.println("Passed test #13");
+    } ;
+
+    // #14
+    System.out.println(
+        "Test #14. Attempt to create directory at the location of existing file"
+            + " on the second level (using relative path): ");
+    arguments = (new String("mkdir dir1/file2")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #14");
+      return;
+    } else {
+      System.out.println("Passed test #14");
+    } ;
+
+
+    // #15
+    System.out.println(
+        "Test #15. Attempt to create directory at the location of existing file"
+            + "at higher level (using relative path): ");
+    arguments = (new String("mkdir dir1/a/file3")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #15");
+      return;
+    } else {
+      System.out.println("Passed test #15");
+    } ;
+
+    // #16
+    System.out.println(
+        "Test #16. Attempt to create existing directory on the third level: ");
+    arguments = (new String("mkdir dir1/a/d")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #16");
+      return;
+    } else {
+      System.out.println("Passed test #16");
+    } ;
+
+    // #17
+    System.out.println(
+        "Test #17. Attempt to create directory at non-exiting path (using "
+        + "relative path): ");
+    arguments = (new String("mkdir dirThatDoesNotExist/anotherDir")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("PATHNOTFOUND")) {
+      System.out.println("Failed test #17");
+      return;
+    } else {
+      System.out.println("Passed test #17");
+    } ;
+
+    // #18
+    System.out
+        .println("Test #18. Attempt to create directory at non-exiting path "
+            + "at deeper level (using relative path): ");
+    arguments = (new String(
+        "mkdir dir1/dirThatDoesNotExist/anotherDirThatDoesNotExist/dir"))
+            .split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("PATHNOTFOUND")) {
+      System.out.println("Failed test #18");
+      return;
+    } else {
+      System.out.println("Passed test #18");
+    } ;
+
+
+    // #19
+    System.out
+        .println("Test #19. Attempt to create directory with invalid name: ");
+    // Skipping "/" because mkdir treats it as a special character for path
+    String[] invalidChars = {".", "!", "@", "#", "$", "%", "^", "&", "*", "(",
+        ")", "{", "}", "~", "|", "<", ">", "?"};
+    // Trying out every invalid character
+    for (String c : invalidChars) {
+      arguments = (new String("mkdir dir" + c + "invalid")).split(" ");
+      if (mkdir.isValid(arguments).isEmpty()
+          || !mkdir.isValid(arguments).values().contains("BADDIRNAME")) {
+        System.out
+            .println("Failed test #19. Character " + c + " caused the failure");
+        return;
+      }
+    }
+    System.out.println("Passed test #19");
+
+    // #20
+    System.out.println("Test #20. Attempt to add child to a file at "
+        + "first level (using full path): ");
+    arguments = (new String("mkdir /file1/dir")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("DIRNOTFOUND")) {
+      System.out.println("Failed test #20");
+      return;
+    } else {
+      System.out.println("Passed test #20");
+    } ;
+
+    // #21
+    System.out.println("Test #21. Attempt to add child to a file at "
+        + "second level (using full path): ");
+    arguments = (new String("mkdir /dir1/file2/dir")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("DIRNOTFOUND")) {
+      System.out.println("Failed test #21");
+      return;
+    } else {
+      System.out.println("Passed test #21");
+    } ;
+
+    // #22
+    System.out.println("Test #22. Attempt to add child to a file at "
+        + "deeper level (using full path): ");
+    arguments = (new String("mkdir /dir1/a/file3/dir")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("DIRNOTFOUND")) {
+      System.out.println("Failed test #22");
+      return;
+    } else {
+      System.out.println("Passed test #22");
+    } ;
+
+    // #23
+    System.out.println("Test #23. Attempt to add child to a file at "
+        + "first level (using relative path): ");
+    arguments = (new String("mkdir file1/dir")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("DIRNOTFOUND")) {
+      System.out.println("Failed test #23");
+      return;
+    } else {
+      System.out.println("Passed test #23");
+    } ;
+
+    // #24
+    System.out.println("Test #24. Attempt to add child to a file at "
+        + "second level (using relative path): ");
+    arguments = (new String("mkdir dir1/file2/dir")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("DIRNOTFOUND")) {
+      System.out.println("Failed test #24");
+      return;
+    } else {
+      System.out.println("Passed test #24");
+    } ;
+
+    // #25
+    System.out.println("Test #25. Attempt to add child to a file at "
+        + "deeper level (using relative path): ");
+    arguments = (new String("mkdir dir1/a/file3/dir")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("DIRNOTFOUND")) {
+      System.out.println("Failed test #25");
+      return;
+    } else {
+      System.out.println("Passed test #25");
+    } ;
+
+    // #26
+    System.out
+        .println("Test #26. Attempt to add directory at at root using //:");
+    arguments = (new String("mkdir //")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("BADPATH")) {
+      System.out.println("Failed test #26");
+      return;
+    } else {
+      System.out.println("Passed test #26");
+    } ;
+
+    // #27
+    System.out.println(
+        "Test #27. Attempt to add directory at path using // at the beginning "
+        + "of the path:");
+    arguments = (new String("mkdir //dir1")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("BADPATH")) {
+      System.out.println("Failed test #27");
+      return;
+    } else {
+      System.out.println("Passed test #27");
+    } ;
+
+    // #28
+    System.out.println(
+        "Test #28. Attempt to add directory at path using // in the middle of "
+        + "the path:");
+    arguments = (new String("mkdir dir1//a")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("BADPATH")) {
+      System.out.println("Failed test #28");
+      return;
+    } else {
+      System.out.println("Passed test #28");
+    } ;
+
+    // #29
+    System.out.println(
+        "Test #29. Attempt to add directory at path using // at the end of "
+        + "the path:");
+    arguments = (new String("mkdir dir1//")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("BADPATH")) {
+      System.out.println("Failed test #29");
+      return;
+    } else {
+      System.out.println("Passed test #29");
+    } ;
+
+    // #30
+    System.out.println(
+        "Test #30. Attempt to add directory at path using multiples occurences "
+        + "of // :");
+    arguments = (new String("mkdir /dir1/a///d/newDir")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("BADPATH")) {
+      System.out.println("Failed test #30");
+      return;
+    } else {
+      System.out.println("Passed test #30");
+    } ;
+
+    // #31
+    System.out
+        .println("Test #31. Attempt to add directory at path using \".\" :");
+    arguments = (new String("mkdir dir1/.")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #31");
+      return;
+    } else {
+      System.out.println("Passed test #31");
+    } ;
+
+    // #32
+    System.out.println(
+        "Test #32. Attempt to add directory at path using \".\" at root:");
+    arguments = (new String("mkdir /.")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #32");
+      return;
+    } else {
+      System.out.println("Passed test #32");
+    } ;
+
+    // #33
+    System.out.println(
+        "Test #33. Attempt to add directory at path using \"..\" at the end "
+        + "of path:");
+    arguments = (new String("mkdir dir1/..")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #33");
+      return;
+    } else {
+      System.out.println("Passed test #33");
+    } ;
+
+    // #34
+    System.out.println(
+        "Test #33. Attempt to add directory at path using \"..\" at root:");
+    arguments = (new String("mkdir ..")).split(" ");
+    if (mkdir.isValid(arguments).isEmpty()
+        || !mkdir.isValid(arguments).values().contains("EXISTS")) {
+      System.out.println("Failed test #34");
+      return;
+    } else {
+      System.out.println("Passed test #34");
+    } ;
+
+
+    // PART 2. TESTING VALID INPUTS
+    System.out.println("\n\nTESTING EXECUTION OF MKDIR \n");
+
+    // #1
+    System.out.println(
+        "Test #1. Creating a directory at first level (using full path)");
+    arguments = (new String("mkdir /newDir1")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #1. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #1. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #1");
+    } ;
+
+    // #2
+    System.out.println(
+        "Test #33. Creating a directory at second level (using full path)");
+    arguments = (new String("mkdir /newDir1/newDir2")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #2. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #2. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #2");
+    } ;
+
+    // #3
+    System.out.println(
+        "Test #3. Creating a directory at deeper level (using full path)");
+    arguments = (new String("mkdir /newDir1/newDir2/newDir3")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #3. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #3. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #3");
+    } ;
+
+    // #4
+    System.out.println(
+        "Test #4. Creating a directory at first level (using relative path)");
+    arguments = (new String("mkdir newNewDir1")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #4. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #4. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #4");
+    } ;
+
+    // #5
+    System.out.println(
+        "Test #5. Creating a directory at second level (using relative path)");
+    arguments = (new String("mkdir newNewDir1/newNewDir2")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #5. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #5. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #5");
+    } ;
+
+    // #6
+    System.out.println(
+        "Test #6. Creating a directory at deeper level (using relative path)");
+    arguments =
+        (new String("mkdir /newNewDir1/newNewDir2/newNewDir3")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #6. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #6. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #6");
+    } ;
+
+    // #7
+    System.out.println(
+        "Test #7. Creating a directory at valid path ending with a slash");
+    arguments = (new String("mkdir newDir1/anotherDir1/")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #7. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #7. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #7");
+    } ;
+
+    // #8
+    System.out
+        .println("Test #8. Creating a directory at valid path using \".\" at "
+            + "the beginning of the path ");
+    arguments = (new String("mkdir ./newDir1/anotherDir2")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #8. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #8. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #8");
+    } ;
+
+    // #9
+    System.out
+        .println("Test #9. Creating a directory at valid path using \".\" at "
+            + "in the middle of the path ");
+    arguments = (new String("mkdir /newDir1/./anotherDir3")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #9. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #9. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #9");
+    } ;
+
+    // #10
+    System.out
+        .println("Test #10. Creating a directory using .. in the beginning of "
+            + "the path (using full path)");
+    arguments = (new String("mkdir /../newDir1/anotherDir4")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #10. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #10. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #10");
+    } ;
+
+    // #11
+    System.out
+        .println("Test #11. Creating a directory using .. in the middle of "
+            + "the path (using full path)");
+    arguments =
+        (new String("mkdir /newDir1/../newDir1/anotherDir5")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #11. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #11. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #11");
+    } ;
+
+    // #12
+    System.out
+        .println("Test #12. Creating a directory using .. at the beginning of "
+            + "the path (using relative path)");
+    arguments = (new String("mkdir ../newDir1/anotherDir6")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #12. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #12. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #12");
+    } ;
+
+    // #13
+    System.out
+        .println("Test #13. Creating a directory using .. in the middle of "
+            + "the path (using relative path)");
+    arguments = (new String("mkdir newDir1/../newDir1/anotherDir7")).split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #13. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #13. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #13");
+    } ;
+
+    // #14
+    System.out.println(
+        "Test #14. Creating a directory using path with multiple occurences "
+        + "of \"..\" ");
+    arguments =
+        (new String("mkdir newDir1/../../../newDir1/../newDir1/anotherDir8"))
+            .split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #14. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #14. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #14");
+    } ;
+
+    // #15
+    System.out.println(
+        "Test #15. Creating a directory using path with occurences of "
+        + "\"..\" and \".\"");
+    arguments = (new String("mkdir ./.././newDir1/././../newDir1/anotherDir9"))
+        .split(" ");
+    if (!mkdir.isValid(arguments).isEmpty()) {
+      System.out.println("Failed test #15. Unexpected error occured.");
+      return;
+    } else {
+      mkdir.run(arguments);
+      if (!(new Path(arguments[1]).isValidPath())) {
+        System.out.println("Failed test #15. Directory wasn't created");
+        return;
+      }
+      System.out.println("Passed test #15");
+    } ;
+
+    System.out.println("\nCongratulations! Class passed all tests");
+  
+  }
+  */
+  
+}

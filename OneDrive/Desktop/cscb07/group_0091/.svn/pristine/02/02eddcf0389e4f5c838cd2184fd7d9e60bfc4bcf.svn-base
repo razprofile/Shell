@@ -1,0 +1,108 @@
+package jShell.commands;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import jShell.Error;
+import jShell.Shell;
+
+public class History extends Command {
+
+  /*
+   * for optional number arguement, you want to start from somewhere
+   * 
+   * 4 cases: history -> print out everything history n -> n most recent commands history greater
+   * than n -> everything history invalid integer -> exception reminding them that its in invalid
+   * error
+   * 
+   * 
+   * TODO: check for history 0 and history -5
+   */
+
+  @Override
+  public HashMap<String, String> isValid(String[] args) {
+    //HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+    
+    // Checking if the correct number of arguments if passed
+    if (args.length > 2) {
+      errors.put("all", "WROUNGARGS");
+      return errors;
+    }
+
+    // If second argument is passed, check if it's a number
+    if (args.length > 1) {
+      try {
+        Integer.parseInt(args[1]);
+      } catch (NumberFormatException e) {
+        errors.put(args[1], "INVALIDARGS");
+      }
+    }
+    
+    return errors;
+  }
+
+  @Override
+  public void run(String[] args) {
+    // TODO Auto-generated method stub
+
+    ArrayList<String> commandHistory = Shell.getShell().getUserData().getCommandHistory();
+
+    int start = 0;
+    // 1st case no optional number arguements
+    if (args.length == 1) {
+      start = 0;
+    } else {
+      // now parse the paremeter
+      // check for int params
+
+      int numberArg = 0;
+      try {
+        numberArg = Integer.parseInt(args[1]);
+
+      } catch (Exception e) {
+        // helpful message
+        Error m = new Error();
+        Shell.getShell().outputToShellln(m.errorMessage("INVALIDARGS")
+            + " Please enter an integer number following the command.");
+        return;
+      }
+
+      // now check within bounds
+      if (numberArg > 0 && numberArg <= commandHistory.size()) {
+        // start from most recent command
+        start = commandHistory.size() - numberArg;
+      } else if (numberArg < 0) {
+        Error x = new Error();
+        Shell.getShell().outputToShellln(
+            x.errorMessage("INVALIDARGS") + " Please enter a number greater than 0");
+        return;
+      }
+      // account case for 0 special case
+      // do nothing and return back to prompt
+      else if (numberArg == 0) {
+        return;
+      }
+      /*
+       * else case is case of n being greater than elements in history list, in that case you want
+       * to print everything so keep start as is
+       * 
+       */
+
+    }
+
+    // loop through list, using correct value of class
+    for (int i = start; i < commandHistory.size(); i++) {
+
+      System.out.println((i + 1) + "." + commandHistory.get(i));
+    }
+
+  }
+
+  @Override
+  public String toString() {
+
+    return "history";
+
+  }
+
+}

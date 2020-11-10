@@ -1,0 +1,1984 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell;
+
+import jShell.interfaces.*;
+
+import java.util.Arrays;
+
+/**
+ * Path class handles all operations related to full or relative paths, namely 
+ * checks the validity of the format of the path, checks if path represents a 
+ * valid location in the file system tree.
+ * 
+ * @author Sasha (Oleksandr)
+ *
+ */
+public class Path implements IPath {
+
+  // Textual representation of the path
+  String path;
+  
+  IFileSystem fs;
+
+  /**
+   * Constructor for path object
+   * 
+   * @param path Textual representation of the path
+   */
+  public Path(String path) {
+	this.fs = FileSystem.getFileSystem();
+    this.path = path;
+  }
+  
+  public Path(String path, IFileSystem fs) {
+	  this.fs = fs;
+	  this.path = path;
+  }
+
+  /**
+   * Return textual representation of the path
+   * 
+   * @return String corresponding to path
+   */
+  public String toString() {
+
+    return path;
+
+  }
+
+  /**
+   * Checks if path is equal to arbitrary object p. If p is a path, checks 
+   * whether they have the same textual representation
+   * 
+   * @param p Object to be compared to
+   * @return True if p is equal to path; false otherwise
+   */
+  public boolean equals(Object p) {
+
+    // If p is not instance of Path class, return false
+    if (!(p instanceof Path)) {
+      return false;
+    }
+
+    // If p is instance of Path, compare the textual representation
+    return this.path.toString().equals(p.toString());
+  }
+
+  /**
+   * Return the Path object with the same textual representation
+   */
+  @Override
+  public Path clone() {
+
+    return new Path(this.path);
+
+  }
+
+  /**
+   * Checks if path is a valid full path, that points to existing location in 
+   * current file system.
+   * 
+   * @return True if string is valid full path; false is not full path
+   */
+  public boolean isValidFullPath() {
+
+    // Try to get a node at full path; if null is returned, path must be invalid
+    return (fs.getNodeAtFullPath(this) != null);
+
+  }
+
+  /**
+   * Checks if path is a valid relative path, that points to existing location 
+   * in current file system.
+   * 
+   * @return True if string is valid relative path; false is not relative path
+   */
+  public boolean isValidRelativePath() {
+
+    // Try to get a node at relative path; if null is returned, path must be 
+    // invalid
+    return (fs
+        .getNodeAtRelativePath(this) != null);
+
+  }
+
+  /**
+   * Checks if path is a valid full or relative path
+   * 
+   * @return True if string is valid relative or full path; false if is not 
+   *         relative or full path
+   */
+  public boolean isValidPath() {
+
+    return (this.isValidFullPath() || this.isValidRelativePath());
+
+  }
+
+  /**
+   * Checks if path points to a directory. If path is not valid, return false.
+   * 
+   * @return True if path is valid and ends with a directory
+   */
+  public boolean isPathToDirectory() {
+
+    IFileSystemNode bottom = fs.getNodeAtPath(this);
+    return bottom instanceof IDirectory;
+
+  }
+
+  /**
+   * Checks if path has valid format, i.e. contains no consecutive slash 
+   * characters.
+   * 
+   * @return True, if path does not contain consecutive slash characters; 
+   *         false, otherwise.
+   */
+  public boolean doubleSlashChecker() {
+
+    // Iterating over the characters in the path
+    for (int i = 0; i < this.path.length() - 1; i++) {
+      if (this.path.charAt(i) == '/' && this.path.charAt(i + 1) == '/') {
+        // If at least two consecutive slashes are found, return false
+        return false;
+      }
+    }
+
+    return true;
+
+  }
+
+  /**
+   * This method splits the path into the sequence of directories/files
+   * 
+   * @return The array of names of the directories/files in the path
+   */
+  public String[] getSequence() {
+
+    String[] sequence = {};
+
+    // If path is not empty, split it. If path is empty, return empty sequence
+    if (!this.toString().isEmpty()) {
+      sequence = this.toString().split("/", -1);
+    }
+
+    // If first or/and last location are equal to empty string, omit them
+    if (sequence.length != 0 && sequence[0].isEmpty()) {
+      // First location is empty; remove first element
+      sequence = Arrays.copyOfRange(sequence, 1, sequence.length);
+    }
+
+    if (sequence.length != 0 && sequence[sequence.length - 1].isEmpty()) {
+      // Last location is empty; remove last element
+      sequence = Arrays.copyOfRange(sequence, 0, sequence.length - 1);
+    }
+
+    return sequence;
+
+  }
+
+  /**
+   * This method returns a full path of regular form (i.e. not containing . 
+   * and ..) to the parent directory of the node specified by path. If path to 
+   * root is given, return path to root.
+   * 
+   * @return Full path to parent directory
+   */
+  public IPath getParentPath() {
+
+    IPath regularForm = (Path)Path.getRegularForm(this);
+    ((Path)regularForm).removeBottomLocation();
+    return regularForm;
+
+  }
+
+  /**
+   * Return the name of bottom file or directory of the path, if bottom file 
+   * or directory exists. Otherwise, return empty string.
+   * 
+   * @return Name of bottom file or directory
+   */
+  public String getBottomName() {
+
+    IPath pathWithoutLastSlash = Path.getRegularForm((Path)Path.removeLastSlash(this));
+    int begin = pathWithoutLastSlash.toString().lastIndexOf('/');
+    return pathWithoutLastSlash.toString().substring(begin + 1);
+
+  }
+
+  /**
+   * Return the result of appending name of the node to the path
+   * 
+   * @param path Path
+   * @param nodeName Name of the node
+   * @return Result of appending nodeName to path
+   */
+  public IPath appendNodeName(String nodeName) {
+
+    Path pathToBeAppended = new Path(nodeName);
+    return Path.concatPaths(this, pathToBeAppended);
+
+  }
+
+  /**
+   * Converts relative path to full path, assuming input is valid relative path.
+   * 
+   * @param relative Relative path
+   * @return Full path pointing to the same location
+   */
+  public IPath convertRelativeToFull() {
+
+    Path workingDirectory = (Path)IShell.getShell().getUserData().getCurPath();
+
+    // Append relative path to the path or current working directory to make 
+    // it a full path
+    return Path.concatPaths(workingDirectory, this);
+
+  }
+
+  /**
+   * If path has a leading slash character, remove it. Otherwise, return the 
+   * copy of the path.
+   * 
+   * @param path Path
+   * @return Path without leading slash
+   */
+  private static IPath removeLeadingSlash(IPath path) {
+
+    // Checking first character of path, if it's not empty
+    if (!path.toString().isEmpty() && path.toString().charAt(0) == '/') {
+      // Return path without first slash character
+      return new Path(path.toString().substring(1));
+    } else {
+      // Return the copy of the path
+      return ((Path)path).clone();
+    }
+
+  }
+
+  /**
+   * If path has a slash character at the end, remove it. Otherwise, return 
+   * the copy of the path.
+   * 
+   * @param path Path
+   * @return Path without last slash
+   */
+  private static IPath removeLastSlash(IPath path) {
+
+    String str = path.toString();
+
+    // Checking the last character of path, if it's not empty
+    if (!str.toString().isEmpty() && str.charAt(str.length() - 1) == '/') {
+      // Return path without the last slash character
+      return new Path(str.substring(0, str.length() - 1));
+    } else {
+      // Return the copy of the path
+      return ((Path)path).clone();
+    }
+
+
+  }
+
+  /**
+   * Returns the result of concatenation of two paths (in the order they are 
+   * given), assuming both have valid format.
+   * 
+   * @param p1 First path
+   * @param p2 First path
+   * @return Path, which is a result of concatenation of p1 and p2
+   */
+  private static Path concatPaths(Path p1, Path p2) {
+
+    /*
+     * To ensure that concatenation does not generate extra slash symbols on the
+     * edge of concatenation, remove last slash from first path and leading 
+     * slash from second path
+     */
+    String str1 = Path.removeLastSlash(p1).toString();
+    String str2 = Path.removeLeadingSlash(p2).toString();
+
+    // Insert a slash symbol between strings corresponding to first path and 
+    // second path, and return resulting path
+    return new Path(str1 + "/" + str2);
+
+  }
+
+  /**
+   * Method to get rid of occurrences of . and .. inside path
+   * 
+   * @param path Path
+   * @return Path of regular form pointing to the same location
+   */
+  private static Path getRegularForm(Path path) {
+
+    IPath fullPath;
+
+    // If path is relative, convert it to full
+    if (path.toString().isEmpty() || path.toString().charAt(0) != '/') {
+      fullPath = path.convertRelativeToFull();
+    } else {
+      fullPath = ((Path)path).clone();
+    }
+
+    String[] sequenceOfLocations = fullPath.getSequence();
+
+    // Variable to accumulate the path of regular form
+    Path regularPath = new Path("/");
+
+    for (String location : sequenceOfLocations) {
+      // If encounter "." , skip it
+      if (!location.equals(".")) {
+        if (location.equals("..")) {
+          // Going one level up in the file tree
+          regularPath.removeBottomLocation();
+        } else {
+          // Extending resulting path by new file/directory
+          regularPath = (Path)regularPath.appendNodeName(location);
+        }
+      }
+    }
+
+    return regularPath;
+
+  }
+
+
+  /**
+   * Method to remove bottom file or directory from the given path, assuming it 
+   * is a valid path of regular form
+   */
+  private void removeBottomLocation() {
+
+    // Special case of full path to root
+    if (this.equals(new Path("/"))) {
+      return;
+    }
+
+    // Index of last occurrence of slash character
+    int lastSlash = Path.removeLastSlash(this).toString().lastIndexOf('/');
+
+    /*
+     * If path does not contain slash characters, it is either empty or relative
+     * path containing a single directory. In both cases, the result will be 
+     * empty path
+     */
+    if (lastSlash == -1) {
+      this.path = "";
+      return;
+    }
+
+    /*
+     * If path contains only one slash character at the beginning, it is either 
+     * path to root or full path containing a single directory. In both cases, 
+     * the result will be path to root
+     */
+    if (lastSlash == 0) {
+      this.path = "/";
+      return;
+    }
+
+    // In all other cases, remove the last file/directory
+    this.path = this.path.substring(0, lastSlash);
+    return;
+
+  }
+  
+  /**
+   * Checks if second path points a successor of location the path object (or points 
+   * to the same node)
+   * 
+   * @param potentialSuccessor Second path
+   * @return true, if first path is a successor of another (or the path itself); 
+   *         false otherwise
+   */
+   public boolean isSuccessor(IPath potentialSuccessor) {
+     String[] seq1 = this.getSequence();
+	 String[] seq2 = potentialSuccessor.getSequence();
+	  
+	 if (seq1.length > seq2.length) {
+	   return false;
+	 }
+	  
+	 for (int i = 0; i < Math.min(seq1.length, seq2.length); i++) {
+	   if (!seq1[i].equals(seq2[i])) {
+	     return false;
+	   }
+	 }
+	 
+	 return true;
+  }
+  
+  /*
+  public static void main(String args[]) {
+
+    // TESTING TESTING TESTING
+
+    // Creating a simple file system
+    Shell shell = new Shell();
+    FileSystem f = shell.getFileSystem();
+    f.createNewDirectory(new Path("/a"));
+    f.createNewDirectory(new Path("/b"));
+    f.createNewDirectory(new Path("/a/c"));
+    f.createNewDirectory(new Path("/a/d"));
+    f.createNewDirectory(new Path("/a/c/e"));
+    f.createNewFile(new Path("/file1"));
+    f.createNewFile(new Path("/a/file2"));
+    f.createNewFile(new Path("/a/c/file3"));
+
+    // Add some path objects corresponding to existing and not existing 
+    // locations in file system
+    Path fullPathToA = new Path("/a");
+    Path fullPathToB = new Path("/b");
+    Path fullPathToC = new Path("/a/c");
+    Path fullPathToD = new Path("/a/d");
+    Path fullPathToE = new Path("/a/c/e");
+    Path fullPathToFile1 = new Path("/file1");
+    Path fullPathToFile2 = new Path("/a/file2");
+    Path fullPathToFile3 = new Path("/a/c/file3");
+
+    Path relativePathToA = new Path("a");
+    Path relativePathToB = new Path("b");
+    Path relativePathToC = new Path("a/c");
+    Path relativePathToD = new Path("a/d");
+    Path relativePathToE = new Path("a/c/e");
+    Path relativePathToFile1 = new Path("file1");
+    Path relativePathToFile2 = new Path("a/file2");
+    Path relativePathToFile3 = new Path("a/c/file3");
+
+    Path fullPathDoesNotExist1 = new Path("/dirDoesNotExist");
+    Path fullPathDoesNotExist2 = new Path("/b/dirDoesNotExist");
+    Path fullPathDoesNotExist3 = new Path("/a/c/dirDoesNotExist");
+    Path fullPathDoesNotExist4 =
+        new Path("/a/dirDoesNotExist/anotherDirDoesNotExist");
+
+    Path relativePathDoesNotExist1 = new Path("dirDoesNotExist");
+    Path relativePathDoesNotExist2 = new Path("b/dirDoesNotExist");
+    Path relativePathDoesNotExist3 = new Path("a/c/dirDoesNotExist");
+    Path relativePathDoesNotExist4 =
+        new Path("a/dirDoesNotExist/anotherDirDoesNotExist");
+
+    Path root = new Path("/");
+    Path dot = new Path(".");
+    Path twoDots = new Path("..");
+    Path twoTwoDots = new Path("../..");
+    Path existingPathWithDots = new Path("../../a/c/file3");
+    Path notExistingPathWithDots1 = new Path("../../a/dirDoesNotExist");
+    Path notExistingPathWithDots2 = new Path("../../a/dirDoesNotExist/../c");
+    Path pathWithDotAndTwoDots = new Path(".././a/./../a/./c");
+    Path pathWithTwoDotsAtTheEnd = new Path("a/c/e/..");
+    Path pathWithMultipleTwoDotsAtTheEnd = new Path("a/c/e/../../..");
+
+    Path pathDoubleSlash = new Path("//");
+    Path pathDoubleSlashesInside = new Path("a//c");
+    Path pathDoubleSlashesAtTheEnd = new Path("a/c//");
+    Path pathDoubleSlashesAtTheBeginning = new Path("//a/c");
+
+    Path fullPathEndingWithSlash = new Path("/a/c/");
+    Path relativePathEndingWithSlash = new Path("a/c/");
+
+    int testNum = 1;
+    String expected;
+    String result;
+
+
+
+    System.out.println("Testing toString() \n");
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a";
+    result = fullPathToA.toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a/c";
+    result = fullPathToC.toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "a";
+    result = relativePathToA.toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "a/c";
+    result = relativePathToC.toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "..";
+    result = twoDots.toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTesting equals() \n");
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToA.equals(new Path("/a")));
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathToA.equals(new Path("a")));
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToE.equals(new Path("/a/c/e")));
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(root.equals(new Path("..")));
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTesting clone() \n");
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a";
+    result = fullPathToA.clone().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a/c";
+    result = fullPathToC.clone().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a/c/file3";
+    result = fullPathToFile3.clone().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "a/c/file3";
+    result = relativePathToFile3.clone().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "..";
+    result = twoDots.clone().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/";
+    result = root.clone().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTesting isValidFullPath()");
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToA.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToC.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToE.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToFile2.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToFile3.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(relativePathToA.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(relativePathToC.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(relativePathToE.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(relativePathToFile2.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(relativePathToFile3.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathDoesNotExist2.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathDoesNotExist4.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(root.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(twoDots.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathEndingWithSlash.isValidFullPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTesting isValidRelativePath()");
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathToA.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathToC.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathToE.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathToFile2.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathToFile3.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToA.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToC.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToE.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToFile2.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToFile3.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(relativePathDoesNotExist2.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(relativePathDoesNotExist4.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(root.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(dot.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(twoDots.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathEndingWithSlash.isValidRelativePath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTesting isValidPath()");
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToA.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToC.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToE.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToFile2.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToFile3.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToA.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToC.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToE.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToFile2.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToFile3.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathDoesNotExist2.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathDoesNotExist4.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(root.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(dot.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(twoDots.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(pathDoubleSlash.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(pathDoubleSlashesInside.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(pathDoubleSlashesAtTheEnd.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(pathDoubleSlashesAtTheBeginning.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(relativePathDoesNotExist2.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(relativePathDoesNotExist2.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(twoTwoDots.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(existingPathWithDots.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(notExistingPathWithDots1.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(notExistingPathWithDots2.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(pathWithDotAndTwoDots.isValidPath());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTesting isPathToDirectory()");
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToA.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToC.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToE.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathToFile2.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(fullPathToFile3.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToA.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToC.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(relativePathToE.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+    
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(relativePathToFile2.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(relativePathToFile3.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(pathWithDotAndTwoDots.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(twoTwoDots.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(existingPathWithDots.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(root.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(dot.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(twoDots.isPathToDirectory());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTesting doubleSlashChecker()");
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "true";
+    result = String.valueOf(fullPathToC.doubleSlashChecker());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(pathDoubleSlash.doubleSlashChecker());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(pathDoubleSlashesInside.doubleSlashChecker());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result = String.valueOf(pathDoubleSlashesAtTheEnd.doubleSlashChecker());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "false";
+    result =
+        String.valueOf(pathDoubleSlashesAtTheBeginning.doubleSlashChecker());
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTesting getSequence()");
+
+    String[] seq;
+
+    System.out.print("Test #" + testNum + " ");
+    seq = fullPathToE.getSequence();
+    System.out.print(" Expected: a c e. Result: ");
+    for (String item : seq) {
+      System.out.print(item + " ");
+    }
+    if (seq.length != 3 || !seq[0].equals("a") || !seq[1].equals("c")
+        || !seq[2].equals("e")) {
+      System.out.println(". Failed! :(");
+      return;
+    } else {
+      System.out.println(". Passed!");
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    seq = relativePathToE.getSequence();
+    System.out.print(" Expected: a c e. Result: ");
+    for (String item : seq) {
+      System.out.print(item + " ");
+    }
+    if (seq.length != 3 || !seq[0].equals("a") || !seq[1].equals("c")
+        || !seq[2].equals("e")) {
+      System.out.println(". Failed! :(");
+      return;
+    } else {
+      System.out.println(". Passed!");
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    seq = root.getSequence();
+    System.out.print(" Expected:  Result: ");
+    for (String item : seq) {
+      System.out.print(item + " ");
+    }
+    if (seq.length != 0) {
+      System.out.println(" Failed! :(");
+      return;
+    } else {
+      System.out.println(" Passed!");
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    seq = twoTwoDots.getSequence();
+    System.out.print(" Expected: .. .. . Result: ");
+    for (String item : seq) {
+      System.out.print(item + " ");
+    }
+    if (seq.length != 2 || !seq[0].equals("..") || !seq[1].equals("..")) {
+      System.out.println(". Failed! :(");
+      return;
+    } else {
+      System.out.println(". Passed!");
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    seq = fullPathEndingWithSlash.getSequence();
+    System.out.print(" Expected: a c . Result: ");
+    for (String item : seq) {
+      System.out.print(item + " ");
+    }
+    if (seq.length != 2 || !seq[0].equals("a") || !seq[1].equals("c")) {
+      System.out.println(". Failed! :(");
+      return;
+    } else {
+      System.out.println(". Passed!");
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    seq = relativePathEndingWithSlash.getSequence();
+    System.out.print(" Expected: a c . Result: ");
+    for (String item : seq) {
+      System.out.print(item + " ");
+    }
+    if (seq.length != 2 || !seq[0].equals("a") || !seq[1].equals("c")) {
+      System.out.println(". Failed! :(");
+      return;
+    } else {
+      System.out.println(". Passed!");
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTesting getParentPath()");
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/";
+    result = fullPathToB.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/";
+    result = relativePathToB.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/";
+    result = dot.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a/c";
+    result = fullPathToE.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a/c";
+    result = relativePathToE.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/";
+    result = root.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/";
+    result = twoDots.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/";
+    result = twoTwoDots.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a/c";
+    result = existingPathWithDots.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a";
+    result = pathWithDotAndTwoDots.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a";
+    result = pathWithTwoDotsAtTheEnd.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/";
+    result = pathWithMultipleTwoDotsAtTheEnd.getParentPath().toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTesting getBottomName()");
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "e";
+    result = fullPathToE.getBottomName();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "e";
+    result = relativePathToE.getBottomName();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "file3";
+    result = fullPathToFile3.getBottomName();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "";
+    result = root.getBottomName();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+
+
+    System.out.println("\n\nTesting Path.convertRelativeToFull()");
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a/c/e";
+    result = Path.convertRelativeToFull(relativePathToE).toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.print("Test #" + testNum + " ");
+    expected = "/a/d";
+    result = Path.convertRelativeToFull(relativePathToD).toString();
+    System.out.print("Expected: " + expected + ". Result: " + result + ". ");
+    if (expected.equals(result)) {
+      System.out.println("Passed!");
+    } else {
+      System.out.println("Failed! :(");
+      return;
+    }
+    testNum++;
+
+    System.out.println("\nCongratulations! Class passed all tests");
+
+  }
+  */
+}

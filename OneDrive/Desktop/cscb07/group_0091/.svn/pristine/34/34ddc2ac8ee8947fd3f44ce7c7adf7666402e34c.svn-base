@@ -1,0 +1,9 @@
+Class name: Exit
+Parent class (if any): ShellCommand
+Subclasses (if any): -
+
+Responsibilities:
+*Quits the shell
+
+Collaborators:
+*Shell

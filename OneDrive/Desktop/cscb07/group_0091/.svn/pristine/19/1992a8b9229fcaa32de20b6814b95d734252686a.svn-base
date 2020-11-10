@@ -1,0 +1,22 @@
+package jShell;
+
+public class Exit extends Command {
+
+	@Override
+	/*
+	 * Exists the terminal and handles errors in args processing.
+	 * 
+	 * @param args The array of arguments that the user typed in the shell
+	 */
+	public void run(String[] args) {
+		if (args.length != 1) {
+			Error e = new Error();
+			Shell.getShell().outputToShell(e.errorMessage("WRONGARGS") + " Do"
+			    + " not include any arguments after this command.");
+			return;
+		}
+		Shell.getShell().shutDown();
+		Shell.getShell().setIsRunning(false);
+	}
+
+}

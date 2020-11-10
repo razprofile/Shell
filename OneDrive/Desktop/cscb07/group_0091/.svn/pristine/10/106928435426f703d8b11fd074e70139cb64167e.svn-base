@@ -1,0 +1,71 @@
+package jShell;
+
+public class Cat extends Command {
+  /*
+   * TO DO:
+   * - Testing
+   */
+
+  @Override
+  public void run(String[] args) {
+    Error e = new Error();
+    if (!isValid(args)) {
+      return;
+    }
+    File[] files = new File[args.length - 1]; //Array to hold all of the files
+    FileSystemNode temp; // Holds the current file to be added to the file array
+    FileSystem f = Shell.getShell().getFileSystem();
+    Path p;
+    for (int i = 0; i < args.length; i++) {
+      if (i > 0) { // Skip the first argument (the command call)
+        /*
+         * User can pass in either a full path, a relative path, or a file name which assumes
+         * they're using their local directory
+         */
+    	p = new Path(args[i]);
+    	temp = f.getNodeAtRelativePath(p);
+        if (!(temp == null)) {
+          // If file exists, retrieve it
+          files[i - 1] = (File)temp; // Store it in the files array
+        } else {
+          Shell.getShell().outputToShellln(e.errorMessage("FILENOTFOUND")
+              + " (at " + args[i] + ")");
+          return;
+        }
+      }
+    }
+    // File(s) has been retrieved
+    printContents(files, Shell.getShell());
+  }
+
+  private boolean isValid(String[] args) {
+    Error e = new Error();
+    // No files provided
+    if (args.length == 1) {
+      Shell.getShell().outputToShellln(e.errorMessage("WRONGARGS") + " Please"
+          + " include at least one file (or path to file).");
+      return false;
+    }
+    // Add more errors as necessary
+    return true;
+  }
+
+  private void printContents(File[] files, Shell s) {
+    /**
+     * Prints out the contents of each file provided in the files array, with three line breaks
+     * between each.
+     * 
+     * @param files : the array of files to be printed to the shell
+     * @param s : The shell that the contents of the file will be printed to.
+     */
+    // Loop through the entire array
+    for (File current : files) {
+      // Get the contents of the file and print to the shell
+      s.outputToShellln(current.getContents());
+      // Add three line breaks between files
+      s.outputToShellln("");
+      s.outputToShellln("");
+      s.outputToShellln("");
+    }
+  }
+}

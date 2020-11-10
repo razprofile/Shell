@@ -1,0 +1,52 @@
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import jShell.fileSystem.File;
+/**
+ * Test cases for the File class.
+ * @author Kevin Meharchand
+ *
+ */
+public class FileTest {
+  
+  File f = new File("test");
+
+  /*
+   * A test to ensure that a file has no children, as it is not a directory.
+   */
+  @Test
+  public void testIfChildExists() {
+    assertEquals("Should always return false", false, f.ifChildExists("Dummy"));
+  }
+
+  /*
+   * Test case ensuring that the file was initialized properly
+   */
+  @Test
+  public void testFile() {
+    assertNotNull("Make sure the file was created properly", f);
+  }
+
+  /*
+   * A test case combining both Set and Get contents for the file.
+   */
+  @Test
+  public void testSetAndGetContents() {
+    f.setContents("contents");
+    assertEquals("Should return contents", "contents", f.getContents());
+  }
+
+  /*
+   * A test case designed to ensure that a cloned file will retain the same
+   * details and features as the original file.
+   */
+  @Test
+  public void testClone() {
+    f.setContents("contents");
+    File f2 = f.clone();
+    assertEquals("Same name", f.getName(), f2.getName());
+    assertEquals("Same contents", f.getContents(), f2.getContents());
+  }
+
+}

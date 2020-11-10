@@ -1,0 +1,254 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.Directory;
+import jShell.FileSystem;
+import jShell.Path;
+import jShell.Shell;
+
+/**
+ * The Cd command is used for changing directories. 
+ * It will throw an error if directory doesn't exist or path is invalid.
+ * 
+ * @author Sankalp Sharma
+ * 
+ */
+public class Cd extends Command {
+
+  @Override
+
+  /**
+   * Handles the errors for the Cd command. If any errors are found.
+   * It stores the error code as a key and the 
+   * corresponding error message as value. The Cd isValid method takes care of 
+   * additional argument error messages and the directory not found error
+   * 
+   * @param args Arguments for the command
+   * @return Hashmap containing any error codes and their 
+   * corresponding error messages. If command is run successfully, 
+   * then an entry hashmap is returned.
+   */
+  public HashMap<String, String> isValid(String[] args) {
+    // HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+
+    // Checking if only one argument is passed
+    if (args.length != 2) {
+      errors.put("all", "WRONGARGS");
+      return errors;
+    }
+
+    // Checking if specified path is a valid location and a directory
+    Path path = new Path(args[1]);
+
+    if (!path.isValidPath() || !path.isPathToDirectory()) {
+      errors.put(args[1], "DIRNOTFOUND");
+    }
+
+    return errors;
+  }
+
+  private Directory parseDir(String dirStr) {
+    /*
+     * prepare directory for parsing by split by slash to get individual 
+     * directories. set working directory to null initially
+     */
+    String[] dirArray = dirStr.split("/");
+    Directory pwd = null;
+
+    // start with the absolute path case, here we want to set pwd at the root
+    if (dirStr.startsWith("/")) {
+      pwd = Shell.getShell().getFileSystem().getRootDir();
+    }
+    /*
+     * relative path case where the starting point is the current directory 
+     * corresponding to current path
+     */
+    else {
+      pwd = (Directory) Shell.getShell().getFileSystem()
+          .getNodeAtPath(Shell.getShell().getUserData().getCurPath());
+    }
+
+    /*
+     * Now loop through split directories. goDir will take care of 
+     * going up and down the tree
+     */
+    for (String dirToken : dirArray) {
+      if (!dirToken.equals("")) {
+        pwd = goDir(pwd, dirToken);
+      }
+    }
+    return pwd;
+  }
+
+  private Directory goDir(Directory curr, String dir) {
+
+    // 1st case, stay where you're at, just return current directory
+    if (dir.equals(".")) {
+      return curr;
+    }
+    // go up
+    else if (dir.equals("..")) {
+      /*
+       * We want to get the immediate parent of the currdir. 
+       * So we get the parent path of the current directory's path. 
+       * Then we take that path and get the Directory at that path
+       */
+
+      Directory parentDir = (Directory) Shell.getShell().getFileSystem()
+          .getNodeAtPath(curr.getPath().getParentPath());
+      // If parentdir is null, hence we are root then just get root
+      if (parentDir == null) {
+        return Shell.getShell().getFileSystem().getRootDir();
+      }
+      return parentDir;
+    }
+    // only other case is go down one directory and get the child
+    else {
+      Directory destination = (Directory) curr.getChild(dir);
+      return destination;
+    }
+  }
+
+
+  /**
+   * The run method for CD uses the parseDir method to 
+   * determine the right course of action when changing directories
+   * such as: going up one level, staying at current level, and changing
+   * directories with absolute and relative paths.
+   * 
+   */
+  @Override
+  public void run(String[] args) {
+
+    if (args.length == 2) {
+      // assuming all the arguments are correct, go into ParseDir
+      Directory dirDestination = parseDir(args[1]);
+      /*
+       * special case if when the the destination directory path is null,
+       * then we just want to
+       * manually set it to root path
+       */
+      if (dirDestination.getPath() == null) {
+        Shell.getShell().getUserData().setCurPath(new Path("/"));
+
+        /*
+         * else we actually the set the current path to the destination 
+         * directory
+         */
+      } else {
+        Shell.getShell().getUserData().setCurPath(dirDestination.getPath());
+      }
+
+    }
+
+  }
+
+  @Override
+  public String toString() {
+
+    return "cd";
+
+  }
+
+	/*public static void main(String[] args) {
+	    Shell shell = new Shell();
+	    
+	    //print out pwd after doing cd
+	    
+	    String test1 = "mkdir a";
+	    shell.getShell().onInput(test1);
+	    
+	    String test2 = "cd a";
+	    shell.getShell().onInput(test2);
+	    
+	    //test 3 will print out /a
+	    String test3 = "pwd";
+	    shell.getShell().onInput(test3);
+	    
+	    String test4 = "cd ..";
+	    shell.getShell().onInput(test4);
+	    
+	    //test 5 will print out /
+	    String test5 = "pwd";
+	    shell.getShell().onInput(test5);
+	    
+	    String test6 = "cd /a";
+	    shell.getShell().onInput(test6);
+	    
+	    //test 7 will print out /a
+	    String test7 = "pwd";
+	    shell.getShell().onInput(test7);
+	    
+	    String test8 = "mkdir b";
+	    shell.getShell().onInput(test8);
+	    
+	    String test9 = "cd b";
+	    shell.getShell().onInput(test9);
+	    
+	    //test 10 will print out /a/b/
+	    String test10 = "pwd";
+	    shell.getShell().onInput(test10);
+	    
+	    String test11 = "mkdir c";
+	    shell.getShell().onInput(test11);
+	    
+	    String test12 = "cd c";
+	    shell.getShell().onInput(test12);
+	    
+	    //test 13 will print out /a/b/c
+	    String test13 = "pwd";
+	    shell.getShell().onInput(test13);
+	    
+	    String test14 = "cd ../../../a/b/";
+	    shell.getShell().onInput(test14);
+	    
+	    //test 15 will print out /a/b
+	    String test15 = "pwd";
+	    shell.getShell().onInput(test15);
+	    
+	    //test 16 will print Error: Directory not found because b is not at root
+	    String test16 = "cd .././../b";
+	    shell.getShell().onInput(test16);
+	    
+	    //test 17 will print out Error: Directory not found because there is no
+	    //directory called d
+	    String test17 = "cd d";
+	    shell.getShell().onInput(test17);
+	    
+	  //test 18 will print out Error: Incorrect number of arguments.
+	    String test18 = "cd a 3";
+	    shell.getShell().onInput(test18);
+	    
+	}*/
+}

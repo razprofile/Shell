@@ -1,0 +1,12 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class InvalidPathException extends Error {
+
+  private static final String errorTemplate = "Invalid path: %s.";
+
+  public InvalidPathException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

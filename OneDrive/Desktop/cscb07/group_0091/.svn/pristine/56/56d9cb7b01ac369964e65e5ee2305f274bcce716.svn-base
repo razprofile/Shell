@@ -1,0 +1,29 @@
+package test;
+
+import static org.junit.Assert.*;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.fileSystem.Redirection;
+import jShell.mockClasses.MockShell;
+import org.junit.Test;
+
+public class RedirectionTest {
+  
+
+  MockShell s = new MockShell();
+  Redirection r = new Redirection();
+  @Test(expected = BadFileNameException.class)
+  public void testFileHandling() throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException {
+    r.fileHandling(">", "file.txt", "Dummy");
+  }
+
+  @Test
+  public void testCheckRedirection() {
+    assertEquals("Bad operator", false, r.checkRedirection(">>>", "file"));
+    assertEquals("Bad filename", false, r.checkRedirection(">", "file.txt"));
+    assertEquals("All good", true, r.checkRedirection(">", "file"));
+  }
+}

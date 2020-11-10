@@ -1,0 +1,127 @@
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.Directory;
+import jShell.Path;
+import jShell.Shell;
+
+
+
+/**
+ * The Cd command is used for changing directories. It will throw an error if directory doesn't
+ * exist or path is invalid.
+ * 
+ */
+public class Cd extends Command {
+
+  @Override
+  public HashMap<String, String> isValid(String[] args) {
+    // HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+
+    // Checking if only one argument is passed
+    if (args.length != 2) {
+      errors.put("all", "WRONGARGS");
+      return errors;
+    }
+
+    // Checking if specified path is a valid location and a directory
+    Path path = new Path(args[1]);
+
+    if (!path.isValidPath() || !path.isPathToDirectory()) {
+      errors.put(args[1], "DIRNOTFOUND");
+    }
+
+    return errors;
+  }
+
+
+  private Directory parseDir(String dirStr) {
+    /*
+     * prepare directory for parsing by split by slash to get individual directories. set working
+     * directory to null initially
+     */
+    String[] dirArray = dirStr.split("/");
+    Directory pwd = null;
+
+    // start with the absolute path case, here we want to set pwd at the root
+    if (dirStr.startsWith("/")) {
+      pwd = Shell.getShell().getFileSystem().getRootDir();
+    }
+    /*
+     * relative path case where the starting point is the current directory corresponding to current
+     * path
+     */
+    else {
+      pwd = (Directory) Shell.getShell().getFileSystem()
+          .getNodeAtPath(Shell.getShell().getUserData().getCurPath());
+    }
+
+    // Now loop through split directories. goDir will take care of going up/down/current the tree
+    for (String dirToken : dirArray) {
+      if (!dirToken.equals("")) {
+        pwd = goDir(pwd, dirToken);
+      }
+    }
+    return pwd;
+  }
+
+
+  private Directory goDir(Directory curr, String dir) {
+    
+    // 1st case, stay where you're at, just return current directory
+    if (dir.equals(".")) {
+      return curr;
+    }
+    // go up
+    else if (dir.equals("..")) {
+      /*
+       * We want to get the immediate parent of the currdir. So we get the parent path of the
+       * current directory's path. Then we take that path and get the Directory at that path
+       */
+
+      Directory parentDir = (Directory) Shell.getShell().getFileSystem()
+          .getNodeAtPath(curr.getPath().getParentPath());
+      // If parentdir is null, hence we are root then just get root
+      if (parentDir == null) {
+        return Shell.getShell().getFileSystem().getRootDir();
+      }
+      return parentDir;
+    }
+    // only other case is go down one directory and get the child
+    else {
+      Directory destination = (Directory) curr.getChild(dir);
+      return destination;
+    }
+  }
+
+  @Override
+  public void run(String[] args) {
+    
+    if (args.length == 2) {
+      // assuming all the arguments are correct, isValid is checking all the functions.
+      Directory dirDestination = parseDir(args[1]);
+      /*
+       * special case if when the the destination directory path is null, then we just want to
+       * manually set it to root path
+       */
+      if (dirDestination.getPath() == null) {
+        Shell.getShell().getUserData().setCurPath(new Path("/"));
+
+        // else we actually the set the current path to the destination directory
+      } else {
+        Shell.getShell().getUserData().setCurPath(dirDestination.getPath());
+      }
+
+    }
+
+  }
+
+  @Override
+  public String toString() {
+
+    return "cd";
+
+  }
+
+}

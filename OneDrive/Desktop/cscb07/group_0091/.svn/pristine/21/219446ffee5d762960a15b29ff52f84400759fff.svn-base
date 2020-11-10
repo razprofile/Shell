@@ -1,0 +1,219 @@
+package jShell;
+	
+//import java.util.*;
+	
+public class FileSystem {
+	
+	private Directory rootDir;
+	
+	public FileSystem() {
+		
+		this.rootDir = new Directory("");
+		
+	}
+	
+	public FileSystem(Directory root) {
+		
+		this.rootDir = root;
+		
+	}
+	
+	/**
+	 * Get reference to root directory
+	 * 
+	 * @return reference to root directory
+	 */
+	public Directory getRootDir() {
+		
+		return this.rootDir;
+		
+	}
+	
+		
+	/**
+	 * Assuming pass is a valid full path ending with a directory or file, get the reference to the bottom 
+	 * directory or file
+	 * 
+	 * @param path full path
+	 * @return the reference to the node at a full path
+	 */
+	public FileSystemNode getNodeAtFullPath(Path path) {
+		
+		//Sequence of locations to be processed
+		String[] sequenceOfLocations = path.getSequence();
+		
+		//Iterator variable for directories being processed
+		Directory currDir = this.rootDir;
+		
+		for (String dirName : sequenceOfLocations) {
+			if (dirName.equals("..")) {
+				currDir = this.getParent(currDir);
+			}else {
+				if (currDir.getChild(dirName) instanceof Directory) {
+					//If new location is a directory, update the iterator
+					currDir = (Directory) currDir.getChild(dirName);
+				} else {
+					//If new location is file, we must have reached the bottom of the path. We can return this file.
+					return currDir.getChild(dirName);
+				}
+			}
+
+		}
+		
+		return currDir;
+		
+	}
+	
+	
+	/**
+	 * Get the reference to the bottom directory or file, assuming pass is a valid 
+	 * relative path ending with a directory or file,
+	 * 
+	 * @param path full path
+	 * @return the reference to the node at a full path
+	 */
+	public FileSystemNode getNodeAtRelativePath(Path path) {
+		
+		//Get full path from relative path for the same location in the file tree 
+		Path fullPath = Path.convertRelativeToFull(path);
+		return this.getNodeAtFullPath(fullPath);
+		
+	}
+	
+	
+	/**
+	 * Assuming pass is a valid full path ending with a directory, add the specified node to the 
+	 * contents of bottom directory
+	 * 
+	 * @param node File or Directory object to be added
+	 * @param path location of the directory, which contents are being modified
+	 */
+	private void addToExistingLocationAtFullPath(FileSystemNode node, Path path) {
+		
+		//Getting reference to the directory begin updated with the node
+		Directory d = (Directory) this.getNodeAtFullPath(path);
+		
+		Path pathForNode = Path.appendNodeName(path, node.getName());
+		d.addChildren(node);
+		
+	}
+	
+	
+	/**
+	 * Assuming pass is a valid relative path ending with a directory, add the specified node to the 
+	 * contents of bottom directory
+	 * 
+	 * @param node File or Directory object to be added
+	 * @param path location of the directory at a relative path, which contents are being modified
+	 */
+	private void addToExistingLocationAtRelativePath(FileSystemNode node, Path path) {
+		
+		//Getting reference to the directory begin updated with the node
+		Directory d = (Directory) this.getNodeAtRelativePath(path);
+		d.addChildren(node);
+		
+	}
+	
+	/**
+	 * Takes a path and creates a File given by the bottom location (either relative or full path),
+	 * assuming that parent location exists and is a directory.  If path is not a valid location,
+	 * return null.
+	 * 
+	 * @param path path ending with a file to be created
+	 * @return reference to the newly created file
+	 */
+	public File createNewFile(Path path) {
+		
+		//Location for the file to be inserted
+		Path parentPath = path.getParentPath();
+		
+		String fileName = path.getBottomName();
+		File newFile = new File(fileName);
+		
+		if (parentPath.isValidFullPath()) {
+			newFile.setPath(path);
+			this.addToExistingLocationAtFullPath(newFile, parentPath);
+			return newFile;
+		} 
+		
+		if (parentPath.isValidRelativePath()) {
+			newFile.setPath(Path.convertRelativeToFull(path));
+			this.addToExistingLocationAtRelativePath(newFile, parentPath);
+			return newFile;
+		}
+		
+		return null;
+		
+	}
+	
+	/**
+	 * Takes a path and creates a Directory given by the bottom location (either relative or full path),
+	 * assuming that parent location exists and is a directory. If path is not a valid location,
+	 * return null.
+	 * 
+	 * @param path path ending with a file to be created
+	 * @return reference to newly created directory
+	 */
+	 public Directory createNewDirectory(Path path) {
+		 
+			//Location for the Directory to be inserted
+			Path parentPath = path.getParentPath();
+			System.out.println(parentPath.toString());
+			
+			String dirName = path.getBottomName();
+			Directory newDir = new Directory(dirName);
+			
+			if (parentPath.isValidFullPath() && parentPath.isFullPathEndingWithDirectory()) {
+				newDir.setPath(path);
+				this.addToExistingLocationAtFullPath(newDir, parentPath);
+				return newDir;
+			} 
+			
+			if (parentPath.isValidRelativePath() && parentPath.isRelativePathEndingWithDirectory()) {
+				newDir.setPath(Path.convertRelativeToFull(path));
+				this.addToExistingLocationAtRelativePath(newDir, parentPath);
+				return newDir;
+			}
+			
+			return null;
+	 }
+	
+	
+	/**
+	 * This method returns a parent of specified directory, assuming that directory has been added to the file system.
+	 * If directory is root directory, return root directory.
+	 * 
+	 * @param dir directory in file system
+	 * @return parent of dir
+	 */
+	public Directory getParent(Directory dir) {
+		
+		Path pathToDir = dir.getPath();
+		Path pathToParent = pathToDir.getParentPath();
+		Directory parent = (Directory) this.getNodeAtFullPath(pathToParent);
+		return parent;
+		
+	}
+	
+	public static void main (String args[]) {
+		
+		Shell shell = new Shell();
+		FileSystem f = Shell.getShell().getFileSystem();
+		Path p1 = new Path("dir");
+		Directory d = f.createNewDirectory(p1);
+		if (d == null) {
+			System.out.println("Failure");
+		}
+		
+		Path p2 = new Path("dir/dir2");
+		Directory d2 = f.createNewDirectory(p2);
+		if (d2 == null) {
+			System.out.println("Failure");
+		}
+		
+		Path p3 = new Path("dir/dir2/file");
+		File file = f.createNewFile(p3);
+		
+	}
+	
+}

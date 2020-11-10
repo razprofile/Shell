@@ -1,0 +1,12 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class CommandNotFoundException extends Error {
+
+  private static final String errorTemplate = "Command not found: %s";
+
+  public CommandNotFoundException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

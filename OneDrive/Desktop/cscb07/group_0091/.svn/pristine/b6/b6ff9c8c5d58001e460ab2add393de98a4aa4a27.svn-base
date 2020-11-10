@@ -1,0 +1,13 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class ArgsNumberException extends Error {
+
+  private static final String errorTemplate =
+      "Incorrect number of arguments.";
+
+  public ArgsNumberException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

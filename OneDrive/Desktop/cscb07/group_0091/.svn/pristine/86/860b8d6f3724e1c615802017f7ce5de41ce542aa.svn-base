@@ -1,0 +1,161 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Locale;
+import javax.speech.AudioException;
+import javax.speech.Central;
+import javax.speech.EngineException;
+import javax.speech.EngineStateError;
+import javax.speech.synthesis.Synthesizer;
+import javax.speech.synthesis.SynthesizerModeDesc;
+import jShell.Shell;
+import jShell.Errors.BadStringException;
+
+/**
+ * A class to implement the speak command (speaks convert text to audible speech).
+ * 
+ * @author Raz
+ */
+public class Speak extends Command implements jShell.interfaces.InputModeCommand {
+
+  /**
+   * Deallocates the synthesizer
+   */
+  public void shutDown() {
+
+    try {
+      synthesizer.deallocate();
+    } catch (EngineException | EngineStateError e) {
+      e.printStackTrace();
+    }
+  }
+
+  private Synthesizer synthesizer;
+
+  /**
+   * Constructor for the Speak class. Sets up the main properties, handles errors, initialize the
+   * synthesizer
+   */
+  public Speak() {
+
+    // Set property as Kevin Dictionary
+    System.setProperty("freetts.voices",
+        "com.sun.speech.freetts.en.us" + ".cmu_us_kal.KevinVoiceDirectory");
+    try {
+      Central.registerEngineCentral(
+          "com.sun.speech.freetts" + ".jsapi.FreeTTSEngineCentral");
+
+      synthesizer =
+          Central.createSynthesizer(new SynthesizerModeDesc(Locale.US));
+
+      // Allocate synthesizer
+      synthesizer.allocate();
+    } catch (IllegalArgumentException e) {
+      e.printStackTrace();
+    } catch (EngineException e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  /**
+   * Process the args of the speak command, and acts accordingly
+   * 
+   * @param The String arguments that were typed in the shell.
+   */
+  private ArrayList<String> speak = new ArrayList<String>();
+
+  public String run(String[] args) throws BadStringException {
+    // Checking that, if second argument is specified, it is a valid string
+    if (args.length > 1 && !(args[1].startsWith("\"")
+        && args[args.length - 1].endsWith("\""))) {
+      throw new BadStringException();
+    }
+    if (args.length == 1) {
+      Shell.getShell().setInputMode(this);
+    } else {
+      speak(String.join(" ", Arrays.copyOfRange(args, 1, args.length)));
+
+    }
+    return "";
+  }
+
+  public void onInput(String input) {
+    if (input.endsWith(" " + "QUIT") || input.endsWith("\t" + "QUIT")) {
+      int pos = input.lastIndexOf("QUIT");
+      input =
+          input.substring(0, pos) + "" + input.substring(pos + "QUIT".length());
+      speak.add(input);
+      speakAll();
+      return;
+    }
+    if (input.equals("QUIT")) {
+      speakAll();
+      return;
+    }
+    speak.add(input);
+  }
+
+  /**
+   * Speak out loud the specified arg.
+   * 
+   * @param arg The string to be spoken
+   */
+  private void speakAll() {
+    
+    try {
+      synthesizer.resume();
+      speak.forEach(x -> speak(x));
+      synthesizer.waitEngineState(Synthesizer.QUEUE_EMPTY);
+    } catch (IllegalArgumentException | InterruptedException | AudioException
+        | EngineStateError e) {
+      e.printStackTrace();
+    }
+    Shell.getShell().setInputMode(null);
+    speak.clear();
+  }
+
+  private void speak(String arg) {
+
+    synthesizer.speakPlainText(arg, null);
+  }
+  @Override
+  public String toString() {
+
+    return "speak";
+
+  }
+
+}

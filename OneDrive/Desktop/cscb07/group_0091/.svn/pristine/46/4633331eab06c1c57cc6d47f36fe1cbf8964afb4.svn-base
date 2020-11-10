@@ -1,0 +1,57 @@
+package jShell;
+
+public class Cat extends Command{
+  
+  private File[] files;
+  
+  public void run(String[] args) {
+    Error e = new Error();
+    if (!isValid(args)) {
+      return;
+    }   
+    for (int i = 0; i < args.length; i++) {
+      File temp; //Holds the current file to be added to the file array
+      if (i > 0) { //Skip the first argument (the command call)
+        //Locate the file and retrieve the file object. To be updated once 
+        //Filesystem is completed
+        //Located based on the given argument (args[1], args[2], etc...)
+          //If file does not exist:
+          Shell.getShell().OutputToShellln(e.errorMessage("FILENOTFOUND"));
+          // Terminate the process
+          return;
+        //file = (whatever we do to retrieve it)
+        this.files[i - 1] = file; //Store it in the files array
+      }
+    }
+      //File(s) has been retrieved
+      this.printContents();
+  }
+  
+  private boolean isValid(String[] args) {  
+    Error e = new Error();    
+    //No files provided
+    if (args.length == 1) {
+      Shell.getShell().OutputToShellln(e.errorMessage("WRONGARGS"));
+      return false;
+    }
+    // Add more errors as necessary
+    return true;
+  }
+  
+  public void printContents() {
+    /**
+     * Prints out the contents of each file provided in the files array, with
+     * three line breaks between each.
+     * 
+     */
+    // Loop through the entire array
+    for (File current : files) {
+      // Get the contents of the file and print to the shell
+      System.out.println(current.getContents());
+      // Add three line breaks between files
+      System.out.println("");
+      System.out.println("");
+      System.out.println("");
+    }
+  }
+}

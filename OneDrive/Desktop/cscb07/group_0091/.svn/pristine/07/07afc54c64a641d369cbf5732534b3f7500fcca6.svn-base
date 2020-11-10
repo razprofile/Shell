@@ -1,0 +1,176 @@
+package jShell;
+
+//import java.util.*;
+
+public class Path {
+	
+	// Textual representation of the path
+	String path;
+	
+	public Path(String path) {
+		
+		Error e = new Error();
+		
+		if (Path.isValidFullPath(path) || Path.isValidRelativePath(path)) {
+			this.path = path;
+		}
+		else {
+			Shell.getShell().outputToShellln(e.errorMessage("PATHNOTFOUND"));
+		}
+		
+	}
+	
+	
+	/**
+	 * Return textual representation of the path
+	 * 
+	 * @return string corresponding to path
+	 */
+	public String toString() {
+		
+		return path;
+		
+	}
+	
+	
+	/**
+	 * Checks if string is a valid full path
+	 * 
+	 * @param potentialPath
+	 * @return true if string is valid full path; false is not full path
+	 */
+	public static boolean isValidFullPath(String potentialPath) {
+		
+		if (potentialPath.charAt(0) != '/') {
+			return false;
+		}
+		
+		String[] sequenceOfLocations = potentialPath.split("/");
+		Directory currDir = Shell.getShell().getFileSystem().getRootDir();
+		
+		for (String dirName : sequenceOfLocations) {
+			if (!currDir.ifChildExists(dirName)) {
+				return false;
+			};
+			currDir = (Directory) currDir.getChild(dirName);
+		}
+		
+		return true;
+		
+	}
+	
+	/**
+	 * Checks if string is a valid relative path
+	 * 
+	 * @param potentialPath
+	 * @return true if string is valid relative path; false is not relative path
+	 */
+	public static boolean isValidRelativePath(String potentialPath) {
+		
+		if (potentialPath.charAt(0) == '/') {
+			return false;
+		}
+		
+		Path pathWorkingDirectory = Shell.getShell().getUserData().getCurPath();
+		return Path.isValidFullPath(pathWorkingDirectory + "/" + potentialPath);
+		
+	}
+	
+	/** 
+	 * Checks whenever the location given by path is a directory, assuming path exists and valid.
+	 * 
+	 * @return true if specified location at full is a directory; false if file
+	 */
+	public boolean isFullPathEndingWithDirectory() {
+		
+		FileSystemNode bottom = Shell.getShell().getFileSystem().getNodeAtFullPath(this);
+		return bottom instanceof Directory;
+		
+	}
+	
+	/** 
+	 * Checks whenever the location given by path is a directory, assuming path exists and valid.
+	 * 
+	 * @return true if specified location at relative is a directory; false if file
+	 */
+	public boolean isRelativePathEndingWithDirectory() {
+		
+		Path fullPath = Path.convertRelativeToFull(this);
+		return fullPath.isFullPathEndingWithDirectory();
+		
+	}
+	
+	
+	/**
+	 * This method splits the path into the sequence of directories/files
+	 * 
+	 * @return the array of names of the directories/files in the path path
+	 */
+	public String[] getSequence() {
+		
+		if (this.path.charAt(0) == '/') {
+			this.path = this.path.substring(1);
+		}
+		
+		String[] sequence = {};
+		if (!path.isEmpty()) {
+			sequence = path.split("/");
+		}
+		return sequence;
+		
+	}
+	
+	
+	/**
+	* This method checks if given path is relative path or full path assuming that path is 
+	* of valid format
+	* 
+	* @return true, if given path is a full path; false otherwise
+	*/
+	
+	public boolean isFullPath() {
+		
+		if (this.path.charAt(0) == '/') {
+			return true;
+		}
+		
+		return false;
+		
+	}
+	
+	
+	/**
+	 * This method returns the path to the parent directory of the node at current path assuming 
+	 * that path is of valid format
+	 * 
+	 * @return the string corresponding to the path of parent directory
+	 */
+	public String getParentPath() {
+		
+		//Getting the index where last directory begins
+		int bottomDir = this.path.lastIndexOf('/');
+		
+		//If the path is to root directory (i.e. no parent directory exists), return path
+		if (bottomDir == 0) {
+			return this.path;
+		}
+		
+		//The path without the bottom directory i.e. the path to parent directory
+		String parentPath = this.path.substring(0, bottomDir);
+		return parentPath;
+		
+	}
+	/**
+	 * Converts relative path to full path
+	 * 
+	 * @param relative relative path
+	 * @return full path to the same location
+	 */
+	public static Path convertRelativeToFull(Path relative) {
+		
+		return new Path(Shell.getShell().getUserData().getCurPath().toString() + "/" + relative.toString());
+		
+	}
+	
+	
+}

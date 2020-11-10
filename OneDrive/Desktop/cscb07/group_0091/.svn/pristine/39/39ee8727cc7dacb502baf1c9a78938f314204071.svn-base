@@ -1,0 +1,22 @@
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import jShell.Error;
+
+public class ErrorTest {
+  
+  Error e = new Error();
+
+  @Test
+  public void testError() { //Test to make sure the dictionary initialized
+    assertNotNull("Class initialized correctly", e);
+  }
+
+  @Test
+  public void testErrorMessage() {
+    String output = "Error: File or directory already exists.";
+    assertEquals(output, e.errorMessage("EXISTS"));
+  }
+
+}

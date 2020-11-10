@@ -1,0 +1,29 @@
+package jShell.interfaces;
+
+import java.util.HashMap;
+
+public interface ICommand {
+
+	  /**
+	   * Run command with given arguments, assuming arguments are valid
+	   * 
+	   * @param args Arguments for the command
+	   * @return A string representing the command's output, if any
+	   */
+	  public abstract String run(String args[]);
+
+	  /**
+	   * Return a mapping of invalid arguments to the errors they cause, if any
+	   * 
+	   * @param args Arguments for the command
+	   * @return Hashmap of invalid arguments and error codes if error occurred; 
+	   *         empty hashmap if no error occurred
+	   */
+	  public abstract HashMap<String, String> isValid(String[] args);
+
+	  /**
+	   * Return the name of the command
+	   */
+	  public abstract String toString();
+	
+}

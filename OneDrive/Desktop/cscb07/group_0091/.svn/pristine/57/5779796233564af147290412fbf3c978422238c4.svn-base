@@ -1,0 +1,126 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.interfaces.IRedirection;
+import jShell.interfaces.IShell;
+
+/**
+ * The pwd class prints out the current working directory that the user is in. 
+ * It takes in no additional arguments, other than the command name. 
+ * Any additional argument results in a Incorrect number of arguments error.
+ * 
+ * @author Sankalp Sharma
+ **/
+
+public class Pwd extends Command {
+  
+  /**
+   * Handles the errors for the pwd command. If any errors are found, 
+   * It stores the error code as a key and the corresponding 
+   * error message as value. The pwd isValid method takes care of additional
+   * argument error messages.
+   * 
+   * 
+   * @param args Arguments for the command
+   * @return Hashmap containing any error codes and their corresponding 
+   * error messages. If command is run successfully, then an empty
+   * hashmap is returned.
+   */
+  
+  /*public void isValid(String[] args) throws ArgsNumberException {
+
+    // Checking that correct number of arguments is passed
+    
+    HashMap<String, String> errors = new HashMap<String, String>();
+    
+    if (args.length != 1 && args.length !=3) {
+      throw new ArgsNumberException();
+    }
+   
+  }*/
+
+  /**
+   * The run method executes if correct arguments are entered. 
+   * It gets the current path that the User is in.
+   * @throws InvalidPathException 
+   * @throws BadFileNameException 
+   * @throws NodeExistsException 
+   * @throws FileNotFoundException 
+   * @throws RedirectionOperatorsException 
+   * @throws ArgsNumberException 
+   * 
+   */
+  public String run(String args[]) throws InvalidPathException, 
+  NodeExistsException, BadFileNameException, RedirectionOperatorsException, 
+  FileNotFoundException, ArgsNumberException ,RedirectionException{
+    //Throw exception right away
+    argChecker(args);
+    IRedirection r = IShell.getShell().getRedirection();
+    // assuming that the arguments are correct.
+    // Just get current path and print it
+    String outputStr = IShell.getShell().getUserData().getCurPath().toString(); 
+    //check for redirection 
+    if (args.length == 3 && (args[1].equalsIgnoreCase(">") ||
+        args[1].equalsIgnoreCase(">>"))) {
+      r.fileHandling(args[1], args[2], outputStr);   
+    }
+    //print w/o redirection
+    else {
+    return outputStr;
+    }
+    return "";
+  }
+  
+  private  void argChecker(String args[]) throws ArgsNumberException,
+  RedirectionException {
+    if (args.length != 1 && args.length != 3) {
+      throw new ArgsNumberException();
+    } 
+    else if (args.length == 3 && (!(args[1].equalsIgnoreCase(">") || 
+        args[1].equalsIgnoreCase(">>")))) {
+      throw new RedirectionException();
+    }
+  }
+
+  @Override
+  public String toString() {
+
+    return "pwd";
+  }
+}

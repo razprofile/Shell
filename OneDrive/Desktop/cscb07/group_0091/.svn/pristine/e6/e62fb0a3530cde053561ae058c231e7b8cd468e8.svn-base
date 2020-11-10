@@ -1,0 +1,10 @@
+Class name: Error
+Parent class: none
+Subclasses: none
+
+Responsibilities:
+* print error message if error occurs
+* Terminate current shell
+
+Collaborators:
+none

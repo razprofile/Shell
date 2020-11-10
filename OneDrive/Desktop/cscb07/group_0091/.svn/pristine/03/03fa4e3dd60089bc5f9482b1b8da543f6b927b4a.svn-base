@@ -1,0 +1,78 @@
+package test;
+
+import static org.junit.Assert.*;
+import java.util.HashMap;
+import org.junit.Test;
+import jShell.mockClasses.MockShell;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.CommandNotFoundException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.commands.Man;
+
+public class ManTest {
+  
+  MockShell s = new MockShell();
+  Man m = new Man();
+  
+  // TESTS FOR THE run METHOD
+  @Test
+  public void testRunGoodManual() throws InvalidPathException, RedirectionException, ArgsNumberException, CommandNotFoundException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException {
+    String[] params = {"man", "exit"};
+    String expected = "";
+    expected = expected + ("~~~~~~~~~~~~~~~~~~~~\n");
+    expected = expected + ("The exit Command:\n");
+    expected = expected + ("\n");
+    expected = expected + ("Usage: exit\n");
+    expected = expected + ("\n");
+    expected = expected + ("The exit command closes the shell"
+        + " entirely. Adding any arguments after the\n");
+    expected = expected + ("initial command will result"
+        + " in an error. Nothing else to see here!\n");
+    expected = expected + ("~~~~~~~~~~~~~~~~~~~~\n");
+    assertEquals("Shoult have the Exit manual", expected + "\n", m.run(params));
+  }
+  
+  @Test
+  public void testRunRedirection() throws InvalidPathException, RedirectionException, ArgsNumberException, CommandNotFoundException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException {
+    String[] params = {"man", "exit", ">", "file"};
+    assertEquals("No command output", "", m.run(params));
+  }
+  
+  // TESTS FOR THE isValid METHOD
+  @Test(expected = ArgsNumberException.class)
+  public void testIsValidNotEnoughArgs() throws RedirectionException, ArgsNumberException, CommandNotFoundException {
+    String[] params = {"man"};
+    m.isValid(params);
+    String[] params2 = {"man", "cat", "cd", "man", "save"};
+    m.isValid(params2);
+    String[] params3 = {"man", "cat", "cd"};
+    m.isValid(params3);
+  }
+  
+  @Test(expected = CommandNotFoundException.class)
+  public void testIsVaidNonexistentManual() throws RedirectionException, ArgsNumberException, CommandNotFoundException {
+    String[] params = {"man", "abbas"};
+    m.isValid(params);
+  }
+  
+  @Test(expected = RedirectionException.class)
+  public void testIsValidBadRedirection() throws RedirectionException, ArgsNumberException, CommandNotFoundException {
+    String[] params = {"man", "cat", ">>>", "file"};
+    m.isValid(params);
+    String[] params2 = {"man", "cat", ">", "file.txt"};
+    m.isValid(params2);
+  }
+  
+  
+  // TESTS FOR THE toString METHOD
+  @Test
+  public void testToString() {
+    assertEquals(m.toString(), "man");
+  }
+  
+}

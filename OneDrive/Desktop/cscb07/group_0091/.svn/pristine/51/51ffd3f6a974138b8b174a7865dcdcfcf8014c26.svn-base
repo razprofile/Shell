@@ -1,0 +1,17 @@
+package jShell.interfaces;
+
+import java.util.ArrayList;
+import java.util.Stack;
+
+public interface IUserData {
+
+	  public ArrayList<String> getCommandHistory();
+
+	  public IPath getCurPath();
+
+	  public void setCurPath(IPath curPath);
+
+	  public IDirectory getCurDir();
+	  
+	  public Stack<IPath> getPathStack();
+}

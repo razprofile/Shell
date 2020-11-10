@@ -1,0 +1,50 @@
+package jShell;
+
+public class Mkdir extends Command{
+	
+	
+	/**
+	 * Create a new directory at a given path, if entered path is valid and directory does not exist.
+	 * Otherwise, give an error.
+	 */
+	public void run(String args[]) {
+		if (!isValid(args)) {
+			return ;
+		}
+		
+		//Creating a new directory. To be updated, once the Directory class is done. 
+	}
+	
+	/**
+	 * Return true if arguments in args are valid, and return false otherwise. 
+	 * If arguments are invalid, print an error message.
+	 * 
+	 * @param args
+	 * @return true, if arguments args are valid
+	 */
+	private boolean isValid(String args[]) {
+		
+		Error e = new Error();
+		
+		//Checking if only one argument is passed 
+		if (args.length > 1) {
+			Shell.getShell().OutputToShellln(e.errorMessage("WRONGARGS"));
+			return false;
+		}
+		
+		//Checking if given path is valid. To be updated, when the Path class is done.
+		if (false) {
+			Shell.getShell().OutputToShellln(e.errorMessage("PATHNOTFOUND"));
+			return false;
+		}
+		
+		//Checking if directory already exists. To be updated, when the Directory class is done.
+		if (false) {
+			Shell.getShell().OutputToShell(e.errorMessage("EXISTS"));
+			return false;
+		}
+		
+		return true;
+	}
+
+}

@@ -1,0 +1,68 @@
+package jShell;
+
+import java.util.Arrays;
+
+public class Path {
+	
+	// Textual representation of the path
+	String path;
+	
+	public Path(String path) {
+		
+		this.path = path;
+		
+	}
+	
+	
+	/**
+	 * This method splits the path into the sequence of directories/files
+	 * 
+	 * @return the array of names of the directories/files in the path path
+	 */
+	public String[] getSequence() {
+		
+		return this.path.split("/");
+		
+	}
+	
+	
+	/**
+	* This method checks if given path is relative path or full path assuming that path is 
+	* of valid format
+	* 
+	* @return true, if given path is a full path; false otherwise
+	*/
+	
+	public boolean isFullPath() {
+		
+		if (this.path.charAt(0) == '/') {
+			return true;
+		}
+		
+		return false;
+		
+	}
+	
+	
+	/**
+	 * This method returns the path to the parent directory of the node at current path assuming 
+	 * that path is of valid format
+	 * 
+	 * @return the string corresponding to the path of parent directory
+	 */
+	public String getParentPath() {
+		
+		//Getting the index where last directory begins
+		int bottomDir = this.path.lastIndexOf('/');
+		
+		//If the path is to root directory (i.e. no parent directory exists), return path
+		if (bottomDir == 0) {
+			return this.path;
+		}
+		
+		//The path without the bottom directory i.e. the path to parent directory
+		String parentPath = this.path.substring(0, bottomDir);
+		return parentPath;
+		
+	}
+}

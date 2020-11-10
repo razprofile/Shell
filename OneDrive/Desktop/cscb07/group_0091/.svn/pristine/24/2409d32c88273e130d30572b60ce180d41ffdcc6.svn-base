@@ -1,0 +1,78 @@
+package jShell.mockClasses;
+
+import jShell.interfaces.*;
+
+public class MockPath implements IPath {
+
+	String path;
+	
+	public MockPath(String path) {
+		this.path = path;
+	}
+	
+	@Override
+	public boolean isValidFullPath() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isValidRelativePath() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isValidPath() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isPathToDirectory() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean doubleSlashChecker() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String[] getSequence() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IPath getParentPath() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getBottomName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IPath appendNodeName(String nodeName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IPath convertRelativeToFull() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isSuccessor(IPath potentialSuccessor) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+}

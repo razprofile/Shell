@@ -1,0 +1,21 @@
+Class name: ShellCommand
+Parent class: none
+Subclasses: Exit, Mkdir, Cd, Ls, Pwd, 
+Mv, Cp, Cat, GetURL, Echo
+
+Responsibilities:
+* Validating the arguments of the command entered
+
+Collaborators:
+* Exit
+* Mkdir
+* Cd
+* Ls
+* Pwd
+* Mv
+* Cp
+* Cat
+* GetURL
+* Echo
+* Error
+* History

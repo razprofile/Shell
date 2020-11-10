@@ -1,0 +1,119 @@
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import org.junit.Before;
+import jShell.Errors.*;
+import jShell.commands.Ls;
+import jShell.interfaces.IShell;
+import jShell.mockClasses.MockFileSystem;
+import jShell.mockClasses.MockShell;
+
+public class LsTest {
+  
+  MockShell shell;
+  Ls ls;
+  
+  @Before
+  public void init() {
+    shell = new MockShell();
+    ls = new Ls();
+  }
+  
+  @Test
+  public void testLsWithNoArguments(){
+    String[] args = {"ls"};
+    String output = "";
+    try {
+      output = ls.run(args);
+    }catch(Exception e) {
+      fail();
+    }      
+    
+    String expected = "childDir\nchildFile\n";
+    assertEquals(output, expected);
+  }
+  
+  @Test
+  public void testLsInvalidPath() {
+    String[] args = {"ls", "/this/is/invalid/path"};
+    try {
+      ls.run(args);
+      fail();
+    }catch(InvalidPathException e) {
+      return ;
+    }catch(Exception e) {
+      fail();
+    }
+  }
+  
+  @Test
+  public void testLsRedirectionBadName() {
+    String[] args1 = {"ls", ">", "thisFile.HasBadName"};
+    try {
+      ls.run(args1);
+      fail();
+    }catch(BadFileNameException e) {
+      return ;
+    }catch(Exception e) {
+      fail();
+    }
+  }
+  
+  @Test
+  public void testLsRedirectionToDirectory() {
+    String[] args1 = {"ls", ">", MockFileSystem.validDirFullPath};
+    try {
+      ls.run(args1);
+      fail();
+    }catch(NodeExistsException e) {
+      return ;
+    } catch (Exception e) {
+      fail();
+    }
+  }
+  
+  @Test
+  public void testLsRedirectionToBadPath() {
+    String[] args1 = {"ls", ">", "this/file/does/not/exist"};
+    try {
+      ls.run(args1);
+      fail();
+    }catch(InvalidPathException e) {
+      return ;
+    } catch (Exception e) {
+      fail();
+    }
+  }
+  
+  @Test
+  public void testLsValidRedirection() {
+    String filePath = "childFile";
+    String expectedOutput = "childDir\nchildFile\n";
+    String[] args1 = {"ls", ">", filePath};
+    try {
+      ls.run(args1);
+      String expected = "Redirecting output for overwriting:" + expectedOutput +
+          "\n to file with name: " + filePath;
+      assertEquals(shell.getLastOutput(), expected);
+    } catch (Exception e) {
+      fail();
+    }
+  }
+  
+  @Test
+  public void testLsRecursive() {
+    String[] args1 = {"ls", "-R", "/working"};
+    try {
+      String expected = "/working:\nchildDir\nchildFile\n\n"
+                        +"/working/childDir:\n\n" + "/working/childFile\n";
+      String actual = ls.run(args1);
+      assertEquals(expected, actual);
+    }catch(Exception e) {
+      fail();
+    }
+  }
+  
+    
+
+}

@@ -1,0 +1,11 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class DeleteRootDirException extends Error {
+
+  private static final String errorTemplate = "Cannot delete root directory.";
+  public DeleteRootDirException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

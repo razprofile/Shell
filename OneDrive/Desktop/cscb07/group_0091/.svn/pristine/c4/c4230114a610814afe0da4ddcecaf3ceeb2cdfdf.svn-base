@@ -1,0 +1,176 @@
+package jShell;
+
+public class Echo extends Command{
+  
+  /*
+   * TO DO:  
+   * - Testing
+   */
+  @Override
+  public void run(String[] args) {
+    Error e = new Error();
+    if (!isValid(args, Shell.getShell())) {
+      return;
+    }
+    String fullString = "";
+    String currentString = "";
+    FileSystem f = Shell.getShell().getFileSystem();
+    //From the second argument onwards, check until you find another ".
+    for (int i = 0; i < args.length ; i++) {
+      if (i != 0) { //Skip command call
+        currentString = args[i]; //Take one part of the string at a time
+        if (i == 1) {
+          // Make sure the string starts with a double quote
+          if (!(currentString.startsWith("\""))){
+            //Throw an error
+            Shell.getShell().outputToShellln(e.errorMessage("BADSTRING"));
+            return;
+          }
+          if (i + 1 == args.length){
+            //One-word string, no file
+            // Check ending for quotes
+            if (currentString.endsWith("\"")) {
+            fullString = currentString.substring(1, currentString.length() - 1);
+            outputToShell(fullString, Shell.getShell());
+            return;
+            } else {
+              // Error
+              Shell.getShell().outputToShellln(e.errorMessage("BADSTRING"));
+              return;
+            }
+          } else if ((i + 3 == args.length) && ((args[i+1].equalsIgnoreCase(">"))
+              || (args[i+1].equalsIgnoreCase(">>")))) {
+            // One-word string with file, Check and trim accordingly
+            if (!(currentString.endsWith("\""))) {
+              //Incorrectly formatted string, missing end quotes
+              Shell.getShell().outputToShellln(e.errorMessage("BADSTRING"));
+              return;
+            }
+            fullString = currentString.substring(1, currentString.length() - 1);
+            // Function for file operations
+            fileHandling(args[i+1], args[i+2], fullString, f);
+            return;
+          } else {
+            // Begin creating the resultant string, removing the first ".
+            fullString = currentString.substring(1) + " ";
+          }
+        } else {
+          // See if there is a double quote in the other args
+          if (currentString.indexOf("\"") == -1) {
+            // No double quote, see if this is the last argument
+            // If so, then throw an error (incomplete string)
+            if (i == args.length - 1) {
+              Shell.getShell().outputToShellln(e.errorMessage("BADSTRING"));
+              return;
+            } else {
+              //Add this string to the full string list
+              fullString = fullString + currentString + " ";
+            }
+          } else if (currentString.endsWith("\"")){
+            // Correctly terminated string -- add it to the list, trim the "
+            fullString = fullString + 
+                currentString.substring(0, (currentString.length() - 1));
+            //And shift into logic for future arguments IF there are more
+            if (i == args.length - 1) {
+              // No more arguments, print to shell
+              outputToShell(fullString, Shell.getShell());
+              return;
+            } else {
+              // Check the remaining arguments
+              if ((i + 1) == (args.length - 1)) {
+                // Not enough arguments
+                Shell.getShell().outputToShellln(e.errorMessage("WRONGARGS")
+                    + " Please add a file after your desired operator.");
+                return;
+            } else if (!(args[i+1].equalsIgnoreCase(">")) && 
+                  !(args[i+1].equalsIgnoreCase(">>"))) {
+                // No operator
+                Shell.getShell().outputToShellln(e.errorMessage("WRONGARGS") 
+                    + " Expected an operator (> or >>) to follow.");
+                return;
+              } else if ((i + 1) < (args.length - 2)){
+                // Too many arguments
+                Shell.getShell().outputToShellln(e.errorMessage("WRONGARGS")
+                    + " Do not include multiple operators or files/paths.");
+                return;
+              }
+              fileHandling(args[i+1], args[i+2], fullString, f);
+              return;
+            }
+          } else {
+            // Quotations in the middle of a string
+            Shell.getShell().outputToShellln(e.errorMessage("QUOTES"));
+            return;
+          }
+        }       
+      }
+    }
+  }
+  
+  public Boolean isValid(String[] args, Shell s) {
+    Error e = new Error();
+    if (args.length == 1) {
+      s.outputToShellln(e.errorMessage("WRONGARGS") + " Expected at least a "
+          + "string after the initial command.");
+      return false;
+    }
+    return true;
+  }
+  
+  private void fileHandling(String op, String name, String contents, FileSystem f) {
+    // Locate file based on the next argument
+    Error e = new Error();
+    Path p = new Path(name);
+    // Attempt to get the file node at the user's given path
+    FileSystemNode temp = f.getNodeAtRelativePath(p);
+    if (temp == null) { //If it doesn't exist then make it (echo-exclusive)
+      Shell.getShell().outputToShellln("Creating file instead...");
+      // File doesn't exist, then create one!
+      temp = f.createNewFile(p);
+      }
+    // From this point, file exists
+    // See if we are appending or overwriting
+    if (op.equalsIgnoreCase(">")) {
+      overwriteFile(contents, (File)temp);
+      return;
+    } else if (op.equalsIgnoreCase(">>")) {
+      appendFile(contents, (File)temp);
+      return;
+    } else {
+      //Error
+      Shell.getShell().outputToShellln(e.errorMessage("INVALIDARGS"));
+      return;
+    }
+  }
+  
+  private void outputToShell(String output, Shell s) {
+    /**
+     * Prints out the given string directly to the shell.
+     * 
+     * @param output : the string to be printed out to the shell.
+     */
+    s.outputToShellln(output);
+  }
+  
+  private void overwriteFile(String newContents, File file) {
+    /**
+     * Overwrites the contents of a given file, replacing them with
+     * the provided user string (stored on an object-basis)
+     * 
+     * @param newContents: the string that will overwrite the contents of file.
+     * @param file : the file to be overwritten
+     */
+    file.setContents(newContents);
+  }
+  
+  private void appendFile(String addition, File file) {
+    /**
+     * Appends the user's given string to the contents of a user-given file.
+     * 
+     * @param addition: the string to be appended to the file's contents
+     * @param file : the file to have the string appended on to.
+     */
+    file.setContents(file.getContents() + " " + addition);
+  }
+
+}

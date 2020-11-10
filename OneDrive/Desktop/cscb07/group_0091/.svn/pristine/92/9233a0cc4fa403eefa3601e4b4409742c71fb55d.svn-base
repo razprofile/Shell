@@ -1,0 +1,12 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class ArgsException extends Error {
+
+  private static final String errorTemplate = "Invalid argument(s): %s.";
+
+  public ArgsException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

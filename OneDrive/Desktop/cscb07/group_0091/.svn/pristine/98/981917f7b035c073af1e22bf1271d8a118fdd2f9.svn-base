@@ -1,0 +1,14 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class UnknownErrorException extends Error {
+
+  private static final String errorTemplate =
+      "Unknown error occurred.";
+
+  public UnknownErrorException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+  
+}

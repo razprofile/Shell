@@ -1,0 +1,79 @@
+package jShell.commands;
+
+
+
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.InvalidURLException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.interfaces.IDirectory;
+import jShell.interfaces.IRedirection;
+import jShell.interfaces.IShell;
+import jShell.interfaces.IUrlDataFetcher;
+import jShell.fileSystem.File;
+import jShell.fileSystem.FileSystemNode;
+
+public class Curl extends Command {
+  
+  private IUrlDataFetcher udf;
+
+  public Curl(IUrlDataFetcher udf) {
+    super();
+    this.udf = udf;
+    
+  }
+    // TODO Auto-generated constructor stub
+  
+
+  @Override
+  public String run(String[] args) throws ArgsNumberException,InvalidURLException,BadFileNameException, InvalidPathException, NodeExistsException, RedirectionOperatorsException, FileNotFoundException  {
+    //catch errors right away
+    argChecker(args);
+    //special case of ending with a slash
+    String urlName = args[1];
+    if (urlName.endsWith("/")) {
+      throw new BadFileNameException(urlName);
+    }
+    String fileName = urlName.substring(urlName.lastIndexOf("/") + 1, urlName.lastIndexOf("."));
+    if(!FileSystemNode.nameChecker(fileName)) {
+      throw new BadFileNameException(urlName);
+    }
+    String contents = udf.getUrlData(urlName);
+    
+    
+    File f = new File(fileName);
+    f.setContents(contents);
+    IDirectory d = IShell.getShell().getUserData().getCurDir();
+    
+    if(d.ifChildExists(fileName)) {
+      IRedirection r = IShell.getShell().getRedirection();
+      r.fileHandling(">", fileName, contents);
+    }
+    else {
+      d.tryAddChildren(f);
+    }
+    return "";
+    
+  }
+
+  
+  
+  
+  private  void argChecker(String args[]) throws ArgsNumberException,InvalidURLException {
+    if(args.length != 2) {
+      throw new ArgsNumberException();
+    }
+  }
+  
+  @Override
+  public String toString() {
+    // TODO Auto-generated method stub
+    return "curl";
+  }
+
+  }
+
+

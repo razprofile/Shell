@@ -1,0 +1,71 @@
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.Shell;
+import jShell.interfaces.IDirectory;
+import jShell.interfaces.IShell;
+import java.net.*;
+import java.io.*;
+import jShell.Directory;
+import jShell.File;
+
+public class Curl extends Command {
+
+  public Curl() {
+    super();
+  }
+    // TODO Auto-generated constructor stub
+  
+
+  @Override
+  public String run(String[] args)  {
+    try {
+      curlRun(args[1]);
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return "";
+  }
+
+  @Override
+  public HashMap<String, String> isValid(String[] args) {
+    // TODO Auto-generated method stub
+    HashMap<String, String> errors = new HashMap<String, String>();
+    if (args.length != 2) {
+      errors.put("all", "WRONGARGS");
+    }
+    return errors;
+  }
+  
+  
+  private  void curlRun(String path) throws Exception {
+    //remove slash
+    if(path.endsWith("/")) {
+      path = path.substring(0,path.length()-1);
+    }
+    URL url = new URL(path);
+    //assuming the format is sampleurl.com/file.txt
+    String fileName = path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf("."));
+    //read the file and add it to the current working directory
+    String contents = "";
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
+        for (String line; (line = reader.readLine()) != null;) {
+           contents += line + "\n";
+        }
+        File f = new File(fileName);
+        f.setContents(contents);
+        IDirectory d = Shell.getShell().getUserData().getCurDir();
+        d.tryAddChildren(f);
+    }
+  }
+  
+  @Override
+  public String toString() {
+    // TODO Auto-generated method stub
+    return "curl";
+  }
+
+  }
+
+

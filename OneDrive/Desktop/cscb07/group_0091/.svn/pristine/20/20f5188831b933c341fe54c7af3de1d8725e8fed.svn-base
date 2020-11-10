@@ -1,0 +1,12 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class EmptyStackException extends Error {
+
+  private static final String errorTemplate = "There are no directories in the stack to be popped.";
+
+  public EmptyStackException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

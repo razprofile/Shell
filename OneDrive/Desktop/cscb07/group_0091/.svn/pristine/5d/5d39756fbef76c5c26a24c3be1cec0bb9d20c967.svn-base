@@ -1,0 +1,83 @@
+package jShell;
+
+public class Echo extends Command{
+    
+  public void run(String[] args) {
+    if (!isValid(args)) {
+      return;
+    }
+    // Check how many arguments there are:
+    if (args.length == 2) {
+      // User only provided a string, so we write it to the shell
+      this.outputToShell(args[1]);
+    } else {
+      // User also provided an output file
+      // Locate the output file object and return to here.
+      // To be updated once FileSystem is completed
+      // file = (whatever happened)
+      // Check the type of operation to be performed:
+      if (args[2] == ">>") {
+        // Append
+        System.out.println("Appended!");
+        //this.appendFile(args[1], (OutputFile)file); //Remove the outputfile if it gets changed
+      } else {
+        // Overwrite
+        System.out.println("Overwritten!");
+        //this.overwriteFile(args[1], (OutputFile)file);
+      }
+    }
+  }
+  
+  public Boolean isValid(String[] args) {
+    Error e = new Error();
+    
+    // Check if there are enough arguments
+    if (args.length == 1 || args.length == 3 || args.length > 4) {
+      /*
+       * Checks for:
+       * - No string given
+       * - No outfile given
+       * - More than one outfile given
+       */
+      //Shell.getShell().OutputToShellln(e.errorMessage("WRONGARGS"));
+      System.out.println(e.errorMessage("WRONGARGS"));
+      return false;
+    }
+    return true;
+  }
+  //Output the given string to the shell
+  public void outputToShell(String output) {
+    /**
+     * Prints out the given string directly to the shell.
+     * 
+     * @param addition : the string to be printed out to the shell.
+     */
+    //Can be replaced with whatever "to shell" line we have.
+    //System.out.println is temporary
+    System.out.println(output);
+  }
+  
+  public void overwriteFile(String newContents, OutputFile file) {
+    /**
+     * Overwrites the contents of a given file, replacing them with
+     * the provided user string (stored on an object-basis)
+     * 
+     * @param newContents: the string that will overwrite the contents of file.
+     * @param file : the file to be overwritten
+     */
+    // Use the appropriate file method to overwrite the file's contents
+    file.overwrite(newContents);
+  }
+  
+  public void appendFile(String addition, OutputFile file) {
+    /**
+     * Appends the user's given string to the contents of a user-given file.
+     * 
+     * @param addition: the string to be appended to the file's contents
+     * @param file : the file to have the string appended on to.
+     */
+    // Use the appropriate file method to append to the file's contents
+    file.append(addition);
+  }
+
+}

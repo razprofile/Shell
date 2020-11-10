@@ -1,0 +1,76 @@
+package jShell.interfaces;
+
+import jShell.*;
+import jShell.Errors.Error;
+import jShell.commands.*;
+
+public abstract class IShell {
+  
+  /**
+   * Returns the fileSystem
+   * 
+   * @return The main FileSystem for the shell
+   */
+  public abstract IFileSystem getFileSystem();
+  
+  private static IShell shell;
+  public static IShell getShell() {
+    return shell;
+  }
+  protected IShell(){
+    shell = this;
+  }
+  /**
+   * Returns userData
+   * 
+   * @return The main UserData object for the shell
+   */
+  public abstract IUserData getUserData();
+
+
+  public abstract void shutDown();
+
+  /**
+   * Returns the input the user typed in the shell
+   * 
+   * @return The input the user typed in the shell
+   */
+  public abstract String getUserInput();
+
+  /**
+   * Output a value to the shell on the same line
+   * 
+   * @param The value to be output to the shell
+   */
+  public abstract void outputToShell(String value);
+
+  /**
+   * Processes user's input.
+   * 
+   * @param The input the user typed to the shell
+   * @throws Error 
+   */
+  public abstract void onInput(String input);
+
+  /**
+   * Returns Whether the program is running or not
+   * 
+   * @return Whether the program is running or not
+   */
+  public abstract boolean isRunning();
+
+  /**
+   * Sets running to isRunning
+   * 
+   * @param The boolean value of isRunning
+   */
+  public abstract void setIsRunning(boolean isRunning);
+
+  public abstract IRedirection getRedirection();
+
+  public abstract void outputToShellln(String value);
+  public abstract void outputToShellErr(String string);
+  
+  public abstract void setUserData(IUserData data);
+
+}

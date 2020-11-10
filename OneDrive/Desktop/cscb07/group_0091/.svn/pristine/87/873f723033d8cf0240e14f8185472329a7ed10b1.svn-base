@@ -1,0 +1,11 @@
+Class name: UserData
+Parent class: none
+Subclasses: none
+
+Responsibilities:
+* Get the user's command history
+* Get curnet directory
+* Get directory stack
+
+Collaborators:
+* none

@@ -1,0 +1,84 @@
+package jShell.mockClasses;
+
+import jShell.InputModeCommand;
+import jShell.interfaces.*;
+
+import java.util.ArrayList;
+
+public class MockShell implements IShell{
+
+	public ArrayList<String> output = new ArrayList<>();
+	
+	@Override
+	public void setInputMode(InputModeCommand inputMode) {
+	}
+
+	@Override
+	public IFileSystem getFileSystem() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public IUserData getUserData() {
+		return new MockUserData();
+	}
+
+	@Override
+	public void shutDown() {
+
+	}
+
+	@Override
+	public String getUserInput() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void outputToShell(String value) {
+		
+		output.add(value);
+		
+	}
+
+	@Override
+	public void outputToShellln(String value) {
+		output.add(value + "\n");
+		
+	}
+
+	@Override
+	public void onInput(String input) {
+		
+	}
+
+	@Override
+	public boolean isRunning() {
+		return true;
+	}
+
+	@Override
+	public void setIsRunning(boolean isRunning) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void outputErrorMessage(ICommand c, String invalidArgument, String errorCode) {
+		output.add("Error caused by " + invalidArgument + ". Type of error: " + errorCode);
+	}
+
+	@Override
+	public IRedirection getRedirection() {
+		return new MockRedirection(this);
+	}
+
+	@Override
+	public IError getError() {
+		return new MockError();
+	}
+	
+	
+
+}

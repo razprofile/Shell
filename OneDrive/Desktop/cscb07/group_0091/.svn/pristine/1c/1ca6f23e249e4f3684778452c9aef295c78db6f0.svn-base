@@ -1,0 +1,19 @@
+package jShell.interfaces;
+
+public interface IOutputFile extends IFile{
+	
+    /**
+     * Overwrites the contents of the current file, replacing them with the provided text input.
+     * 
+     * @param newContents the new contents that will be stored in this file
+     */
+	public void overwrite(String newContents);
+
+    /**
+     * Appends the user-given string to the contents of the file.
+     * 
+     * @param newContents the new contents to be appended to this file
+     */
+	public void append(String newContents);
+	
+}

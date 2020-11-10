@@ -1,0 +1,86 @@
+package test;
+
+import static org.junit.Assert.*;
+import java.util.HashMap;
+import org.junit.Test;
+import jShell.fileSystem.Path;
+import jShell.interfaces.IPath;
+import jShell.Shell;
+import jShell.Errors.*;
+import jShell.commands.Pwd;
+import jShell.mockClasses.MockFileSystem;
+import jShell.mockClasses.MockPath;
+import jShell.mockClasses.MockShell;
+import jShell.mockClasses.MockUserData;
+
+public class PwdTest {
+
+  MockShell s = new MockShell();
+  Pwd p = new Pwd();
+
+
+  @Test
+  public void testtoString() {
+    assertEquals("pwd", p.toString());
+  }
+
+  @Test(expected = ArgsNumberException.class)
+  public void testwithInvalidArgs()
+      throws ArgsNumberException, RedirectionException, InvalidPathException, NodeExistsException,
+      BadFileNameException, RedirectionOperatorsException, FileNotFoundException {
+    String[] params = {"pwd", "a"};
+    p.run(params);
+
+  }
+
+  @Test(expected = BadFileNameException.class)
+  public void testRedirectionWithInvalidFileName() throws InvalidPathException, NodeExistsException,
+      BadFileNameException, RedirectionOperatorsException, FileNotFoundException,
+      ArgsNumberException, RedirectionException {
+    String[] params = {"pwd", ">", "!"};
+    p.run(params);
+  }
+
+  @Test
+  public void testValidPwd() throws InvalidPathException, NodeExistsException,
+      BadFileNameException, RedirectionOperatorsException, FileNotFoundException,
+      ArgsNumberException, RedirectionException {
+    String[] params = {"pwd"};
+    assertEquals(p.run(params), s.getUserData().getCurPath().toString());
+  }
+
+
+  @Test
+  public void testValidRedirectionOverWrite() throws InvalidPathException, NodeExistsException,
+      BadFileNameException, RedirectionOperatorsException, FileNotFoundException,
+      ArgsNumberException, RedirectionException {
+    String[] params = {"pwd", ">", "childFile"};
+    p.run(params);
+    String outputMessageOverWrite =
+        "Redirecting output for overwriting:" + s.getUserData().getCurPath().toString()
+            + "\n to file with name: " + "childFile";
+    assertEquals(outputMessageOverWrite, s.getLastOutput());
+
+    // testing Overwrite
+    String[] params2 = {"pwd", ">>", "childFile"};
+    p.run(params2);
+    String outputMessageAppend =
+        "Redirecting output for appending:" + s.getUserData().getCurPath().toString()
+            + "\n to file with name: " + "childFile";
+    assertEquals(outputMessageAppend, s.getLastOutput());
+
+  }
+  
+  @Test(expected = RedirectionException.class)
+  public void testInvalidRedirectionArgs() throws InvalidPathException, NodeExistsException,
+      BadFileNameException, RedirectionOperatorsException, FileNotFoundException,
+      ArgsNumberException, RedirectionException {
+    String[] params = {"pwd", "a", ">"};
+    p.run(params);
+  }
+
+
+
+}
+
+

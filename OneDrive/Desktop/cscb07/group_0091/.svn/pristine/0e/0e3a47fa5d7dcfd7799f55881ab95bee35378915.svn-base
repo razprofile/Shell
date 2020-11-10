@@ -1,0 +1,18 @@
+package jShell.interfaces;
+
+import java.util.ArrayList;
+import java.util.Stack;
+import jShell.Errors.InvalidPathException;
+
+public interface IUserData {
+
+	  public ArrayList<String> getCommandHistory();
+
+	  public IPath getCurPath();
+
+	  public void setCurPath(IPath curPath) throws InvalidPathException;
+
+	  public IDirectory getCurDir();
+	  
+	  public Stack<IPath> getPathStack();
+}

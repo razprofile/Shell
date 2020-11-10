@@ -1,0 +1,115 @@
+package jShell;
+
+import java.util.*;
+
+
+
+public class Directory extends FileSystemNode {
+  /*
+   * Directory class that instantiates a Directory object by taking a name. Stores children in a
+   * hashmap. Collaborates with Error to print out respective Error
+   * 
+   */
+  private Map<String, FileSystemNode> children = new HashMap<String, FileSystemNode>();
+
+
+
+  public Directory(String name) {
+    /*
+     * Instantiate the object if you know just the name
+     */
+    setName(name);
+
+  }
+
+  public Directory(String name, Path path) {
+
+    setName(name);
+    setPath(path);
+  }
+
+  public boolean tryAddChildren(FileSystemNode n) {
+    /**
+     * This method adds children objects to the Directory object. Children can be either directories
+     * or files
+     * 
+     * @param Children object to be added
+     * 
+     **/
+    if (ifChildExists(n.getName())) {
+      // directory already exists
+      Error e = new Error();
+      Shell.getShell().outputToShellln(e.errorMessage("EXISTS"));
+      return false;
+    }
+    children.put(n.getName(), n);
+    return true;
+  }
+
+  public boolean ifChildExists(String name) {
+    /**
+     * Returns true or false for if a child exists in a directory object
+     * 
+     * @param Key to search for hashamp
+     * @return boolean value indicating whether child is in directory hashmap
+     **/
+
+    return children.containsKey(name);
+
+  }
+
+
+
+  public FileSystemNode getChild(String name) {
+    /**
+     * Returns a child object provided it exists, otherwise returns null
+     * 
+     * @param String: name of the object you want to return
+     * @return FileSystemNode either the child directory or file
+     **/
+    Error e = new Error();
+    if (ifChildExists(name)) {
+      return children.get(name);
+    } else {
+      return null;
+    }
+  }
+
+
+  // get all the children
+  public Collection<FileSystemNode> getChildren() {
+    return children.values();
+
+
+  }
+  /*
+  public static void main(String[] args) {
+    Directory d1 = new Directory("dir1");
+    Path p1 = new Path("/dir1/dir2");
+    Directory d2 = new Directory("dir2", p1);
+    d1.tryAddChildren(d2);
+    // is it supposed to give error here?
+    Directory d3 = new Directory("dir3!");
+    Path p2 = new Path("/dir1/dir2/file2");
+    File f = new File("file1");
+    File f_two = new File("file2", p2);
+    Path p3 = new Path("/dir1/dir2/file3");
+    File f_three = new File("file3", p3);
+    d1.tryAddChildren(f);
+    d1.tryAddChildren(f_two);
+    d1.tryAddChildren(f_three);
+    f_three.setContents("these are the contents");
+    System.out.println(d1.ifChildExists(f_three.getName()));
+    System.out.println(d1.ifChildExists(d2.getName()));
+    System.out.println(d1.getChild(d2.getName()));
+    System.out.println(d2.getPath());
+    System.out.println(f_two.getPath());
+    System.out.println(f_three.getPath());
+    System.out.println(d2.getName());
+    System.out.println(f_three.getContents());
+    File f_four = new File("file3", p3);
+    d1.tryAddChildren(f_four);
+  }
+  */
+}
+

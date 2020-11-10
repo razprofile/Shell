@@ -1,0 +1,7 @@
+package jShell.interfaces;
+
+public interface InputModeCommand {
+
+  public void onInput(String input);
+  
+}

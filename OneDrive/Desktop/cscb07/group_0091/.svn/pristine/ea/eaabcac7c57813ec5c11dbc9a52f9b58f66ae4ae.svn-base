@@ -1,0 +1,12 @@
+package jShell.interfaces;
+
+public interface IError {
+	  /**
+	   * Returns an appropriate error message based on the type of error encountered
+	   * 
+	   * @param ShellCommand The command which prompted an error to occur
+	   * @return an error message based on the type of error that occurred
+	   */
+	  public String errorMessage(String code);
+
+}

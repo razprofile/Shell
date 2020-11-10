@@ -1,0 +1,75 @@
+package jShell.commands;
+
+import java.util.Arrays;
+import jShell.Directory;
+import jShell.FileSystemNode;
+import jShell.Shell;
+import jShell.Path;
+import jShell.Error;
+
+
+public class Ls extends Command{
+	
+	public void run(String[] args) {
+		
+		Error e = new Error();
+		
+		//Getting rid of first argument, which is Ls
+		args = Arrays.copyOfRange(args, 1, args.length);
+		
+		if (args.length == 0) {
+			
+			Directory currDir = Shell.getShell().getUserData().getCurDir();
+			
+			//No path given, print contents of current directory
+			for (FileSystemNode child : currDir.getChildren()) {
+				Shell.getShell().outputToShellln(child.getName());
+			}
+		
+		}
+		
+		for (String argument : args) {
+			
+			Path p = new Path(argument);
+			
+			//Checking if given location corresponds to a valid location at current file tree
+			if (!p.isValidPath()) {
+				Shell.getShell().outputToShellln(e.errorMessage("PATHNOTFOUND"));
+				continue ;
+			}
+					
+			//Checking if specified path is a directory or a file
+			if (p.isPathToDirectory()) {
+				/*
+				 * Path leads to directory
+				 */
+				
+				//Getting reference to specified directory
+				Directory dir = (Directory) Shell.getShell().getFileSystem().getNodeAtPath(p);
+				
+				//Printing name of directory
+				Shell.getShell().outputToShellln(dir.getName() + ":");
+				
+				//Printing names of contents
+				for (FileSystemNode child : dir.getChildren()) {
+					Shell.getShell().outputToShellln(child.getName());
+				}
+				
+				Shell.getShell().outputToShellln("");
+			} else {
+				/*
+				 * Path leads to file
+				 */
+				Shell.getShell().outputToShellln(p.toString());
+			}
+		}
+		
+	}
+	
+	public boolean isValid(String[] args){
+		
+		return true;
+		
+	}
+
+}

@@ -1,0 +1,70 @@
+package test;
+
+import static org.junit.Assert.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import org.junit.Test;
+import jShell.commands.History;
+import jShell.mockClasses.MockShell;
+import jShell.mockClasses.MockUserData;
+
+public class HistoryTest {
+  
+  
+  MockUserData ud = new MockUserData();
+  MockShell s = new MockShell();
+  History h = new History(s);
+  HashMap<String, String> errors = new HashMap<String, String>();
+
+  @Test
+  public void testHistoryMostRecentCommand() {
+    String[] params = {"history 1"};
+    h.run(params);
+    assertEquals("command", s.getUserData().getCommandHistory().get(0));
+  }
+  
+  @Test
+  public void testHistorywithNegativeNumber() {
+    String[] params = {"history -1"};
+    h.run(params);
+    assertEquals("history: -1: Error: Please Enter a non-negative number",
+        h.isValid(params), errors);
+  }
+  
+  @Test
+  public void testHistorywithNonInteger() {
+    String[] params = {"history a"};
+    h.run(params);
+    assertEquals("history: a: Error: Argument type is incorrect.",
+        h.isValid(params), errors);
+  }
+  
+  @Test
+  public void testHistoryAll() {
+    String[] params = {"history"};
+    h.run(params);
+    ArrayList<String> historyarray = new ArrayList<String>();
+    historyarray.add("command");
+    historyarray.add("some other command");
+    historyarray.add("this was valid command");
+    historyarray.add("this was invalid command");
+    historyarray.add("some more commands");
+    historyarray.add("some more commands");
+    historyarray.add("last command");
+    assertEquals(historyarray,s.getUserData().getCommandHistory());
+  }
+  
+  @Test
+  public void testHistoryNRecent() {
+    String[] params = {"history 3"};
+    h.run(params);
+    ArrayList<String> historyarray = new ArrayList<String>();
+    historyarray.add("some more commands");
+    historyarray.add("some more commands");
+    historyarray.add("last command");
+    ArrayList<String> commandList = new ArrayList<String>(s.getUserData().getCommandHistory().subList(4, 7));
+    assertEquals(historyarray,commandList);
+}
+}

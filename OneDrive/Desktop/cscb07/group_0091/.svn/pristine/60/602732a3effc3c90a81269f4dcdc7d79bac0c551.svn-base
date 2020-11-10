@@ -1,0 +1,14 @@
+Class name: Directory
+Parent class: none
+Subclasses: none
+
+Responsibilities:
+* Get the name of the directory
+* Open directory
+* Create a new directory
+* Check if directory exists
+* Delete directory
+* Go back to parent directory
+
+Collaborators:
+none

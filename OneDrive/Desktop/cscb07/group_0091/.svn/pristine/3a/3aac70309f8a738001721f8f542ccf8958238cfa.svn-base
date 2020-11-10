@@ -1,0 +1,130 @@
+package jShell;
+	
+import java.util.*;
+	
+public class FileSystem {
+	
+	private Directory rootDir;
+	
+	public FileSystem() {
+		
+		rootDir = new Directory("");
+		
+	}
+	
+	/**
+	 * Get reference to root directory
+	 * 
+	 * @return reference to root directory
+	 */
+	public Directory getRootDir() {
+		
+		return this.rootDir;
+		
+	}
+	
+		
+	/**
+	 * Assuming pass is a valid full path ending with a directory or file, get the reference to the bottom 
+	 * directory or file
+	 * 
+	 * @param path full path
+	 * @return the reference to the node at a full path
+	 */
+	public FileSystemNode getNodeAtFullPath(Path path) {
+		
+		String[] sequenceOfDirs = path.getSequence();
+		
+		Directory currDir = this.rootDir;
+		
+		for (String dirName : sequenceOfDirs) {
+			currDir = (Directory) currDir.getChild(dirName);
+		}
+		
+		return currDir;
+		
+	}
+	
+	
+	/**
+	 * Assuming pass is a valid relative path ending with a directory or file, get the reference to the bottom 
+	 * directory or file
+	 * 
+	 * @param path full path
+	 * @return the reference to the node at a full path
+	 */
+	public FileSystemNode getNodeAtRelativePath(Path path) {
+		
+		Path fullPath = Path.convertRelativeToFull(path);
+		return this.getNodeAtFullPath(fullPath);
+		
+	}
+	
+	
+	/**
+	 * Assuming pass is a valid full path ending with a directory, add the specified node to the 
+	 * contents of bottom directory
+	 * 
+	 * @param node File or Directory object to be added
+	 * @param path location of the directory, which contents are being modified
+	 */
+	public void addToLocationAtFullPath(FileSystemNode node, Path path) {
+		
+		Directory d = (Directory) this.getNodeAtFullPath(path);
+		d.addChildren(node);
+		
+	}
+	
+	
+	/**
+	 * Assuming pass is a valid relative path ending with a directory, add the specified node to the 
+	 * contents of bottom directory
+	 * 
+	 * @param node File or Directory object to be added
+	 * @param path location of the directory at a relative path, which contents are being modified
+	 */
+	public void addToLocationAtRelativePath(FileSystemNode node, Path path) {
+		
+		Directory d = (Directory) this.getNodeAtRelativePath(path);
+		d.addChildren(node);
+		
+	}
+	
+	
+	public static void main(String args[]) {
+		
+		//FileSystem f = new FileSystem();
+		
+		//Directory d1 = new Directory("dir1");
+		//Directory d2 = new Directory("dir2");
+		
+		//Path path1 = new Path("/");
+		//System.out.println(path1.getSequence().length);
+		//System.out.println(path1.getSequence()[0]);
+		//System.out.println(path1.getSequence()[1]);	
+		
+		//Path path2 = new Path("/dir1");
+		
+		//f.addToLocationAtFullPath(d1, path1);
+		//System.out.println(f.getRootDir().ifChildExists("dir1"));
+		//f.addToLocationAtFullPath(d2, path2);
+		
+		//String s = "/dir";
+		//String[] arr = s.split("/");
+		//System.out.println(arr.length);
+		//System.out.println(arr[0]);
+		//System.out.println(arr[1]);
+		
+		//String s2 = new String("1//2");
+		//String[] arr2 = s2.split("/");
+		//System.out.println(arr2.length);
+		
+		//Directory d1 = new Directory("parent");
+		//Directory d2 = new Directory("child");
+		//d1.addChildren(d2);
+		//String s = new String("child");
+		//Directory d3 = (Directory)d1.getChild("child");
+		//System.out.println(d3.getName());
+	}
+	
+}

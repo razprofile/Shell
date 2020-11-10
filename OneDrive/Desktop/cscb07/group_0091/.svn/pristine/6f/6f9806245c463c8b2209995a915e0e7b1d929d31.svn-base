@@ -1,0 +1,90 @@
+package jShell;
+
+public class File extends FileSystemNode {
+  private String name;
+  private String contents; //Since the only "files" we are handling are .txt
+  private String path;
+  
+  /*
+   * Responsibilities not included in this class:
+   * 
+   * check if file exists: it doesn't really make much sense for a file
+   * to see if itself exists, since if it can run that function to check, then
+   * it definitely exists. This responsibility should be handled by the shell
+   * itself or by another intermediate class.
+   * 
+   * Delete file: Unsure if this one belongs here, a file being used to delete
+   * another file (or even self-delete) seems absurd.
+   */
+  public File(String name) {
+    setName(name);
+  }
+  
+  public File(String name,Path path) {
+   setName(name);
+   setPath(path);
+  }
+  
+  public String getName() {
+    /**
+     * Prints out the name of this particular file
+     * 
+     * @return the name of the file
+     */
+    return name;
+  }
+  
+  public boolean ifChildExists(String name) {
+	  return false;
+  }
+  
+  public void setName(String name) {
+    /**
+     * Sets the filename of this file object
+     * 
+     * @param filename the name of the file to be created
+     */
+    Error e = new Error();
+    String spaceChecker[] = name.trim().split("\\s+");
+    if (spaceChecker.length > 1) {
+      //Error message
+      Shell.getShell().outputToShellln(e.errorMessage("BADFILENAME")
+          + " Do not include spaces in a file's name");
+    }
+      // Check for invalid symbols in the name
+      String invalidChar[] = {"/", ".", "!", "@", "#", "$", "%", "^", "&", "*",
+          "(", ")", "{", "}", "~", "|", "<", ">", "?"};
+      String symbolChecker[] = name.split("");
+      for (String currentChar : symbolChecker) {
+        for (int i = 0; i < invalidChar.length; i++) {
+          if (currentChar.equals(invalidChar[i]) == true) {
+            Shell.getShell().outputToShellln(e.errorMessage("BADFILENAME")
+                + " Do not include " + currentChar + " in file names.");
+            Shell.getShell().outputToShellln(e.errorMessage("REMINDER"));
+            return;
+          }
+        }
+      }
+      this.name = name;
+    }
+  
+  public void setContents(String contents) {
+    /**
+     * Populates the contents of this file with whatever
+     * text the user desires
+     * 
+     * @param contents the text to be added to the file
+     */
+    this.contents = contents;
+  }
+  
+  public String getContents() {
+    /**
+     * Opens and returns the contents of this file
+     * 
+     * @return the contents of the file
+     */
+    return contents;
+  }
+  
+}

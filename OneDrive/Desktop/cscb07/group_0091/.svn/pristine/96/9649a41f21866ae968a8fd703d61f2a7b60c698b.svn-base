@@ -1,0 +1,12 @@
+Class name: History
+Parent class: ShellCommand
+Subclasses: none
+
+Responsibilities:
+* Print out the most recent commands entered by the user,
+including commands resulting in error and a number representing and the order in which
+they were entered
+
+Collaborators:
+* Shell
+* UserData

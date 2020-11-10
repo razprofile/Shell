@@ -1,0 +1,92 @@
+package jShell;
+
+import java.util.*;
+
+
+
+public class Directory extends FileSystemNode {
+  /*
+   * Directory class that instantiates a Directory object by taking a name. Stores children in a
+   * hashmap. Collaborates with Error to print out respective Error
+   * 
+   */
+  private Map<String, FileSystemNode> children = new HashMap<String, FileSystemNode>();
+
+  private Error e;
+
+
+
+  public Directory(String name) {
+    /*
+     * Instantiate the object if you know just the name
+     */
+    super(name);
+
+  }
+
+  public Directory(String name, Path path) {
+
+    super(name, path);
+  }
+
+  void addChildren(FileSystemNode n) {
+    /**
+     * This method adds children objects to the Directory object. Children can be either directories
+     * or files
+     * 
+     * @param Children object to be added
+     * 
+     **/
+    e = new Error();
+    if (ifChildExists(n.getName())) {
+      // directory already exists
+      System.out.println(e.errorMessage("EXISTS"));
+    } else {
+      children.put(n.getName(), n);
+      System.out.println("Successfully added!");
+    }
+    // print for debugging
+    System.out.println(children);
+  }
+
+  public boolean ifChildExists(String name) {
+    /**
+     * Returns true or false for if a child exists in a directory object
+     * 
+     * @param Key to search for hashamp
+     * @return boolean value indicating whether child is in directory hashmap
+     **/
+
+    return children.containsKey(name);
+
+  }
+
+
+
+  public FileSystemNode getChild(String name) {
+    /**
+     * Returns a child object provided it exists, otherwise returns null
+     * 
+     * @param String: name of the object you want to return
+     * @return FileSystemNode either the child directory or file
+     **/
+
+    if (ifChildExists(name)) {
+      return children.get(name);
+    } else {
+      Shell.getShell().outputToShellln(e.errorMessage("NOCHILD"));
+      return null;
+    }
+  }
+
+
+  // get all the children
+  public Collection<FileSystemNode> getChildren() {
+    return children.values();
+
+
+  }
+  
+ 
+}
+

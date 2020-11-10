@@ -1,0 +1,10 @@
+Class name: Cat
+Parent class (if any): Command
+Subclasses (if any): none
+
+Responsibilities:
+* output the contents of a file to the shell (either in the current directory or at a given path) 
+* check validity of given arguments
+
+Collaborators:
+*Path

@@ -1,0 +1,100 @@
+package jShell;
+
+// import java.util.ArrayList;
+
+import java.util.Dictionary;
+import java.util.Hashtable;
+
+
+public class Directory {
+
+
+  private String directoryName;
+  
+  private File f;
+
+  // create dictionary to store Directory objects
+  private Dictionary directories = new Hashtable();
+  
+  //create file Dictionary to store file Objects
+  private Dictionary files = new Hashtable();
+
+  public Directory(String name) {
+
+
+    Directory d = new Directory(name);
+
+    directories.put(name, d);
+
+  }
+
+  public void setNameofDir(String name) {
+
+    this.directoryName = name;
+
+
+  }
+
+  public String getNameofDir() {
+
+    return directoryName;
+  }
+
+
+  public void deleteDirectory(String name) {
+    
+    /*
+     * Given a name, delete exists in dictionary
+     * 
+     * 
+     * @param name of the directory to be delete,
+     * prints directory not found if directory doesn't exist
+     * 
+     */
+    
+    //check if object exists
+    if (directories.get(name) != null) {
+
+      directories.remove(name);
+      
+      System.out.println("Directory successfully removed");
+    }
+    //replace some sort of error message later
+    else
+      System.out.println("Directory not found");
+
+
+  }
+
+  public boolean checkDirectory(String name) {
+    /*
+     * Given a name, checks whether directory exists in dictionary
+     * 
+     * 
+     * @param name of the directory to be searched
+     * 
+     */
+
+    boolean inDir = false;
+    if (directories.get(name) != null) {
+
+      inDir = true;
+    }
+
+    // else object value is null, in that case return false
+    return inDir;
+
+
+  }
+  //method for adding file
+  public void addFile(String name) {
+    //add file to directory dictionary
+    files.put(name, f);
+    
+    
+    
+  }
+
+
+
+}

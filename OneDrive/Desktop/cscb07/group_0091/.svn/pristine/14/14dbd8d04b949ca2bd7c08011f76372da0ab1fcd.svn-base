@@ -1,0 +1,90 @@
+package jShell.commands;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import jShell.Error;
+import jShell.Shell;
+
+/**
+ * The history command prints out the recent commands entered by the user,
+ * irrespective of their correctness. It takes in a number as an optional
+ * argument.
+ * 
+ * If no number is entered, then all the commands entered by the user are
+ * displayed. If 0 is displayed, then the program does nothing. If a negative
+ * number is entered, then an invalid argument error occurs. If a number is
+ * greater than the number of commands entered, then display everything.
+ * 
+ **/
+
+public class History extends Command {
+	@Override
+	public HashMap<String, String> isValid(String[] args) {
+
+		// HashMap to map every argument by an error it caused
+		HashMap<String, String> errors = new HashMap<String, String>();
+
+		// Checking if the correct number of arguments if passed
+		if (args.length > 2) {
+			errors.put("all", "WRONGARGS");
+			return errors;
+		}
+
+		// If second argument is passed, check if it's a number
+		else if (args.length > 1) {
+			try {
+				int numberArg = Integer.parseInt(args[1]);
+				if (numberArg < 0) {
+					errors.put(args[1], "LESSTHANZERO");
+				}
+			} catch (NumberFormatException e) {
+				errors.put(args[1], "INVALIDARGS");
+			}
+		}
+
+		return errors;
+	}
+
+	@Override
+	/**
+	 * The run method parses the arguments to determine how many user entered
+	 * commands to print. It assumes all the arguments are of the current format.
+	 * 
+	 * @param array of Strings
+	 **/
+	public void run(String[] args) {
+
+		ArrayList<String> commandHistory = Shell.getShell().getUserData().getCommandHistory();
+		// variable that will determine where the loop should begin
+		int start = 0;
+		// 1st case no optional number arguments. leave start as is
+		if (args.length == 1) {
+			start = 0;
+		} else {
+			// if it gets to here, that means its valid integer so just convert it for usage
+			int numberArg = Integer.parseInt(args[1]);
+
+			// now check within range
+			if (numberArg > 0 && numberArg <= commandHistory.size()) {
+				// start from most recent command
+				start = commandHistory.size() - numberArg;
+			}
+			// account case for 0 special case. Do nothing and return back to prompt
+			else if (numberArg == 0) {
+				return;
+			}
+		}
+		// loop through list, using correct value of start
+		for (int i = start; i < commandHistory.size(); i++) {
+			Shell.getShell().outputToShellln((i + 1) + "." + commandHistory.get(i));
+		}
+	}
+
+	@Override
+	public String toString() {
+
+		return "history";
+
+	}
+
+}

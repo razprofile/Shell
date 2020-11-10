@@ -1,0 +1,14 @@
+package jShell.Errors;
+
+public abstract class Error extends Exception {
+
+  protected final String errorMessage;
+
+  protected Error(String message) {
+    this.errorMessage = message;
+  }
+
+  public String getError() {
+    return this.errorMessage;
+  }
+}

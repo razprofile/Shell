@@ -1,0 +1,95 @@
+package jShell;
+
+public class File extends FileSystemNode {
+  private String name;
+  private String contents; //Since the only "files" we are handling are .txt
+  private String path;
+  
+  
+  public File(String name) {
+    setName(name);
+  }
+  
+  public File(String name,Path path) {
+   setName(name);
+   setPath(path);
+  }
+  
+  /**
+   * Provides the name of a particular file object
+   * 
+   * @return the name of the file
+   */
+  public String getName() {
+    return name;
+  }
+  
+  public boolean ifChildExists(String name) {
+	  return false;
+  }
+  
+  /**
+   * Sets the filename of this file object
+   * 
+   * @param filename the name of the file to be created
+   */
+  public void setName(String name) {
+    if (!(nameChecker(name))) {
+      return;
+    }
+    this.name = name;
+    }
+  
+  /**
+   * Checks a potential file name for validity before allowing any file(s) to
+   * be created.
+   * @param name The potential file name to be checked
+   * @return a boolean value representing if the name is valid (true) or not
+   * (false)
+   */
+  public static boolean nameChecker(String name) {
+    Error e = new Error();
+    String spaceChecker[] = name.trim().split("\\s+");
+    if (spaceChecker.length > 1) {
+      //Error message
+      Shell.getShell().outputToShellln(e.errorMessage("BADFILENAME")
+          + " Do not include spaces in a file's name");
+      return false;
+    }
+      // Check for invalid symbols in the name
+      String invalidChar[] = {"/", ".", "!", "@", "#", "$", "%", "^", "&", "*",
+          "(", ")", "{", "}", "~", "|", "<", ">", "?"};
+      String symbolChecker[] = name.split("");
+      for (String currentChar : symbolChecker) {
+        for (int i = 0; i < invalidChar.length; i++) {
+          if (currentChar.equals(invalidChar[i]) == true) {
+            Shell.getShell().outputToShellln(e.errorMessage("BADFILENAME")
+                + " Do not include " + currentChar + " in file names.");
+            Shell.getShell().outputToShellln(e.errorMessage("REMINDER"));
+            return false;
+          }
+        }
+      }
+      return true;
+  }
+  
+  /**
+   * Populates the contents of this file with whatever
+   * text the user desires
+   * 
+   * @param contents the text to be added to the file
+   */
+  public void setContents(String contents) {
+    this.contents = contents;
+  }
+  
+  /**
+   * Opens and returns the contents of this file
+   * 
+   * @return the contents of the file
+   */
+  public String getContents() {
+    return contents;
+  }
+  
+}

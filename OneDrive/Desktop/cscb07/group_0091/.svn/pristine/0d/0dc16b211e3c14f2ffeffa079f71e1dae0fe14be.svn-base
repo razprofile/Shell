@@ -1,0 +1,612 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import jShell.Directory;
+import jShell.FileSystemNode;
+import jShell.Shell;
+import jShell.Path;
+import jShell.FileSystem;
+
+/**
+ * Ls class handles all operations related to ls command, namely checks if arguments are valid
+ * arguments for ls command and outputs the contents of specified location or multiple locations in
+ * the file system tree.
+ * 
+ * @author Sasha (Oleksandr)
+ *
+ */
+
+public class Ls extends Command {
+
+  /**
+   * For every given path, if path points to directory, print the contents of the directory, if path
+   * points to the file print the path of the file. This method assumes all arguments are valid
+   */
+  public void run(String[] args) {
+
+    // Getting rid of first argument, which is Ls
+    args = Arrays.copyOfRange(args, 1, args.length);
+
+    if (args.length == 0) {
+      Directory currDir = Shell.getShell().getUserData().getCurDir();
+
+      // No path given, print contents of current directory
+      for (FileSystemNode child : currDir.getChildren()) {
+        Shell.getShell().outputToShellln(child.getName());
+      }
+
+      return;
+    }
+
+    // If arguments are given, iterate over arguments
+    for (String argument : args) {
+      Path p = new Path(argument);
+
+      // Checking if specified path is a directory or a file
+      if (p.isPathToDirectory()) {
+        /*
+         * Path points to the directory
+         */
+
+        // Getting reference to corresponding directory
+        Directory dir = (Directory) Shell.getShell().getFileSystem().getNodeAtPath(p);
+
+        // Printing name of the directory
+        Shell.getShell().outputToShellln(p.toString() + ":");
+
+        // Printing contents
+        for (FileSystemNode child : dir.getChildren()) {
+          Shell.getShell().outputToShellln(child.getName());
+        }
+
+        Shell.getShell().outputToShellln("");
+      } else {
+        /*
+         * Path points to the file
+         */
+        Shell.getShell().outputToShellln(p.toString());
+      }
+    }
+
+  }
+
+  /**
+   * Return a mapping of invalid arguments to the errors they cause, if any.
+   * 
+   * @param args Arguments for the command
+   * @return Hashmap of invalid arguments and error codes if error occurred; empty hashmap if no
+   *         error occurred
+   */
+  @Override
+  public HashMap<String, String> isValid(String[] args) {
+
+    // HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+
+    // Iterating over every argument
+    for (int i = 1; i < args.length; i++) {
+
+      Path p = new Path(args[i]);
+
+      // Checking if given location corresponds to a valid location at current file
+      // tree
+      if (!p.isValidPath()) {
+        errors.put(args[i], "PATHNOTFOUND");
+      }
+    }
+
+    return errors;
+
+  }
+
+  /**
+   * Return the name of the command
+   * 
+   * @return The name of the command, i.e. ls
+   */
+  @Override
+  public String toString() {
+
+    return "ls";
+
+  }
+	
+	/*
+	public static void main(String args[]) {
+	    
+	    //TESTING TESTING TESTING
+	  
+	    //Creating shell and mock file system
+        Shell shell = new Shell();
+        FileSystem f = shell.getFileSystem();
+        Ls ls = new Ls();
+        String[] arguments; 
+      
+        //Adding files and directories to the mock file system
+        f.createNewDirectory(new Path("/dir1"));
+        f.createNewDirectory(new Path("/dir2"));
+        f.createNewDirectory(new Path("/dir1/a"));
+        f.createNewDirectory(new Path("/dir1/b"));
+        f.createNewDirectory(new Path("/dir2/c"));
+        f.createNewDirectory(new Path("/dir1/a/d"));
+        f.createNewFile(new Path("/file1"));
+        f.createNewFile(new Path("/dir1/file2"));
+        f.createNewFile(new Path("dir1/a/file3"));
+      
+        //Print the way mock file system looks like
+        System.out.println("Printing all items in the file system:");
+        System.out.println("/");
+        System.out.println("/dir1");
+        System.out.println("/dir2");
+        System.out.println("/file1");
+        System.out.println("/dir1/a");
+        System.out.println("/dir1/b");
+        System.out.println("/dir1/file2");
+        System.out.println("/dir2/c");
+        System.out.println("/dir1/a/d");
+        System.out.println("/dir1/a/file3");
+        System.out.println("\n\n");
+      
+        int testNum = 1;
+      
+        //PART 1. TESTING INPUTS THAT SHOULD RETURN AN ERROR
+        System.out.println("TESTING POSSIBLE ERRORS \n");
+        
+        
+        //
+        System.out.println("Test #"+ testNum + ". Attempt to call ls with invalid relative path: ");
+        arguments = (new String("ls thisDirDoesNotExist")).split(" ");
+        if (
+            ls.isValid(arguments).isEmpty() 
+            || !ls.isValid(arguments).values().contains("PATHNOTFOUND")
+            ) {
+            System.out.println("Failed test #" + testNum);
+            return ;
+        } else {
+            System.out.println("Passed test #" + testNum);
+        };
+        testNum++;
+        
+        //
+        System.out.println("Test #"+ testNum + ". Attempt to call ls with invalid full path: ");
+        arguments = (new String("ls /thisDirDoesNotExist")).split(" ");
+        if (
+            ls.isValid(arguments).isEmpty() 
+            || !ls.isValid(arguments).values().contains("PATHNOTFOUND")
+            ) {
+            System.out.println("Failed test #" + testNum);
+            return ;
+        } else {
+            System.out.println("Passed test #" + testNum);
+        };
+        testNum++;
+        
+        //
+        System.out.println("Test #" + testNum + ". Attempt to call ls with multiple invalid full paths: ");
+        arguments = (new String("ls /thisDirDoesNotExist /anotherDirThatDoesNotExist")).split(" ");
+        if (
+            ls.isValid(arguments).isEmpty() 
+            || !ls.isValid(arguments).values().contains("PATHNOTFOUND")
+            ) {
+            System.out.println("Failed test #" + testNum);
+            return ;
+        } else {
+            System.out.println("Passed test #" + testNum);
+        };
+        testNum++;
+        
+        //
+        System.out.println("Test #" + testNum + ". Attempt to call ls with multiple invalid relative paths: ");
+        arguments = (new String("ls thisDirDoesNotExist anotherDirThatDoesNotExist")).split(" ");
+        if (
+            ls.isValid(arguments).isEmpty() 
+            || !ls.isValid(arguments).values().contains("PATHNOTFOUND")
+            ) {
+            System.out.println("Failed test #" + testNum);
+            return ;
+        } else {
+            System.out.println("Passed test #" + testNum);
+        };
+        testNum++;
+        
+        //
+        System.out.println("Test #" + testNum + ". Attempt to call ls with invalid relative and full paths: ");
+        arguments = (new String("ls /thisDirDoesNotExist anotherDirThatDoesNotExist")).split(" ");
+        if (
+            ls.isValid(arguments).isEmpty() 
+            || !ls.isValid(arguments).values().contains("PATHNOTFOUND")
+            ) {
+            System.out.println("Failed test #" + testNum);
+            return ;
+        } else {
+            System.out.println("Passed test #" + testNum);
+        };
+        testNum++;
+        
+        //
+        System.out.println("Test #" + testNum + ". Attempt to call ls with valid and invalid paths: ");
+        arguments = (new String("ls /thisDirDoesNotExist /dir1/a")).split(" ");
+        if (
+            ls.isValid(arguments).isEmpty() 
+            || !ls.isValid(arguments).values().contains("PATHNOTFOUND")
+            ) {
+            System.out.println("Failed test #" + testNum);
+            return ;
+        } else {
+            System.out.println("Passed test #" + testNum);
+        };
+        testNum++;
+        
+        //PART 2. TESTING VALID INPUTS
+        System.out.println("TESTING EXECUTION OF LS \n");
+        
+        //#1
+        System.out.println(
+            "Test #" + testNum + ". Calling ls arguments");
+        arguments = (new String("ls")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("dir2");
+            System.out.println("dir1");
+            System.out.println("file1");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //#2
+        System.out.println(
+            "Test #" + testNum + " . Calling ls with single arugmnet \".\" ");
+        arguments = (new String("ls .")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println(".:");
+            System.out.println("dir2");
+            System.out.println("dir1");
+            System.out.println("file1");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //#3
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with single arugmnet \"/\" ");
+        arguments = (new String("ls /")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("/:");
+            System.out.println("dir2");
+            System.out.println("dir1");
+            System.out.println("file1");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //#3
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with single arugmnet \"..\" ");
+        arguments = (new String("ls ..")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("..:");
+            System.out.println("dir2");
+            System.out.println("dir1");
+            System.out.println("file1");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //#3
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with single arugmnet,"
+                + "which is a full path \"/dir1\" ");
+        arguments = (new String("ls /dir1")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("/dir1:");
+            System.out.println("a");
+            System.out.println("b");
+            System.out.println("file2");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //#3
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with single arugmnet,"
+                + "which is a full path \"dir1\" ");
+        arguments = (new String("ls dir1")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("dir1:");
+            System.out.println("a");
+            System.out.println("b");
+            System.out.println("file2");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with single arugmnet,"
+                + "which is a full path to a file \"/file1\" ");
+        arguments = (new String("ls /file1")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("/file1");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with multiple arugmnets,"
+                + "which are paths to directories");
+        arguments = (new String("ls /. /dir1 dir1/a")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("/.:");
+            System.out.println("dir2");
+            System.out.println("dir1");
+            System.out.println("file1");
+            System.out.println("");
+            System.out.println("/dir1:");
+            System.out.println("a");
+            System.out.println("b");
+            System.out.println("file2");
+            System.out.println("");
+            System.out.println("dir1/a:");
+            System.out.println("d");
+            System.out.println("file3");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with multiple arugmnets,"
+                + "which are location of files");
+        arguments = (new String("ls /file1 /dir1/file2 dir1/a/file3/")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("/file1");
+            System.out.println("/dir1/file2");
+            System.out.println("dir1/a/file3/");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with multiple arugmnets,"
+                + "which are location of files and paths to directories");
+        arguments = (new String("ls /. file1 /dir1/ dir1/a/file3/")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("/.:");
+            System.out.println("dir2");
+            System.out.println("dir1");
+            System.out.println("file1");
+            System.out.println("");
+            System.out.println("/file1");
+            System.out.println("/dir1/:");
+            System.out.println("a");
+            System.out.println("b");
+            System.out.println("file2");
+            System.out.println("");
+            System.out.println("dir1/a/file3/");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with path containing a dot at the end \"/dir1/.\" ");
+        arguments = (new String("ls /dir1/.")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("/dir1/.:");
+            System.out.println("a");
+            System.out.println("b");
+            System.out.println("file2");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with path containing a dot at the beginning \"./dir1\"");
+        arguments = (new String("ls ./dir1")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("./dir1:");
+            System.out.println("a");
+            System.out.println("b");
+            System.out.println("file2");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with path containing a dot in the middle \"dir1/./a/\"");
+        arguments = (new String("ls dir1/./a/")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("dir1/./a/:");
+            System.out.println("d");
+            System.out.println("file3");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with path containing double dot at the end \"/dir1/..\" ");
+        arguments = (new String("ls /dir1/..")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("/dir1/..:");
+            System.out.println("dir2");
+            System.out.println("dir1");
+            System.out.println("file1");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with path containing double dot at the beginning \"../dir1\"");
+        arguments = (new String("ls ../dir1")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("../dir1:");
+            System.out.println("a");
+            System.out.println("b");
+            System.out.println("file2");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;
+        
+        //
+        System.out.println(
+            "Test # "+ testNum + ". Calling ls with path containing double dot in the middle \"dir1/../dir1/\"");
+        arguments = (new String("ls dir1/../dir1/")).split(" ");
+        if (!ls.isValid(arguments).isEmpty()) {
+            System.out.println("Failed test #1. Unexpected error occured.");
+            return ;
+        } else {
+            System.out.println("Expected output: ");
+            System.out.println("dir1/../dir1/:");
+            System.out.println("a");
+            System.out.println("b");
+            System.out.println("file2");
+            System.out.println("");
+            System.out.println("Output: ");
+            ls.run(arguments);
+            System.out.println("");
+        };
+        testNum++;   
+	}
+	*/
+
+}

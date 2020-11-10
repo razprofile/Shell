@@ -1,0 +1,51 @@
+package jShell;
+
+import java.util.Dictionary;
+import java.util.Hashtable;
+
+public class Error {
+
+	private Dictionary<String, String> messages = new Hashtable<String, String>();
+
+	public Error() {
+		// Errors for the general Shell
+		messages.put("NOCOMMAND", "Error: Incorrect command entered.");
+		messages.put("WRONGARGS", "Error: Incorrect number of arguments.");
+		messages.put("INVALIDARGS", "Error: Argument type is incorrect.");
+		// Errors for String formatting
+		messages.put("BADSTRING", "Error: Please enter a correctly formatted "
+				+ "string (Begins and ends with double quotes, no double quotes" + " within).");
+		// Errors for mkdir
+		messages.put("EXISTS", "Error: Specified directory already exists.");
+		// Errors for Directory
+		messages.put("NOCHILD", "Error: The file or path you specified could not" + " be found.");
+		// Errors for cd and ls
+		messages.put("BADPATH", "Error: Invalid path name.");
+		messages.put("BADFILENAME", "Error: Invalid file name.");
+		messages.put("BADDIRNAME", "Error: Invalid directory name");
+		messages.put("PATHNOTFOUND", "Error: Path not found.");
+		messages.put("DIRNOTFOUND", "Error: Directory not found.");
+		messages.put("FILENOTFOUND", "Error: File not found.");
+		// Errors for popd
+		messages.put("EMPTYSTACK", "Error: There are no directories in the stack" + "to be popped.");
+		// Errors for file naming
+		messages.put("REMINDER", "Invalid characters in file names are: / ." + " ! @ # $ % ^ & * ( ) { } ~ | < > ?");
+		// errors for history
+		messages.put("LESSTHANZERO", "Error: Please Enter a non-negative number");
+	}
+
+	/**
+	 * Returns an appropriate error message based on the type of error encountered
+	 * 
+	 * @param ShellCommand The command which prompted an error to occur
+	 * @return an error message based on the type of error that occurred
+	 */
+	public String errorMessage(String code) {
+
+		String message;
+		// Retrieve the appropriate message from the dictionary of messages
+		message = messages.get(code);
+		return message;
+	}
+
+}

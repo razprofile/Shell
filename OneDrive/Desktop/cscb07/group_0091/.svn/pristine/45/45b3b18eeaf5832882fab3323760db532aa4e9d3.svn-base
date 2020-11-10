@@ -1,0 +1,25 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class BadStringException extends Error {
+
+  private static final String errorTemplate =
+      " Please enter a correctly formatted string (Begins and ends with double "
+          + "quotes, no double quotes within).";
+  private static final String errorTemplate2 =
+      " %s is not a correctly formatted string (Begins and ends with double "
+          + "quotes, no double quotes within).";
+
+  public BadStringException(Object... args) {
+      super(new Formatter().format(getRightErrorTemplate(args), args).toString());
+  }
+  private static String getRightErrorTemplate(Object... args) {
+    if(args.length==0) {
+      return errorTemplate;
+    }
+    return errorTemplate2;
+  }
+
+
+}

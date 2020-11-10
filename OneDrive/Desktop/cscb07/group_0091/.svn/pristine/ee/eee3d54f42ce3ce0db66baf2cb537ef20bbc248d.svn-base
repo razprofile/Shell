@@ -1,0 +1,69 @@
+package test;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import jShell.Shell;
+import jShell.Errors.ArgsNumberException;
+import jShell.commands.Exit;
+import jShell.interfaces.IShell;
+
+public class ExitTest {
+  private Exit ex;
+  private IShell sh;
+
+  @Before
+  public void setUp() throws Exception {
+    sh = new Shell();
+    ex = new Exit(); 
+  }
+
+  @After
+  public void tearDown() throws Exception {}
+
+  /**
+   * Testing where all args are correct
+   */
+  @Test
+  public void testExit1() {
+    String[] args = {"exit"};
+    try {
+      ex.run(args);
+    } catch (ArgsNumberException e) {
+      fail("Not suppossed to throw a error because args are correct");
+    }
+    assertTrue(!sh.isRunning());
+  }
+  
+  /**
+   * Testing invalid args
+   */
+  @Test
+  public void testExit2() {
+    String[] args = {"exit", "1"};
+    try {
+      ex.run(args);
+      fail("Invalid number of args, the command shouldnt run.");
+    } catch (ArgsNumberException e) {
+      assertTrue(sh.isRunning());
+    }
+    
+  }
+  
+  /**
+   * Testing invalid args
+   */
+  @Test
+  public void testExit3() {
+    String[] args = {"exit", "abc", "de", "2"};
+    try {
+      ex.run(args);
+      fail("Invalid number of args, the command shouldnt run.");
+    } catch (ArgsNumberException e) {
+      assertTrue(sh.isRunning());
+    }
+  }
+
+}

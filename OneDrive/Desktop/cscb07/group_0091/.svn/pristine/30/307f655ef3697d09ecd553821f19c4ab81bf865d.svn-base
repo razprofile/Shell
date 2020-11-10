@@ -1,0 +1,219 @@
+package jShell;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+import jShell.commands.*;
+
+/**
+ * Main shell class
+ * 
+ * @author Raz
+ */
+public class Shell {
+
+	private static Shell Shell; // The main shell object for all classes to use
+	private InputModeCommand inputMode= null;
+	public void setInputMode(InputModeCommand inputMode) {
+		this.inputMode = inputMode;
+	}
+
+	public InputModeCommand getInputMode() {
+		return inputMode;
+	}
+
+	private UserData userData;
+	private ArrayList<Command> commands; // Stores all the commands
+
+	private Scanner input; // User input for the Shell
+	private FileSystem fileSystem;
+	private boolean running; // Keep track if the Shell is running
+
+	/**
+	 * constructor for Shell
+	 */
+	public Shell() {
+
+		Shell = this;
+		setIsRunning(true);
+		commands = new ArrayList<Command>();
+		input = new Scanner(System.in);
+		fileSystem = new FileSystem();
+		userData = new UserData(new Path("/"));
+		RegisterCommands();
+		// TODO Add directory class and create an object for it here
+	}
+
+	/**
+	 * Returns the fileSystem
+	 * 
+	 * @return The main FileSystem for the shell
+	 */
+	public FileSystem getFileSystem() {
+
+		return fileSystem;
+	}
+
+	/**
+	 * Returns userData
+	 * 
+	 * @return The main UserData object for the shell
+	 */
+	public UserData getUserData() {
+
+		return userData;
+	}
+
+	private void RegisterCommands() { // TODO Right now all the commands have to be added manually
+										// (look at the cd
+										// example) can we find a better way?e
+		commands.add(new Exit());
+		commands.add(new Speak());
+		commands.add(new Mkdir());
+		commands.add(new Cd());
+		commands.add(new Cat());
+		commands.add(new Echo());
+		commands.add(new Man());
+		commands.add(new Pwd());
+		commands.add(new Ls());
+		commands.add(new Pushd());
+		commands.add(new Popd());
+		commands.add(new History());
+
+		// commands.add(new CommandName());
+	}
+
+	/**
+	 * Terminate shell
+	 */
+	public void shutDown() {
+
+		commands.stream().filter(command -> command.getClass() == Speak.class).forEach(x -> {
+			((Speak) x).shutDown();
+		});
+	}
+
+	/**
+	 * Returns shell
+	 * 
+	 * @return The shell object all others classes use
+	 */
+	public static Shell getShell() {
+
+		return Shell;
+	}
+
+	/**
+	 * Returns the input the user typed in the shell
+	 * 
+	 * @return The input the user typed in the shell
+	 */
+	public String getUserInput() {
+
+		return this.input.nextLine();
+	}
+
+	/**
+	 * Output a value to the shell on the same line
+	 * 
+	 * @param The value to be output to the shell
+	 */
+	public void outputToShell(String value) {
+
+		System.out.print(value);
+	}
+
+	/**
+	 * Output a value to the shell on a new line
+	 * 
+	 * @param The value to be output to the shell
+	 */
+	public void outputToShellln(String value) {
+
+		System.out.println(value);
+	}
+
+	/**
+	 * Processes user's input.
+	 * 
+	 * @param The input the user typed to the shell
+	 */
+	public void onInput(String input) {
+		if(inputMode != null) {
+			Shell.getShell().getUserData().getCommandHistory().set(
+					Shell.getShell().getUserData().getCommandHistory().size()-1,
+					Shell.getShell().getUserData().getCommandHistory().get(Shell.getShell().getUserData().getCommandHistory().size()-1)+
+					" " + input);
+			inputMode.onInput(input);
+			return;
+		}
+		userData.getCommandHistory().add(input);
+		String args[] = input.trim().split("\\s+"); // Get rid of all white spaces, and split the
+													// arguments into a
+													// String array
+		for (Command c : this.commands) { // check if command exists by comparing the first argument to
+											// class name
+			if (c.getClass().getSimpleName().toLowerCase().equals(args[0])) {
+				// run command
+				if (!c.isValid(args).isEmpty()) {
+					for (String invalidArgument : c.isValid(args).keySet()) {
+						String errorCode = c.isValid(args).get(invalidArgument);
+						this.outputErrorMessage(c, invalidArgument, errorCode);
+					}
+					return;
+				}
+				c.run(args);
+				return;
+			}
+		}
+		// If the command does not exist, output an error.
+		// TODO create a class error and use it to handle the errors
+		Error e = new Error();
+		outputToShellln(e.errorMessage("NOCOMMAND"));
+
+	}
+
+	/**
+	 * Returns Whether the program is running or not
+	 * 
+	 * @return Whether the program is running or not
+	 */
+	public boolean isRunning() {
+
+		return running;
+	}
+
+	/**
+	 * Sets running to isRunning
+	 * 
+	 * @param The boolean value of isRunning
+	 */
+	public void setIsRunning(boolean isRunning) {
+
+		running = isRunning;
+	}
+
+	/**
+	 * Prints invalid argument and an error message in case of invalid arguments for
+	 * the command being executed
+	 * 
+	 * @param c               command with invalid arguments
+	 * @param invalidArgument invalid argument; "all" if all arguments are invalid
+	 * @param errorCode       error code for error that occured
+	 */
+	public void outputErrorMessage(Command c, String invalidArgument, String errorCode) {
+
+		Error e = new Error();
+
+		if (invalidArgument.equals("all")) {
+			// If all arguments are invalid, print error message without specifying the
+			// argument
+			this.outputToShellln(c.toString() + ": " + e.errorMessage(errorCode));
+		} else {
+			// Output error message specifying invalid argument
+			this.outputToShellln(c.toString() + ": " + invalidArgument + ": " + e.errorMessage(errorCode));
+		}
+
+	}
+
+}

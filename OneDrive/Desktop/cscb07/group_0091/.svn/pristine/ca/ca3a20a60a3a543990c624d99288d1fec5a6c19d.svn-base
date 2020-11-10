@@ -1,0 +1,50 @@
+package test;
+
+import static org.junit.Assert.*;
+import jShell.Shell;
+import jShell.Error;
+import jShell.Redirection;
+import jShell.commands.Mkdir;
+import org.junit.Test;
+
+public class RedirectionTest {
+  
+  /*
+   * Tests to add:
+   * - Directory-based ones
+   */
+
+  Redirection r = new Redirection();
+  Shell s = new Shell();
+  Error e = new Error();
+  Mkdir m = new Mkdir();
+  @Test
+  public void testFileHandling() {
+    //assertEquals("Overwriting test", "Overwritten", r.fileHandling(">", "file", "test", Shell.getShell().getFileSystem()));
+    //assertEquals("Appending test", "Appended", r.fileHandling(">>", "file", "test", Shell.getShell().getFileSystem()));
+    //assertEquals("Bad filename", e.errorMessage("BADFILENAME"), r.fileHandling(">>", "file.txt", "test", Shell.getShell().getFileSystem()));
+    //assertEquals("Bad operator", e.errorMessage("INVALIDARGS"), r.fileHandling(">>>", "file", "test", Shell.getShell().getFileSystem()));
+    fail("Mock Shell not implemented yet");
+  }
+
+  @Test
+  public void testCheckRedirection() {
+    assertEquals("Bad operator", false, r.checkRedirection(">>>", "file"));
+    assertEquals("Bad filename", false, r.checkRedirection(">", "file.txt"));
+    assertEquals("All good", true, r.checkRedirection(">", "file"));
+  }
+  
+  @Test
+  public void testFileHandlingDirectories() {
+    String[] mkdirParams = {"mkdir", "a"};
+    m.run(mkdirParams); //Create the directory "a" in the shell
+    //assertEquals("Overwriting test", "Overwritten", r.fileHandling(">", "a/file", "test", Shell.getShell().getFileSystem()));
+    //assertEquals("Appending test", "Appended", r.fileHandling(">>", "a/file", "test", Shell.getShell().getFileSystem()));
+    //assertEquals("Bad filename", e.errorMessage("BADFILENAME"), r.fileHandling(">>", "a/file.txt", "test", Shell.getShell().getFileSystem()));
+    //assertEquals("Bad operator", e.errorMessage("INVALIDARGS"), r.fileHandling(">>>", "a/file", "test", Shell.getShell().getFileSystem()));
+    String[] mkdirParams2 = {"mkdir", "b"};
+    m.run(mkdirParams2);
+    //assertEquals("Path ends in directory", e.errorMessage("NOCHILD"), r.fileHandling(">", "a/b", "test", Shell.getShell().getFileSystem()));
+    fail("Mock Shell not implemented yet");
+  }
+}

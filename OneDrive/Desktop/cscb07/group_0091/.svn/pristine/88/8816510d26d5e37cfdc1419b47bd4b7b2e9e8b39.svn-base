@@ -1,0 +1,109 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+
+package jShell.commands;
+
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.DeleteRootDirException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.WorkingDirException;
+import jShell.fileSystem.Path;
+import jShell.interfaces.IFileSystemNode;
+import jShell.interfaces.IPath;
+import jShell.interfaces.IShell;
+
+/**
+ * Rm command removes a directory from a file system and all its contents. It gives an error when
+ * trying to delete current working directory or root.
+ * 
+ * @author Sankalp Sharma
+ */
+
+
+public class Rm extends Command {
+
+
+  public Rm() {
+    super();
+  }
+
+  public String run(String[] args) throws WorkingDirException,
+      InvalidPathException, DeleteRootDirException, ArgsNumberException {
+    
+    //catch errors that can be caught right away
+    argChecker(args);
+    // parse the arguement and get currpath
+    String delStr = args[1];
+    String currPath = IShell.getShell().getUserData().getCurPath().toString();
+
+    // get the Node object that the user is trying to delete
+
+    IFileSystemNode getNode =
+        IShell.getShell().getFileSystem().getNodeAtPath(new Path(delStr));
+
+    // get the Abs path of the node to be Delete
+    delStr = getNode.getPath().toString();
+
+    /*
+     * compare the path of node to be deleted and currPath and give an error if user tries to delete the
+     * current working directory
+     */
+    if (currPath.startsWith(delStr)) {
+      throw new WorkingDirException();
+    }
+
+    // if everything is valid then pass delStr as a path onto removeDir
+    IPath toDel = new Path(delStr);
+    IFileSystemNode delNode = IShell.getShell().getFileSystem().removeNode(toDel);
+    return "";
+  }
+
+  private void argChecker(String[] args)
+      throws DeleteRootDirException, ArgsNumberException {
+
+    // Checking that correct number of arguments is passed
+    if (args.length != 2) {
+      throw new ArgsNumberException();
+    }
+    // trying to delete root
+    if (args[1].equals("/")) {
+      throw new DeleteRootDirException();
+    }
+  }
+
+
+  @Override
+  public String toString() {
+    // TODO Auto-generated method stub
+    return "rm";
+  }
+
+}

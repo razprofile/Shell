@@ -1,0 +1,11 @@
+Class name: Directory
+Parent class: none
+Subclasses: none
+
+Responsibilities:
+* Create a new directory with given name
+* Add new child directory to the contents of directory
+* Add new child file to the contents of file
+
+Collaborators:
+* File

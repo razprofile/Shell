@@ -1,0 +1,102 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import jShell.Errors.ArgsException;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.BadStringException;
+import jShell.Errors.CommandNotFoundException;
+import jShell.Errors.DeleteRootDirException;
+import jShell.Errors.DirNotFoundException;
+import jShell.Errors.EmptyStackException;
+import jShell.Errors.Error;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NegativeNumberException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.Errors.WorkingDirException;
+
+/**
+ * Test cases for the Error class.
+ * 
+ * @author Kevin Meharchand
+ *
+ */
+public class ErrorTest {
+
+  Error e;
+
+  /*
+   * Testing cases for each individual exception, ensuring that when it is thrown, that the right
+   * message is returned.
+   */
+  @Test
+  public void testError() {
+    e = new ArgsException("%s");
+    assertEquals("Invalid argument(s): %s.", e.getError());
+    e = new ArgsNumberException();
+    assertEquals("Incorrect number of arguments.", e.getError());
+    e = new BadFileNameException();
+    assertEquals("Invalid name for file or directory.", e.getError());
+    e = new BadStringException();
+    assertEquals(
+        " Please enter a correctly formatted string (Begins and ends with double quotes, no double quotes within).",
+        e.getError());
+    e = new CommandNotFoundException("%s");
+    assertEquals("Command not found: %s", e.getError());
+    e = new DeleteRootDirException();
+    assertEquals("Cannot delete root directory.", e.getError());
+    e = new DirNotFoundException("%s");
+    assertEquals("Dir not found: %s.", e.getError());
+    e = new EmptyStackException();
+    assertEquals("There are no directories in the stack to be popped.", e.getError());
+    e = new FileNotFoundException("%s");
+    assertEquals("File not found: %s.", e.getError());
+    e = new InvalidPathException("%s");
+    assertEquals("Invalid path: %s.", e.getError());
+    e = new NegativeNumberException("%s");
+    assertEquals("%s is negative, please Enter a non-negative number", e.getError());
+    e = new NodeExistsException("%s");
+    assertEquals("File or directory already exists: %s.", e.getError());
+    e = new RedirectionException();
+    assertEquals("Arguments for redirection are invalid.", e.getError());
+    e = new RedirectionOperatorsException();
+    assertEquals("Argument type is incorrect. Operators for redirection must be > or >>",
+        e.getError());
+    e = new WorkingDirException();
+    assertEquals("Cannot delete current working directory.", e.getError());
+  }
+}

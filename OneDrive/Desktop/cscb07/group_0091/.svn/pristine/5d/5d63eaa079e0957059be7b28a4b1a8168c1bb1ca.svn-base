@@ -1,0 +1,28 @@
+package jShell;
+
+public class OutputFile extends File {
+  
+  public OutputFile(String filename) {
+    super(filename);
+  }
+  
+  public void overwrite(String newContents) {
+    /**
+     * Overwrites the contents of the current file, replacing them
+     * with the provided text input.
+     * 
+     * @param newContents the new contents that will be stored in this file
+     */
+    super.setContents(newContents);
+  }
+  
+  public void append(String newContents) {
+    /**
+     * Appends the user-given string to the contents of the file.
+     * 
+     * @param newContents the new contents to be appended to this file
+     */
+    super.setContents((super.getContents()) + newContents); //String + string
+  }
+  
+}

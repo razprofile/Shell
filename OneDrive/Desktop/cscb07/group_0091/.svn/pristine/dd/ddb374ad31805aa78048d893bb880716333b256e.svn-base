@@ -1,0 +1,84 @@
+package jShell;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Locale;
+
+import javax.speech.AudioException;
+import javax.speech.Central;
+import javax.speech.EngineException;
+import javax.speech.EngineStateError;
+import javax.speech.synthesis.Synthesizer;
+import javax.speech.synthesis.SynthesizerModeDesc;
+
+public class Speak extends Command {
+	public void shutDown() {
+		try {
+			synthesizer.deallocate();
+		} catch (EngineException | EngineStateError e) {
+			e.printStackTrace();
+		}
+	}
+
+	private Synthesizer synthesizer;
+	
+	public Speak() {
+		// Set property as Kevin Dictionary
+		System.setProperty("freetts.voices", "com.sun.speech.freetts.en.us" + ".cmu_us_kal.KevinVoiceDirectory");
+		try {
+			Central.registerEngineCentral("com.sun.speech.freetts" + ".jsapi.FreeTTSEngineCentral");
+
+			synthesizer = Central.createSynthesizer(new SynthesizerModeDesc(Locale.US));
+
+			// Allocate synthesizer
+			synthesizer.allocate();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (EngineException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public void run(String[] args) {
+		if(args.length ==1) {
+			String input ="";
+			ArrayList<String> speak = new ArrayList<String>();	
+			while(true) {
+				Shell.getShell().outputToShell("$");
+				input = Shell.getShell().getUserInput().replaceAll("\\s+", " ");
+				if(input.endsWith(" "+"QUIT")) {
+					input = input.replace(" QUIT", "");
+					speak.add(input);
+					break;
+				}
+				if(input.equals("QUIT")) {
+					break;
+				}
+				speak.add(input);
+			}
+			try {
+				synthesizer.resume();
+				speak.forEach(x ->speak(x) );
+				synthesizer.waitEngineState(Synthesizer.QUEUE_EMPTY);
+			} catch (IllegalArgumentException | InterruptedException | AudioException | EngineStateError e) {
+				e.printStackTrace();
+			}
+		}else {
+			if(args[1].startsWith("\"") && args[args.length - 1].endsWith("\"")){
+				speak(String.join(" ", Arrays.copyOfRange(args, 1, args.length)));
+			}
+			else {
+				Shell.getShell().outputToShellln("Invalid string provided for speak.");
+			}
+		}
+	
+	}
+	
+	private void speak(String arg) {
+			synthesizer.speakPlainText(arg, null);
+	}
+	
+	
+}

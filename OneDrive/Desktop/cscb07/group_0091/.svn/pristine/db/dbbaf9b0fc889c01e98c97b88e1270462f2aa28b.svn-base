@@ -1,0 +1,12 @@
+Class name: Pushd
+Parent class (if any): ShellCommand
+Subclasses (if any): -
+
+Responsibilities:
+* Push the current working directory onto the directory stack
+* Modifies the new current working directory to DIR 
+* Give an error if DIR does not exist
+
+Collaborators:
+* Directory 
+* Error

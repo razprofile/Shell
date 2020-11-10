@@ -1,0 +1,35 @@
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import jShell.fileSystem.File;
+
+public class FileTest {
+  
+  File f = new File("test");
+
+  @Test
+  public void testIfChildExists() {
+    assertEquals("Should always return false", false, f.ifChildExists("Dummy"));
+  }
+
+  @Test
+  public void testFile() {
+    assertNotNull("Make sure the file was created properly", f);
+  }
+
+  @Test
+  public void testSetAndGetContents() {
+    f.setContents("contents");
+    assertEquals("Should return contents", "contents", f.getContents());
+  }
+
+  @Test
+  public void testClone() {
+    f.setContents("contents");
+    File f2 = f.clone();
+    assertEquals("Same name", f.getName(), f2.getName());
+    assertEquals("Same contents", f.getContents(), f2.getContents());
+  }
+
+}

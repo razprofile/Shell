@@ -1,0 +1,70 @@
+package jShell.mockClasses;
+
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.fileSystem.File;
+import jShell.fileSystem.FileSystemNode;
+import jShell.fileSystem.Path;
+import jShell.interfaces.*;
+
+public class MockRedirection implements IRedirection{
+
+	MockShell shell;
+	
+	public MockRedirection(MockShell shell) {
+		this.shell = shell;
+	}
+	
+	@Override
+	public void fileHandling(String operation, String path, String contents)
+	    throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException{
+		
+	  Path p = new Path(path);
+	  String nameCheck = p.getBottomName();
+	  // Check fileName for validity
+	  if (!FileSystemNode.nameChecker(nameCheck)) {
+	    throw new BadFileNameException();
+	  }
+	  
+	  if (p.isValidPath() && p.isPathToDirectory()) {
+	    throw new NodeExistsException(p.toString());
+	  }
+	  
+	  if (!p.getParentPath().isValidPath() || !p.getParentPath().isPathToDirectory()) {
+	    throw new InvalidPathException(p.toString());
+	  }
+	  
+	  
+	  if (operation.equals(">")) {
+		shell.outputToShell("Redirecting output for overwriting:" + contents +
+					"\n to file with name: " + path );
+	  }else if (operation.equals(">>")){
+	    if (!p.isValidPath()) {
+	        throw new NodeExistsException(p.toString());
+	      }
+	    shell.outputToShell("Redirecting output for appending:" + contents +
+					"\n to file with name: " + path );
+	  }else {
+	    shell.outputToShell("operation for redirection was not recognized");
+	    throw new RedirectionOperatorsException(operation);
+	  }
+
+		
+	}
+
+	@Override
+	public boolean checkRedirection(String operator, String filename) {
+	  if (!((operator.equalsIgnoreCase(">")) || operator.equalsIgnoreCase(">>"))) {
+	      return false;
+	    }
+	    if (!FileSystemNode.nameChecker(filename)) {
+	      return false;
+	    }
+	    return true;
+	}
+	
+
+}

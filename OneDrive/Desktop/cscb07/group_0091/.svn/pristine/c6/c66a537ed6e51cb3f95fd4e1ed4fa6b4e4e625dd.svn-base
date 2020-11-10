@@ -1,0 +1,63 @@
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.InvalidURLException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.commands.Curl;
+import jShell.mockClasses.MockFile;
+import jShell.mockClasses.MockShell;
+import jShell.mockClasses.MockUrlDataFetcher;
+
+public class CurlTest {
+  
+   MockFile f = new MockFile();
+   MockUrlDataFetcher mdf = new MockUrlDataFetcher();
+   Curl c = new Curl(mdf);
+   MockShell s = new MockShell();
+   
+
+  @Test(expected=ArgsNumberException.class)
+  public void testTooManyArgs() throws ArgsNumberException, InvalidURLException, BadFileNameException, InvalidPathException, NodeExistsException, RedirectionOperatorsException, FileNotFoundException {
+    String[] params = {"curl","http://www.sampleurl.com","3"};
+    c.run(params);
+    
+  }
+  
+  @Test(expected=InvalidURLException.class)
+  public void testInValidURLDataFetcher() throws  InvalidURLException {
+    String param = "http://www.cs.toronto.edu/~trebla/CSCB09-2019-Summer/lab02/words.htmlxt";
+    mdf.getUrlData(param);
+  }
+  
+  @Test
+  public void testValidURLDataFetcher() throws InvalidURLException {
+    String param = "http://www.sampleurl.com/some.txt";
+    assertEquals("these are the contents of the url",mdf.getUrlData(param));
+  }
+  
+  
+  @Test
+  public void testValidFile() throws ArgsNumberException, InvalidURLException, BadFileNameException, InvalidPathException, NodeExistsException, RedirectionOperatorsException, FileNotFoundException {
+    String params[] = {"curl","http://www.sampleurl.com/some.txt"};
+    c.run(params);
+    
+  }
+  
+  @Test
+  public void testAddContentstoFile() throws InvalidURLException {
+    String param = "http://www.sampleurl.com/some.txt";
+    String contents = mdf.getUrlData(param);
+    f.setContents(contents);
+    assertEquals(s.getLastOutput(),"Setting contents of file " + f.getName() 
+        + " to " + contents + "\n");
+    
+  }
+  
+
+}

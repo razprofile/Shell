@@ -1,0 +1,48 @@
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Test cases for the UserData class.
+ * 
+ * @author Raz Ben Haim
+ *
+ */
+public class UserDataTest {
+  
+  @Before
+  public void setUp() throws Exception {}
+  
+  @Test
+  public void testSetCurPathAbs() {
+    fail("Not yet implemented");
+  }
+  
+  @Test
+  public void testSetCurPathRel() {
+    
+  }
+  
+  @Test
+  public void testSetCurPathAbsInvalid() {
+    
+  }
+  
+  @Test
+  public void testSetCurPathRelInvalid() {
+    
+  }
+  
+  @Test
+  public void getCurDirValid() {
+    
+  }
+  
+  @Test
+  public void getcurDirInvalid() {
+    
+  }
+
+}

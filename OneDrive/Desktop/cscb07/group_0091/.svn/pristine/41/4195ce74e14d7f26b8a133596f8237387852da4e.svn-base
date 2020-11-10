@@ -1,0 +1,14 @@
+Class name: File
+Parent class: none
+Subclasses: InputFile, OutputFile
+
+Responsibilities:
+* Open file
+* Close file
+* Print the name of the file
+* Get new file
+* Check if file exists
+* Delete file
+
+Collaborators:
+none

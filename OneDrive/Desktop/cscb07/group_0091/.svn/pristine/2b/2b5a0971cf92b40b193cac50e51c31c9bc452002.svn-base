@@ -1,0 +1,15 @@
+Class name: Echo
+Parent class (if any): ShellCommand
+Subclasses (if any): -
+
+Responsibilities:
+* Outputs the message to the shell, if file is not provided
+* Delete the contents of a file and put a string in a file (if file exists)
+* If the file does not exist, create a new file, and put the string inside. 
+* Append a string to a file (if the file exists).
+* Print error message for invalid input
+
+Collaborators:
+*OutputFile
+*InputFile
+*Error

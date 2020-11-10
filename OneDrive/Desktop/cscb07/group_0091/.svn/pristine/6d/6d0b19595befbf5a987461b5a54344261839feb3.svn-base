@@ -1,0 +1,96 @@
+package jShell.mockClasses;
+
+import jShell.interfaces.*;
+import java.util.ArrayList;
+
+public class MockShell extends IShell{
+  
+    private static MockShell Shell; // The main shell object for all classes to use
+
+    private MockUserData userData;
+
+    private MockFileSystem fileSystem;
+  
+    private MockRedirection redirect; //Single Redirection object to be used by all classes
+    private MockError err; //Single Error object to be used by all classes
+    
+	public ArrayList<String> output = new ArrayList<>();
+
+	public MockShell() {
+	  super();
+	  Shell = (MockShell) IShell.getShell();
+	  userData = new MockUserData();
+	  fileSystem = new MockFileSystem();
+	  redirect = new MockRedirection(Shell);
+	  err = new MockError();
+	}
+	
+	@Override
+	public IFileSystem getFileSystem() {
+		return fileSystem;
+	}
+
+	@Override
+	public IUserData getUserData() {
+		return userData;
+	}
+
+	@Override
+	public void shutDown() {
+	    output.add("Shutting down the Shell");
+	}
+
+	@Override
+	public String getUserInput() {
+		return "String entered by user";
+	}
+
+	@Override
+	public void outputToShell(String value) {
+		output.add(value);
+	}
+	
+	@Override
+	public void outputToShellErr(String value) {
+	  output.add(value);
+	}
+
+	@Override
+	public void onInput(String input) {
+		output.add("Processing user's input: " + input );
+	}
+
+	@Override
+	public boolean isRunning() {
+		return true;
+	}
+
+	@Override
+	public void setIsRunning(boolean isRunning) {
+	}
+	
+	public void outputErrorMessage(ICommand c, 
+	    String invalidArgument, String errorCode) {
+		output.add("Error occured during the call of " + c.toString() + 
+		    ". It was caused by " + invalidArgument + 
+		    ". Type of error: " + errorCode);
+	}
+
+	@Override
+	public IRedirection getRedirection() {
+		return redirect;
+	}
+
+
+    @Override
+    public void outputToShellln(String value) {
+      output.add(value + "\n");
+    }
+    
+    public String getLastOutput() {
+      return output.get(output.size() - 1);
+    }
+	
+	
+
+}

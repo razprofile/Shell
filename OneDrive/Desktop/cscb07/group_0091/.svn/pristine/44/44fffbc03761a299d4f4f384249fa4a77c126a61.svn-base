@@ -1,0 +1,14 @@
+Class name: Ls
+Parent class (if any): ShellCommand
+Subclasses (if any): -
+
+Responsibilities:
+*Print the files and directories in the current directory.
+*Print the files and directories in a specified path.
+*Print an error message if the specified path is not found.
+
+Collaborators:
+*Directory
+*File
+*Error
+*Path

@@ -1,0 +1,12 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class BadFileNameException extends Error {
+
+  private static final String errorTemplate = "Invalid name for file or directory.";
+
+  public BadFileNameException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

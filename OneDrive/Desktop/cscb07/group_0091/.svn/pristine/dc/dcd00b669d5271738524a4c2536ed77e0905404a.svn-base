@@ -1,0 +1,526 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.CommandNotFoundException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.interfaces.IRedirection;
+
+/**
+ * The Man class holds all of the functions related to the Man command. It inherits some basic
+ * methods from the Command class in order to function properly within the Shell system as a whole.
+ * 
+ * Man returns a small document in the shell regarding the details of a given command.
+ * 
+ * @author Kevin Meharchand
+ *
+ */
+public class Man extends Command {
+  private HashMap<String, String> Manuals = new HashMap<String, String>();
+
+  public Man() {
+    super();
+  }
+
+  /**
+   * The overridden run method inherited from the Command class. Simply determines which manual to
+   * print out, giving an error if that command hasn't been added to the system yet.
+   * 
+   * @throws InvalidPathException
+   * @throws CommandNotFoundException 
+   * @throws ArgsNumberException 
+   * @throws RedirectionException 
+   * @throws BadFileNameException 
+   * @throws NodeExistsException 
+   * @throws FileNotFoundException 
+   * @throws RedirectionOperatorsException 
+   */
+  @Override
+  public String run(String[] args) throws InvalidPathException, RedirectionException, ArgsNumberException, CommandNotFoundException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException {
+    isValid(args);
+    fillMap(); // initialize the manuals hashmap
+    IRedirection r = shell.getRedirection();
+    String manual = Manuals.get(args[1]); // isValid ensures input validity
+    if (!r.checkRedirection(args[args.length - 2], args[args.length - 1])) {
+      return manual + "\n";
+    } else {
+      r.fileHandling(args[args.length - 2], args[args.length - 1], manual);
+    }
+    return "";
+  }
+
+  public void isValid(String[] args) throws RedirectionException, ArgsNumberException, CommandNotFoundException {
+
+    // Checking if correct number of arguments is specified
+    if (args.length < 2 || args.length > 4 || args.length == 3) {
+      throw new ArgsNumberException();
+    }
+
+    // Checking if argument is a valid command
+    String[] commands = {"cat", "cd", "echo", "exit", "history", "ls", "mkdir",
+        "popd", "pushd", "pwd", "speak", "man", "rm", "cp", "mv", "save",
+        "load", "tree", "find", "curl"};
+
+    if (!Arrays.asList(commands).contains(args[1])) {
+      // Command is not in the list
+      throw new CommandNotFoundException(args[1]);
+    }
+
+    // Checking if redirection is valid
+    if (args.length == 4) {
+      IRedirection r = shell.getRedirection();
+      if (!r.checkRedirection(args[args.length - 2], args[args.length - 1])) {
+        throw new RedirectionException();
+      }
+    }
+  }
+
+  /**
+   * A helper function designed to fill the man command's hashmap with each possible manual. If a
+   * developer were to add any new manuals, they could simply add a .put line here.
+   */
+  private void fillMap() {
+    Manuals.put("cat", this.printManualCat());
+    Manuals.put("cd", this.printManualCd());
+    Manuals.put("echo", this.printManualEcho());
+    Manuals.put("exit", this.printManualExit());
+    Manuals.put("history", this.printManualHistory());
+    Manuals.put("ls", this.printManualLs());
+    Manuals.put("man", this.printManualMan());
+    Manuals.put("mkdir", this.printManualMkdir());
+    Manuals.put("popd", this.printManualPopd());
+    Manuals.put("pushd", this.printManualPushd());
+    Manuals.put("pwd", this.printManualPwd());
+    Manuals.put("speak", this.printManualSpeak());
+    Manuals.put("rm", this.printManualRm());
+    Manuals.put("mv", this.printManualMv());
+    Manuals.put("cd", this.printManualCp());
+    Manuals.put("curl", this.printManualCurl());
+    Manuals.put("save", this.printManualSave());
+    Manuals.put("load", this.printManualLoad());
+    Manuals.put("find", this.printManualFind());
+    Manuals.put("tree", this.printManualTree());
+  }
+
+  private String printManualCd() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The cd Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: cd [DIRECTORY]\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("This command will change the current "
+        + "Directory to 'DIRECTORY'.\n");
+    toGo = toGo + ("DIRECTORY may be relative to the current"
+        + " directory, or it may be a full path.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Similarly to Unix and other shells,"
+        + " .. indicates a parent directory\n");
+    toGo = toGo + ("and . indicates the current directory\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualCat() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The cat Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: cat FILE1 [FILE2 FILE3 ...]\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("This command will print out the contents"
+        + " of all files indicated\n");
+    toGo = toGo + ("(minimum 1) concatenated in the shell.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("FILE can be a file name in the current "
+        + "working directory, or it\n");
+    toGo = toGo + ("can be a partial or full path to another"
+        + " file in another directory.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualEcho() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The echo Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: echo STRING [> FILE]\n");
+    toGo = toGo + ("Usage: echo STRING [>> FILE]\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("This command has multiple variants.\n");
+    toGo = toGo + ("Variant 1: echo STRING\n");
+    toGo = toGo
+        + ("Simply prints out the given STRING" + " back into the shell.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Variant 2: echo STRING > FILE\n");
+    toGo = toGo
+        + ("Takes the given STRING and writes it " + "into the given FILE,\n");
+    toGo = toGo + ("overwriting the contents of FILE"
+        + " if it exists, and creating FILE if it doesn't.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Variant 3: echo STRING >> FILE\n");
+    toGo = toGo + ("Takes the given STRING and appends it "
+        + "to the end of the current contents of FILE.\n");
+    toGo = toGo
+        + ("This variant will also" + " create FILE if it does not exist.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualExit() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The exit Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: exit\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The exit command closes the shell"
+        + " entirely. Adding any arguments after the\n");
+    toGo = toGo + ("initial command will result"
+        + " in an error. Nothing else to see here!\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualHistory() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The history Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: history [NUMBER]\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The history command prints out into the "
+        + "shell a list of the most recently entered commands.\n");
+    toGo = toGo + ("This list can be shortened by adding a "
+        + "number after the command. \n");
+    toGo = toGo + ("If no number is specified, then all "
+        + "commands up to and including\n");
+    toGo = toGo + ("the current instance of the history "
+        + "command will be listed.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualMan() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The man Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: man COMMAND\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The man command prints out the"
+        + " documentation for a given COMMAND into the shell.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualLs() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The ls Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: ls [-R] [PATH ...]\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The ls command prints out to the shell"
+        + " the contents of the current directory if no PATH is specified.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("If a PATH is specified, ls will print "
+        + "out the contents of the specified directory at the path.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("If the given PATH ends at a file, the"
+        + " name of that file will be printed out instead\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Multiple PATHs may be included after the "
+        + "first. If so, the contents of each will be displayed in the order"
+        + " given.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("If any PATHs included as arguments are"
+        + " invalid/do not exist, an error message will be returned instead"
+        + " of any output.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("If the -R option is included, ls will"
+        + " recursively list the contents\n");
+    toGo = toGo + ("of the subdirectories of PATH as well.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualMkdir() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The mkdir Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: mkdir DIRECTORY [DIRECTORY2...]\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The mkdir command creates a user-given"
+        + " DIRECTORY at the user-specified path.\n");
+    toGo = toGo + ("DIRECTORY may be either a full path"
+        + " or a path relative to the current directory.\n");
+    toGo = toGo + ("Mkdir can create multiple DIRECTORIES" + " at a time.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualPopd() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The popd Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: popd\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The popd command removes the top "
+        + "directory stored in the directory stack (see pushd)\n");
+    toGo = toGo + ("and changes the" + " current working directory to said "
+        + "directory.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("If there are no directories stored"
+        + " in the stack, then popd will not \n");
+    toGo = toGo + ("move the user's current directory.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualPushd() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The pushd Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: pushd DIRECTORY\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The pushd command takes the current "
+        + " directory and saves it onto the directory stack.\n");
+    toGo = toGo + ("The current directory will then change"
+        + " to the user-given DIRECTORY.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualPwd() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The pwd Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: pwd\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The pwd command simply prints out the"
+        + " current working directory (including its whole path).\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualSpeak() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The speak Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: speak [STRING]\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The speak command will convert a"
+        + " user-given STRING into audible speech output.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The STRING parameter is optional. If"
+        + " excluded, the speak command will then enter\n");
+    toGo = toGo + ("a state in which the user may"
+        + " type in any input they wish, followed by the word \n");
+    toGo = toGo + ("QUIT (case-" + "sensitive) to have the output play.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualRm() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The rm Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: rm DIRECTORY\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The rm command removes a directory"
+        + " (and subsequently its contents)\n");
+    toGo = toGo + ("from the file system\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualMv() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The mv Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: mv OLDPATH NEWPATH\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The mv command moves the item at path"
+        + " OLDPATH (including its contents if it is a directory)\n");
+    toGo = toGo
+        + ("to NEWPATH. OLDPATH is then removed" + " from the file system.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("If NEWPATH is a directory, OLDPATH"
+        + " becomes an item in that directory.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualCp() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The cp Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: cp OLDPATH NEWPATH\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The cp command copies the path OLDPATH"
+        + " (including the contents of OLDPATH if it is a directory)\n");
+    toGo =
+        toGo + (" and moves it to the location specified" + " by NEWPATH.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Unlike the mv command, cp does not "
+        + "delete OLDPATH once it has moved.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualCurl() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The curl Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: curl URL\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The curl command retrieves a file from"
+        + " the given URL and adds\n");
+    toGo = toGo + ("it to the current working directory.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualSave() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The save Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: save FILENAME\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The save command saves the current state"
+        + " of the shell to a file on the user's actual computer.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("All elements of the shell, including"
+        + " files, command states and the mock file system are saved.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("If the user chooses to use an existing"
+        + " file as FILENAME, the contents of FILENAME\n");
+    toGo = toGo + ("will be overwritten " + "with the shell's save state.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualLoad() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The load Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: load FILENAME\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The load command loads a previously"
+        + " saved state of the shell (see the \"save\" command manual).\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("This command cannot be used once any"
+        + " other command has been used\n");
+    toGo = toGo + ("in the current instance of the shell.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualTree() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The tree Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: tree\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The tree command outputs in a string"
+        + " format the entire file system\n");
+    toGo = toGo + ("of the current instance of the shell.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+  private String printManualFind() {
+    String toGo = "";
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    toGo = toGo + ("The find Command:\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("Usage: find PATH [PATH2...] " + "-type TYPE -name NAME\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The find command searches the "
+        + "directory(ies) provided at PATH (and PATH2, PATH3, etc.)\n");
+    toGo = toGo + ("for objects of type TYPE with the " + "name NAME.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("the TYPE argument can be either \"-f\""
+        + " for files, or \"-d\" for directories.\n");
+    toGo = toGo + ("\n");
+    toGo = toGo + ("The NAME argument is the desired file or"
+        + " directory name to be located, case sensitive.\n");
+    toGo = toGo + ("~~~~~~~~~~~~~~~~~~~~\n");
+    return toGo;
+  }
+
+
+  @Override
+  public String toString() {
+
+    return "man";
+
+  }
+  // public static void main (String[] args) {
+  // //Test 1: No command after man
+  // Shell s = new Shell();
+  // Man m = new Man();
+  // String[] test = {"man"};
+  // m.run(test); //Should return an error
+  // //Test 2: Correct command after man
+  // String[] test2 = {"man", "cat"};
+  // m.run(test2); //Should return the manual for Cat
+  // //Test 3: incorrect command after man
+  // String[] test3 = {"man", "brown"};
+  // m.run(test3); //Should return an error
+  // Test 4: More than one command asked for
+  // String[] test4 = {"man", "cat", "ls"};
+  // m.run(test4); //Should return an error. It will crash when run through this
+  // Command's main function, but not when called via jShell.driver
+  // (as isValid is called by the shell) }
+}

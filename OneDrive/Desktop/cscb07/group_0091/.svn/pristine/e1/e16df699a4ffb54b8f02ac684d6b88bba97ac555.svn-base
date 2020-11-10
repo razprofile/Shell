@@ -1,0 +1,232 @@
+package jShell.commands;
+
+
+import jShell.Error;
+import jShell.File;
+import jShell.FileSystem;
+import jShell.FileSystemNode;
+import jShell.Path;
+import jShell.Shell;
+
+public class Echo extends Command{
+  
+  @Override
+  public void run(String[] args) {
+    if (!isValid(args)) {
+      return;
+    }
+    String fullString = "";
+    String currentString = "";
+    FileSystem f = Shell.getShell().getFileSystem();
+    for (int i = 1; i < args.length ; i++) {
+        currentString = args[i]; //Take one part of the string at a time
+        if (i == 1) { // Check the start of the string
+          fullString = handleFirstString(currentString, args);
+          if (fullString == null) { //If anything went wrong, end
+            return;
+          }
+        } else { //Check other arguments
+          currentString = handleOtherStrings(currentString, args, i);
+          if (currentString == null) {
+            return;
+          } else {
+            fullString = fullString + currentString;
+            if (i == args.length - 1) { // No more arguments (No files involved)
+              outputToShell(fullString, Shell.getShell());
+              return;
+            } else if ((args[i+1].equalsIgnoreCase(">")) || 
+                    (args[i+1].equalsIgnoreCase(">>"))) {
+              boolean opCheck = checkOperatorAndFile(i, args);
+              if (opCheck == true) {
+                fileHandling(args[i+1], args[i+2], fullString, f);
+                return;
+              }
+              return;
+            }
+          }       
+        }       
+      }
+    }
+  
+  /**
+   * Inherited method that tests the incoming arguments for validity.
+   * 
+   * @param args : the list of user-given arguments for this command
+   * @return A boolean representing the validity of the arguments
+   */
+  public boolean isValid(String[] args) {
+    if (args.length == 1) {
+      return false;
+    }
+    return true;
+  }
+  
+  /**
+   * Specific operations designed for handling either the start of a given
+   * string, or for handling a one-word long string.
+   * 
+   * @param firstString : The first string input given by the user
+   * @param args : The list of arguments given by the user
+   * @return A formatted string if successful, otherwise returns null.
+   */
+  private String handleFirstString(String firstString, String[] args) {
+    Error e = new Error();
+    if (!(firstString.startsWith("\""))){ //Check for starting quotes
+      Shell.getShell().outputToShellln(e.errorMessage("BADSTRING"));
+      return null;
+    }
+    if (args.length == 2){ //One-word string, no file
+      if (firstString.endsWith("\"") && firstString.length() > 1) {
+      outputToShell(firstString.substring(1, firstString.length() - 1),
+          Shell.getShell());
+      return null;
+      } else { //Error
+        Shell.getShell().outputToShellln(e.errorMessage("BADSTRING"));
+        return null;
+      }
+    } else if ((args.length == 4) && ((args[2].equalsIgnoreCase(">"))
+        || (args[2].equalsIgnoreCase(">>")))) {
+      if (!(firstString.endsWith("\""))) { //No quotes to close the string
+        Shell.getShell().outputToShellln(e.errorMessage("BADSTRING"));
+        return null;
+      } // File-handling operations
+      firstString = firstString.substring(1, firstString.length() - 1);
+      fileHandling(args[2], args[3], firstString, 
+          Shell.getShell().getFileSystem());
+      return null;
+    } else {
+      return (firstString.substring(1));
+    }
+  }
+  
+  /**
+   * Performs concatenation and other operations on subsequent arguments past
+   * the start of the user-given string.
+   * 
+   * @param currentString : the current section of the string being analyzed
+   * @param args : the list of arguments following the command call
+   * @param i : the current index of arguments to be analyzed
+   * @return A formatted string to be added to the overall contents of
+   * the file if successful, otherwise returns null 
+   */
+  private String handleOtherStrings(String currentString, String[] args, int i){
+    Error e = new Error();
+    if (currentString.indexOf("\"") == -1) { // No double quote
+      if (i == args.length - 1) { //If this is the last argument, error
+        Shell.getShell().outputToShellln(e.errorMessage("BADSTRING"));
+        return null;
+      } else {
+        return (" " + currentString); //Add to result
+      }
+    } else if (currentString.endsWith("\"")){ //Correctly terminated
+        return (" " + currentString.substring(0, (currentString.length() - 1)));
+    } else {
+      // Quotations in the middle of a string
+      Shell.getShell().outputToShellln(e.errorMessage("QUOTES"));
+      return null;
+    }
+  }
+  /**
+   * Checks the user-given operator (> or >>) and file (absolute path, relative
+   * path or local file) for validity
+   * 
+   * @param currentArg : an index representing the current amount of arguments
+   * remaining in the command call.
+   * @param args : The list of arguments given with the command
+   * @return a boolean value representing the success or failure of this
+   * check
+   */
+  private boolean checkOperatorAndFile(int currentArg, String[] args) {
+    Error e = new Error();
+    if ((currentArg + 1) == (args.length - 1)) {
+      // Not enough arguments
+      Shell.getShell().outputToShellln(e.errorMessage("WRONGARGS")
+          + " Please add a file after your desired operator.");
+      return false;
+  } else if ((currentArg + 1) < (args.length - 2)){
+      // Too many arguments
+      Shell.getShell().outputToShellln(e.errorMessage("WRONGARGS")
+          + " Do not include multiple operators or files/paths.");
+      return false;
+    } else {
+      return true;
+    }
+  }
+  
+  /**
+   * Deals with file-related operations such as appending, overwriting, or
+   * even creating new files to be used in the Echo command.
+   * 
+   * @param operation : the desired operation to be performed on a file, 
+   * either appending or overwriting
+   * @param fileName : the file (or path to file) provided by the user
+   * @param contents : the contents to overwrite/append with
+   * @param f : The current instance of the Shell's File System
+   */
+  private void fileHandling(String operation, String fileName, 
+      String contents, FileSystem f) {
+    // Locate file based on the next argument
+    Error e = new Error();
+    Path p = new Path(fileName);
+    // Attempt to get the file node at the user's given path
+    FileSystemNode temp = f.getNodeAtRelativePath(p);
+    if (temp == null) { //If it doesn't exist then make it (echo-exclusive)
+      Shell.getShell().outputToShellln("Creating file instead...");
+      // File doesn't exist, then create one!
+      temp = f.createNewFile(p);
+      if (temp == null) {
+        Shell.getShell().outputToShellln(e.errorMessage("NOCHILD") + " Echo"
+            + " cannot create new directories.");
+        return;
+      }
+      }
+    // From this point, file exists
+    // See if we are appending or overwriting
+    if (operation.equalsIgnoreCase(">")) {
+      overwriteFile(contents, (File)temp);
+      return;
+    } else if (operation.equalsIgnoreCase(">>")) {
+      appendFile(contents, (File)temp);
+      return;
+    } else {
+      //Error
+      Shell.getShell().outputToShellln(e.errorMessage("INVALIDARGS"));
+      return;
+    }
+  }
+  
+  /**
+   * Prints out the given string directly to the shell.
+   * 
+   * @param output : the string to be printed out to the shell.
+   * @param s : The active shell instance
+   */
+  private void outputToShell(String output, Shell s) {
+    s.outputToShellln(output);
+  }
+  
+  /**
+   * Overwrites the contents of a given file, replacing them with
+   * the provided user string (stored on an object-basis)
+   * 
+   * @param newContents: the string that will overwrite the contents of file.
+   * @param file : the file to be overwritten
+   */
+  private void overwriteFile(String newContents, File file) {
+    file.setContents(newContents);
+  }
+  
+  /**
+   * Appends the user's given string to the contents of a user-given file.
+   * 
+   * @param addition : the string to be appended to the file's contents
+   * @param file : the file to have the string appended on to.
+   */
+  private void appendFile(String addition, File file) {
+    if (file.getContents() == null) {
+      file.setContents("");
+    }
+    file.setContents(file.getContents() + addition);
+  }
+
+}

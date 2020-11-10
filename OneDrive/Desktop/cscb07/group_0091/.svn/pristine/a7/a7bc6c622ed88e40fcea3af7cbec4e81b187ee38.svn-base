@@ -1,0 +1,73 @@
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.Error;
+import jShell.FileSystemNode;
+import jShell.Path;
+import jShell.Shell;
+
+public class Mkdir extends Command {
+
+
+  /**
+   * Create a new directory at a given path, assuming specified path is valid and exists
+   * 
+   * @param args arguments for mkdir command
+   */
+  public void run(String args[]) {
+
+    // Path of the directory to be created
+    Path path = new Path(args[1]);
+
+    // Creating a new directory
+    Shell.getShell().getFileSystem().createNewDirectory(path);
+
+  }
+
+  @Override
+  public HashMap<String, String> isValid(String args[]) {
+
+    // HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+
+    // Checking if exactly two arguments are passed
+    if (args.length != 2) {
+      errors.put("all", "WRONGARGS");
+      return errors;
+    }
+
+    Path path = new Path(args[1]);
+
+    // Checking if the name of directory being created is valid name
+    String name = path.getBottomName();
+    if (!FileSystemNode.nameChecker(name)) {
+      errors.put(name, "BADDIRNAME");
+      return errors;
+    }
+
+    // Getting the location of the directory that is being modified
+    Path location = path.getParentPath();
+
+    // Checking if given location corresponds to a valid location of directory at current file tree
+    if (!location.isValidPath() || !location.isPathToDirectory()) {
+      errors.put(location.toString(), "PATHNOTFOUND");
+      return errors;
+    }
+
+    // Checking if directory with given name already exists
+    if (path.isValidPath()) {
+      errors.put(args[1], "EXISTS");
+    }
+
+    return errors;
+  }
+
+  @Override
+  public String toString() {
+
+    return "mkdir";
+
+  }
+
+}
+

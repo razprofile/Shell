@@ -1,0 +1,49 @@
+package jShell;
+
+import java.util.ArrayList;
+import java.util.Stack;
+/**
+ * A class to get user's command history, current directory and directory stack
+ * @author Raz 
+ */
+public class UserData {
+
+	private ArrayList<String> commandHistory;
+
+	public Stack<Path> getPathStack() {
+		return pathStack;
+	}
+
+	private Path curPath;
+
+	private Stack<Path> pathStack;
+	
+	/**
+	   * Constructs a new UserData object which includes commandHistory, 
+	   * pathStack and sets curPath
+	   * 
+	   * @param curPath Current path in the in the shell
+	   */
+	public UserData(Path curPath) {
+		commandHistory = new ArrayList<String>();
+		pathStack = new Stack<Path>();
+		this.curPath = curPath;
+	}
+
+	public ArrayList<String> getCommandHistory() {
+		return commandHistory;
+	}
+
+
+	public Path getCurPath() {
+		return curPath;
+	}
+
+	public void setCurPath(Path curPath) {
+		this.curPath = curPath;
+	}
+	public Directory getCurDir() {
+		return (Directory) Shell.getShell().getFileSystem().getNodeAtFullPath(curPath);
+	}
+
+}

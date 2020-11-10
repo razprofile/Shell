@@ -1,0 +1,55 @@
+package test;
+
+import static org.junit.Assert.*;
+import java.util.HashMap;
+import org.junit.Test;
+import jShell.commands.Echo;
+import jShell.mockClasses.MockShell;
+
+public class EchoTest {
+  
+  MockShell s = new MockShell();
+  Echo e = new Echo();
+  HashMap<String, String> expectedErrors = new HashMap<String, String>();
+
+  @Test
+  public void testRun() {
+    String[] params = {"echo", "\"hello\""};
+    assertEquals("Basic string", "hello", e.run(params));
+    String[] redirParams = {"echo", "\"hello\"", ">", "file"};
+    assertEquals("Redirection to file", "", e.run(redirParams));
+    String[] params2 = {"echo", "\"hello", "there\""};
+    assertEquals("Basic multiword string", "hello there", e.run(params2));
+    String[] redirParams2 = {"echo", "\"hello", "there\"", ">>", "file"};
+    assertEquals("Redirection to file", "", e.run(redirParams2));
+    String[] emptyParams = {"echo", "\"", "\""};
+    assertEquals("Empty string but quotes on it", " ", e.run(emptyParams));
+  }
+  
+  @Test
+  public void testIsValid() {
+    String[] params = {"echo"};
+    expectedErrors.put("all", "WRONGARGS");
+    assertEquals("Not enough arguments", expectedErrors, e.isValid(params));
+  }
+  
+  @Test
+  public void testIsValidBadString() {
+    String[] params = {"echo", "hello\""};
+    expectedErrors.put("hello\"", "BADSTRING");
+    assertEquals("Bad string", expectedErrors, e.isValid(params));
+  }
+  
+  @Test
+  public void testIsValidNoString() {
+    String[] params = {"echo", "\""};
+    expectedErrors.put("\"", "BADSTRING");
+    assertEquals("No string", expectedErrors, e.isValid(params));
+  }
+
+  @Test
+  public void testToString() {
+    assertEquals("echo", e.toString());
+  }
+
+}

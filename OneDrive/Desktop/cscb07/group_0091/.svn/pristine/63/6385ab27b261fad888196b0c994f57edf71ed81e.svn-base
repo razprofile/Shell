@@ -1,0 +1,75 @@
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.DeleteRootDirException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.WorkingDirException;
+import jShell.commands.Rm;
+import jShell.mockClasses.MockFileSystem;
+import jShell.mockClasses.MockShell;
+
+public class RmTest {
+  
+  MockShell s = new MockShell();
+  Rm r = new Rm();
+
+  @Test(expected = DeleteRootDirException.class)
+  public void testRemovingRootDir() throws WorkingDirException, InvalidPathException, DeleteRootDirException, ArgsNumberException {
+    String[] params = {"rm", MockFileSystem.fullPathRoot};
+    r.run(params);
+  }
+  
+  @Test(expected = ArgsNumberException.class)
+  public void testTooManyArgs() throws WorkingDirException, InvalidPathException, DeleteRootDirException, ArgsNumberException {
+    String[] params = {"rm", "a", "b"};
+    r.run(params);
+  }
+  
+  @Test(expected = WorkingDirException.class)
+  public void testDeleteWorkingDirectory() throws WorkingDirException, InvalidPathException, DeleteRootDirException, ArgsNumberException {
+    String[] params = {"rm",MockFileSystem.workingDirFullPath};
+    r.run(params);
+  }
+  
+  @Test
+  public void testValidRm() throws WorkingDirException, InvalidPathException, DeleteRootDirException, ArgsNumberException {
+    String[] params = {"rm",MockFileSystem.validDirFullPath};
+    r.run(params);
+    assertEquals(s.getLastOutput(), "Removed a node at path " + MockFileSystem.validDirFullPath + "\n");
+    
+    //testing a file
+    String[] params2 = {"rm",MockFileSystem.validFileFullPath};
+    r.run(params2);
+    assertEquals(s.getLastOutput(), "Removed a node at path " + MockFileSystem.validFileFullPath + "\n");
+  }
+  
+  @Test
+  public void testValidRmRelative() throws WorkingDirException, InvalidPathException, DeleteRootDirException, ArgsNumberException {
+    String[] params = {"rm",MockFileSystem.validDirRelativePath};
+    r.run(params);
+    assertEquals(s.getLastOutput(), "Removed a node at path " + MockFileSystem.validDirFullPath + "\n");
+    
+    //testing a file at relative path
+    String[] params2 = {"rm",MockFileSystem.validFileRelativePath};
+    r.run(params2);
+    assertEquals(s.getLastOutput(), "Removed a node at path " + MockFileSystem.validFileFullPath + "\n");
+    
+  }
+  
+  @Test
+  public void testValidRmAtAnotherDir() throws WorkingDirException, InvalidPathException, DeleteRootDirException, ArgsNumberException {
+    String[] params = {"rm",MockFileSystem.validAnotherDirFullPath};
+    r.run(params);
+    assertEquals(s.getLastOutput(), "Removed a node at path " + MockFileSystem.validAnotherDirFullPath + "\n");
+    
+    //testing its child
+    String[] params2 = {"rm",MockFileSystem.validAnotherChildDirFullPath};
+    r.run(params2);
+    assertEquals(s.getLastOutput(), "Removed a node at path " + MockFileSystem.validAnotherChildDirFullPath + "\n");
+    
+    
+  }
+
+}

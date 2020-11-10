@@ -1,0 +1,27 @@
+package test;
+
+import static org.junit.Assert.*;
+import jShell.fileSystem.Redirection;
+import jShell.mockClasses.MockShell;
+import org.junit.Test;
+
+public class RedirectionTest {
+  
+  /*
+   * These tests will require some more mock objects.
+   */
+
+  MockShell s = new MockShell();
+  Redirection r = new Redirection();
+  @Test
+  public void testFileHandling() {
+    fail("Mock Shell not implemented yet");
+  }
+
+  @Test
+  public void testCheckRedirection() {
+    assertEquals("Bad operator", false, r.checkRedirection(">>>", "file"));
+    assertEquals("Bad filename", false, r.checkRedirection(">", "file.txt"));
+    assertEquals("All good", true, r.checkRedirection(">", "file"));
+  }
+}

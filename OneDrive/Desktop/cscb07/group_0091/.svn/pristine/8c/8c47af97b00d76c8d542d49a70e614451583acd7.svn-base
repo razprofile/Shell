@@ -1,0 +1,13 @@
+Class name: OutputFile
+Parent class: File
+Subclasses: none
+
+Responsibilities:
+* open file for writing
+* overwrite contents of the file
+* append data to contents of the file
+* close file
+* if file not found or file is protected from writing, give an error
+
+Collaborators:
+* Error

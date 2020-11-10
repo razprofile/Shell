@@ -1,0 +1,12 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class FileNotFoundException extends Error {
+
+  private static final String errorTemplate = "File not found: %s.";
+
+  public FileNotFoundException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

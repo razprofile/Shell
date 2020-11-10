@@ -1,0 +1,215 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.fileSystem.File;
+import jShell.fileSystem.Path;
+import jShell.interfaces.IFile;
+import jShell.interfaces.IFileSystem;
+import jShell.interfaces.IFileSystemNode;
+import jShell.interfaces.IPath;
+import jShell.interfaces.IRedirection;
+import jShell.interfaces.IShell;
+
+/**
+ * The Cat class holds all of the functions related to the Cat command. It inherits some basic
+ * methods from the Command class in order to function properly within the Shell system as a whole.
+ * 
+ * Cat concatenates the contents of any number of given files together in the shell, separated by
+ * three line breaks each. Cat can identify files in local, relative or full paths
+ * 
+ * @author Kevin Meharchand
+ *
+ */
+public class Cat extends Command {
+  public Cat() {
+    super();
+  }
+
+  /**
+   * The overridden run method inherited from the Command class. Attempts to locate files in the
+   * overall shell File System one at a time, returning an appropriate error if the file cannot be
+   * found.
+   * @throws FileNotFoundException 
+   * @throws ArgsNumberException 
+   * @throws InvalidPathException 
+   * @throws BadFileNameException 
+   * @throws NodeExistsException 
+   * @throws RedirectionOperatorsException 
+   */
+  @Override
+  public String run(String[] args) throws FileNotFoundException, ArgsNumberException, InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException {
+    isValid(args);
+    IFile[] files = new File[args.length - 1]; // Array to hold all of the files
+    IFileSystemNode temp; // Holds the current file to be added to the file array
+    IFileSystem f = shell.getFileSystem();
+    IPath p;
+    IRedirection r = shell.getRedirection();
+    boolean goodRedirection =
+        r.checkRedirection(args[args.length - 2], args[args.length - 1]);
+    for (int i = 0; i < args.length; i++) {
+      if (i > 0) { // Skip the first argument (the command call)
+        /*
+         * User can pass in either a full path, a relative path, or a file name which assumes they're using
+         * their local directory
+         */
+        p = new Path(args[i]);
+        temp = (IFileSystemNode) f.getNodeAtPath(p);
+        if (!(temp == null)) {
+          /*
+           * Here too -- if good redirection, stop reading files after the last two. Some logic for that
+           */
+          // If file exists, retrieve it
+          if (goodRedirection) {
+            if (i < args.length - 2) {
+              files[i - 1] = (File) temp; // Store it in the files array
+            }
+          } else {
+            files[i - 1] = (File) temp; // Store it in the files array
+          }
+        } else { // Display an appropriate error message
+          /*
+           * If we fail redirection, cat currently reads the two arguments as potential files. Is this
+           * expected behaviour?
+           */
+          if (!goodRedirection) { // No redirection, function normally
+            throw new FileNotFoundException(args[i]);
+          } else {
+            if (i < args.length - 2) { // Only print error messages for files
+              /*
+               * Since the operator and filename would be seen as potential files to be read, by skipping the last
+               * 2 arguments ONLY IF redirection has been validated, we can avoid printing bad error messages.
+               */
+              throw new FileNotFoundException(args[i]);
+            }
+          }
+        }
+      }
+    }
+    // File(s) has been retrieved
+    // Determine if we are to output to a file or to the shell.
+    if (goodRedirection) {
+      printContentsToFile(files, shell, args[args.length - 1],
+          args[args.length - 2]); // Print to file
+      return "";
+    } else {
+      return printContents(files, shell); // Print to shell
+    }
+  }
+
+
+  public void isValid(String[] args) throws ArgsNumberException {
+
+    // HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+
+    // No files provided
+    if (args.length == 1) {
+     throw new ArgsNumberException();
+    }
+  }
+
+  /**
+   * Prints out the contents of each file provided in the files array, with three line breaks between
+   * each.
+   * 
+   * @param files : the array of files to be printed to the shell
+   * @param s : The shell that the contents of the file will be printed to.
+   * @return The contents of the file(s)
+   */
+  private String printContents(IFile[] files, IShell s) {
+    // Loop through the entire array
+    String contents = "";
+    for (IFile current : files) {
+      if (current != null) {
+        // Get the contents of the file and print to the shell
+        contents = contents + current.getContents() + "\n\n\n\n";
+      }
+    }
+    return contents;
+  }
+
+  private void printContentsToFile(IFile[] files, IShell s, String fileName,
+      String operation) throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException {
+    IRedirection r = shell.getRedirection();
+    String contents = "";
+    /*
+     * Before handling the concatenated outputs, if you are overwriting, then only the first call to
+     * fileHandling should overwrite. Subsequent file outputs from Cat should be appended.
+     * 
+     * So the first file should be handled differently if using overwrite.
+     */
+    // Loop through the entire array
+    for (IFile current : files) {
+      if (current != null) {
+        // Get the contents of the file and print into a file
+        contents = contents + current.getContents() + "\n\n\n\n";
+      }
+    }
+    if (!contents.equalsIgnoreCase("")) {
+      r.fileHandling(operation, fileName, contents);
+    }
+  }
+
+  @Override
+  public String toString() {
+
+    return "cat";
+
+  }
+  // public static void main (String[] args) {
+  // // Real testing hours.
+  // Shell s = new Shell();
+  // Cat c = new Cat();
+  // Echo e = new Echo();
+  // String[] test = {"echo", "\"test\"", ">", "file"};
+  // e.run(test);
+  // String[] catTest = {"cat", "file"}; //Reading one file
+  // c.run(catTest);
+  // String[] test2 = {"echo", "\"test2\"", ">", "file2"};
+  // e.run(test2);
+  // String[] catTest2 = {"cat", "file", "file2"}; //Reading more than one file
+  // c.run(catTest2);
+  /*
+   * These test cases have also been performed on files located at relative and full paths. They have
+   * worked perfectly for those too. Those cases are not included here as many shell components are in
+   * use to form the fully functioning file system.
+   */
+  // }
+
+}

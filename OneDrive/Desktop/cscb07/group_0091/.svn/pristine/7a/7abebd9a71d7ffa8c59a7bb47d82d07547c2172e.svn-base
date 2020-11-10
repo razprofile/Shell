@@ -1,0 +1,45 @@
+package test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
+import jShell.Directory;
+import jShell.Shell;
+import jShell.commands.Find;
+
+public class FindTest {
+
+  Shell s;
+  Find f;
+  Directory root;
+  Directory test;
+  Directory t;
+
+  @Before
+  public void createDirs() {
+    s = new Shell();
+    f = new Find();
+    root = (Directory) s.getFileSystem().getRootDir();
+    test = new Directory("test");
+    t = new Directory("test");
+    root.tryAddChildren(test);
+    root.tryAddChildren(t);
+    test.tryAddChildren(new Directory("test1"));
+    t.tryAddChildren(new Directory("t1"));
+  }
+
+  @Test
+  public void testRun() {
+    String[] params = {"find", "-type", "d", "-name", "\"test\""};
+    assertEquals(f.run(params), "/test");
+  }
+
+  @Test
+  public void testRedirectionRun() {
+    String[] params =
+        {"find", "-type", "d", "-name", "\"test\"", ">", "file"};
+    assertEquals(f.run(params), "");
+    assertTrue(root.ifChildExists("file"));
+  }
+}

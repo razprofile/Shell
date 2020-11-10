@@ -1,0 +1,11 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class RemovingFileException extends Error {
+
+  private static final String errorTemplate = "Cannot delete standalone file.";
+  public RemovingFileException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

@@ -1,0 +1,33 @@
+package jShell;
+
+import java.util.ArrayList;
+import java.util.Stack;
+
+public class UserData {
+
+	private ArrayList<String> commandHistory;
+
+	private Path curPath;
+
+	private Stack<Path> pathStack;
+
+	public UserData(Path curPath) {
+		commandHistory = new ArrayList<String>();
+		pathStack = new Stack<Path>();
+		this.curPath = curPath;
+	}
+
+	public ArrayList<String> getCommandHistory() {
+		return commandHistory;
+	}
+
+
+	public Path getCurPath() {
+		return curPath;
+	}
+
+	public void setCurPath(Path curPath) {
+		this.curPath = curPath;
+	}
+
+}

@@ -1,0 +1,79 @@
+package jShell;
+
+public class Redirection {
+
+  /**
+   * Deals with file-related operations such as appending, overwriting, or even creating new files
+   * with the output of a given command.
+   * 
+   * @param operation : the desired operation to be performed on a file, either appending or
+   *        overwriting
+   * @param fileName : the file (or path to file) provided by the user
+   * @param contents : the contents to overwrite/append with
+   * @param f : The current instance of the Shell's File System
+   */
+  public void fileHandling(String operation, String fileName, String contents, 
+      FileSystem f) {
+
+    // Locate file based on the next argument
+    Error e = new Error();
+    Path p = new Path(fileName);
+    String nameCheck = p.getBottomName();
+    // Check fileName for validity
+    if (!FileSystemNode.nameChecker(nameCheck)) {
+      Shell.getShell().outputToShellln(e.errorMessage("BADFILENAME"));
+      return;
+    }
+    // Attempt to get the file node at the user's given path
+    FileSystemNode temp = f.getNodeAtPath(p);
+    if (temp == null) { // If it doesn't exist then make it
+      temp = f.createNewFile(p); // File doesn't exist, then create one!
+      if (temp == null) {
+        Shell.getShell().outputToShellln(
+            e.errorMessage("NOCHILD") + " Redirection cannot create new directories.");
+        return;
+      }
+    }
+    // From this point, file exists
+    // See if we are appending or overwriting
+    if (operation.equalsIgnoreCase(">")) {
+      overwriteFile(contents, (File) temp);
+      return;
+    } else if (operation.equalsIgnoreCase(">>")) {
+      appendFile(contents, (File) temp);
+      return;
+    } else {
+      // Error
+      Shell.getShell().outputToShellln(e.errorMessage("INVALIDARGS")
+          + " Expected either > or >> before the desired file name/path.");
+      return;
+    }
+  }
+
+  /**
+   * Overwrites the contents of a given file, replacing them with the provided user string (stored
+   * on an object-basis)
+   * 
+   * @param newContents: the string that will overwrite the contents of file.
+   * @param file : the file to be overwritten
+   */
+  private void overwriteFile(String newContents, File file) {
+
+    file.setContents(newContents);
+  }
+
+  /**
+   * Appends the user's given string to the contents of a user-given file.
+   * 
+   * @param addition : the string to be appended to the file's contents
+   * @param file : the file to have the string appended on to.
+   */
+  private void appendFile(String addition, File file) {
+
+    if (file.getContents() == null) {
+      file.setContents("");
+    }
+    file.setContents(file.getContents() + addition);
+  }
+
+}

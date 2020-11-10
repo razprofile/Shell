@@ -1,0 +1,11 @@
+Class name: Popd
+Parent class (if any): ShellCommand
+Subclasses (if any): -
+
+Responsibilities:
+* Removes the top path from the directory stack, and goes into it.
+* Gives the corresponding error message if the stack is emptry.
+
+Collaborators:
+* Directory
+* Error

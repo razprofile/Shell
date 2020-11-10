@@ -1,0 +1,90 @@
+package test;
+
+import static org.junit.Assert.*;
+import java.util.Collection;
+import org.junit.Test;
+import jShell.Errors.NodeExistsException;
+import jShell.fileSystem.Directory;
+import jShell.fileSystem.File;
+import jShell.interfaces.IFileSystemNode;
+import jShell.mockClasses.MockShell;
+
+public class DirectoryTest {
+
+  // make Dir and ChildDir
+
+  Directory workingDir = new Directory("working");
+  Directory childDir = new Directory("childDir");
+  File childFile = new File("childFile");
+ 
+  @Test
+  public void testCreation() {
+    assertNotNull(workingDir);
+  }
+
+  @Test
+  public void testAddingChildren() throws NodeExistsException {
+    try {
+      workingDir.tryAddChildren(childDir);
+      workingDir.tryAddChildren(childFile);
+    } catch (NodeExistsException e) {
+      return;
+    }
+  }
+
+  @Test
+  public void testIfChildExists() {
+    try {
+      workingDir.tryAddChildren(childDir);
+      workingDir.tryAddChildren(childFile);
+    } catch (NodeExistsException e) {
+      return;
+    }
+    assertTrue(workingDir.ifChildExists(childDir.getName()));
+  }
+  
+  @Test
+  public void testGetChild() {
+    try {
+      workingDir.tryAddChildren(childDir);
+      workingDir.tryAddChildren(childFile);
+    } catch (NodeExistsException e) {
+      return;
+  }
+    assertEquals(workingDir.getChild(childDir.getName()),childDir);
+  }
+  
+  @Test
+  public void testRemoveChild() {
+    try {
+      workingDir.tryAddChildren(childDir);
+      workingDir.tryAddChildren(childFile);
+    } catch (NodeExistsException e) {
+      return;
+  }
+    assertEquals(workingDir.removeChild(childDir.getName()),childDir);
+  }
+  
+ 
+  @Test
+  public void testClone() {
+    Directory workingDir2 = workingDir.clone();
+    assertEquals(workingDir.getName(),workingDir2.getName());    
+  }
+  
+  @Test
+  public void testGetChildren() throws NodeExistsException {
+    workingDir.tryAddChildren(childDir);
+    workingDir.tryAddChildren(childFile);
+    
+    try {
+      workingDir.getChildren();
+    }
+    catch(Exception e) {
+      return;
+    }
+    
+  }
+  
+
+}

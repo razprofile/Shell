@@ -1,0 +1,162 @@
+package jShell;
+
+public class Echo extends Command{
+  
+  /*
+   * TO DO:  
+   * - Update the Append and Overwrite sections with proper Filesystem
+   *  (or whatever file-gathering mechanism we have) functionality
+   * - Add "create new file" when file doesn't exist functionality
+   * - Add errors where necessary
+   * - Testing
+   */
+  @Override
+  public void run(String[] args) {
+    Error e = new Error();
+    if (!isValid(args, Shell.getShell())) {
+      return;
+    }
+    String fullString = "";
+    String currentString = "";
+    FileSystemNode temp;
+    FileSystem f = Shell.getShell().getFileSystem();
+    Path p;
+    //From the second argument onwards, check until you find another ".
+    for (int i = 0; i < args.length ; i++) {
+      if (i != 0) { //Skip command call
+        currentString = args[i]; //Take one part of the string at a time
+        if (i == 1) {
+          // Make sure the string starts with a double quote
+          if (currentString.indexOf("\"") != 0){
+            //Throw an error
+            Shell.getShell().outputToShellln(e.errorMessage("BADSTRING"));
+            return;
+          }
+          // Begin creating the resultant string, removing the first ".
+          fullString = fullString + currentString.substring(1) + " ";
+        } else {
+          // See if there is a double quote in the other args
+          if (currentString.indexOf("\"") == -1) {
+            // No double quote, see if this is the last argument
+            // If so, then throw an error (incomplete string)
+            if (i == args.length - 1) {
+              Shell.getShell().outputToShellln(e.errorMessage("WRONGARGS"));
+              return;
+            } else {
+              //Add this string to the full string list
+              fullString = fullString + currentString + " ";
+            }
+          } else if (currentString.indexOf("\"") == (currentString.length() - 1)){
+            // Correctly terminated string -- add it to the list, trim the "
+            fullString = fullString + 
+                currentString.substring(0, (currentString.length() - 1));
+            //And shift into logic for future arguments IF there are more
+            if (i == args.length - 1) {
+              // No more arguments, print to shell
+              outputToShell(fullString, Shell.getShell());
+              return;
+            } else {
+              // Check the remaining arguments
+              if ((i + 1) == args.length - 1) {
+                // Not enough arguments
+                Shell.getShell().outputToShellln(e.errorMessage("WRONGARGS") 
+                    + " Expected an operator (> or >>) to follow.");
+                return;
+              } else if ((i + 1) < (args.length - 2)){
+                // Too many arguments
+                Shell.getShell().outputToShellln(e.errorMessage("WRONGARGS")
+                    + " Do not include multiple operators or files/paths.");
+                return;
+              }
+              // Locate file based on the next argument
+              if (Path.isValidFullPath(args[i + 2])) {
+                // FULL PATH
+                p = new Path(args[i + 2]);
+                temp = f.getNodeAtFullPath(p);
+              } else if (Path.isValidRelativePath(args[i + 2])) {
+                // RELATIVE PATH
+                p = new Path(args[i + 2]);
+                temp = f.getNodeAtRelativePath(p);
+              } else {
+                // FILE NAME: Check working directory for file
+                // Retrieve the user's current directory
+                p = Shell.getShell().getUserData().getCurPath();
+                // Store this directory in a variable
+                Directory d = (Directory) f.getNodeAtFullPath(p);
+                // Use directory methods to look for the file name
+                temp = d.getChild(args[i + 2]);
+                if (temp == null) {
+                  Shell.getShell().outputToShellln(e.errorMessage("FILENOTFOUND")
+                      + "(at " + args[i + 2] + ")");
+                  return;
+                }
+              }
+              // See if we are appending or overwriting
+              if (args[i+1].equalsIgnoreCase(">")) {
+                Shell.getShell().outputToShellln("Overwriting...");
+                overwriteFile(fullString, (File)temp);
+                return;
+              } else if (args[i+1].equalsIgnoreCase(">>")) {
+                Shell.getShell().outputToShellln("Appending...");
+                appendFile(fullString, (File)temp);
+                return;
+              } else {
+                //Error
+                Shell.getShell().outputToShellln(e.errorMessage("INVALIDARGS"));
+                return;
+              }
+            }
+          } else {
+            // Quotations in the middle of a string
+            Shell.getShell().outputToShellln(e.errorMessage("QUOTES"));
+            return;
+          }
+        }       
+      }
+    }
+    //This will be reached if there is only a one-word string with no additions
+    outputToShell(currentString.substring(1, currentString.length() - 1), Shell.getShell());
+    return;
+  }
+  
+  public Boolean isValid(String[] args, Shell s) {
+    Error e = new Error();
+    if (args.length == 1) {
+      s.outputToShellln(e.errorMessage("WRONGARGS") + " Expected at least a "
+          + "string after the initial command.");
+      return false;
+    }
+    return true;
+  }
+  
+  private void outputToShell(String output, Shell s) {
+    /**
+     * Prints out the given string directly to the shell.
+     * 
+     * @param output : the string to be printed out to the shell.
+     */
+    s.outputToShellln(output);
+  }
+  
+  private void overwriteFile(String newContents, File file) {
+    /**
+     * Overwrites the contents of a given file, replacing them with
+     * the provided user string (stored on an object-basis)
+     * 
+     * @param newContents: the string that will overwrite the contents of file.
+     * @param file : the file to be overwritten
+     */
+    file.setContents(newContents);
+  }
+  
+  private void appendFile(String addition, File file) {
+    /**
+     * Appends the user's given string to the contents of a user-given file.
+     * 
+     * @param addition: the string to be appended to the file's contents
+     * @param file : the file to have the string appended on to.
+     */
+    file.setContents(file.getContents() + " " + addition);
+  }
+
+}

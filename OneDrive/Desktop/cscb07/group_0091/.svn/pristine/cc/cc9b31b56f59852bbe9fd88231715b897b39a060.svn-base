@@ -1,0 +1,75 @@
+package test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.DirNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.UnknownErrorException;
+import jShell.commands.Cp;
+import jShell.fileSystem.Path;
+import jShell.mockClasses.MockFileSystem;
+import jShell.mockClasses.MockShell;
+
+public class CpTest {
+  MockShell shell;
+  Cp cp;
+
+
+  @Before
+  public void setUp() throws Exception {
+    shell = new MockShell();
+    cp = new Cp();
+  }
+
+  @Test
+  public void testToString() {
+    assertEquals("cp", cp.toString());
+  }
+
+  @Test(expected = ArgsNumberException.class)
+  public void testTooManyArgs() throws ArgsNumberException,
+      InvalidPathException, DirNotFoundException, NodeExistsException {
+    String[] params = {"cp", "a", "b", "c"};
+    try {
+      cp.run(params);
+    } catch (InvalidPathException | NodeExistsException
+        | UnknownErrorException e) {
+      fail("Shouldnt throw these exceptions");
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void testTwoDirs() {
+    String[] params = {"cp", MockFileSystem.validDirRelativePath,
+        MockFileSystem.validAnotherDirFullPath};
+    try {
+      cp.run(params);
+      Path test =new Path(MockFileSystem.validDirRelativePath);
+      String sometiung = test.getBottomName();
+      assertTrue(!MockFileSystem.workingDir.ifChildExists(sometiung));
+      assertTrue(!MockFileSystem.anotherDir.ifChildExists(
+          (new Path(MockFileSystem.validDirRelativePath).getBottomName())));
+    } catch (InvalidPathException | ArgsNumberException | NodeExistsException
+        | UnknownErrorException e) {
+      fail("Shouldnt throw anything.");
+      e.printStackTrace();
+    }
+
+  }
+
+  @After
+  public void tearDown() throws Exception {}
+
+  @Test
+  public void testTwoDir() {
+    // fail("Not yet implemented");
+  }
+
+}

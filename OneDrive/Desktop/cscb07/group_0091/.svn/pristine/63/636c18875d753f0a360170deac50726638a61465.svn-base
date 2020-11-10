@@ -1,0 +1,77 @@
+package jShell.commands;
+
+import java.util.Arrays;
+
+import jShell.Directory;
+import jShell.Error;
+import jShell.Path;
+import jShell.Shell;
+
+public class Mkdir extends Command{
+	
+	
+	/**
+	 * Create a new directory at a given path, assuming specified path is valid and exists
+	 * 
+	 * @param args arguments for mkdir command
+	 */
+	public void run(String args[]) {
+		Error e = new Error();
+		
+		//Getting rid of the first argument which is command's name
+		args = Arrays.copyOfRange(args, 1, args.length);
+		
+		//Path of the directory to be created
+		Path path = new Path(args[0]);
+				
+		//Getting the location of the directory that is being modified
+		Path location = path.getParentPath();
+				
+		//Checking if given location corresponds to a valid location at current file tree
+		if (!location.isValidFullPath() && !location.isValidRelativePath()) {
+			Shell.getShell().outputToShellln(e.errorMessage("PATHNOTFOUND"));
+			return ;
+		}
+				
+		//Checking if specified location is a directory, not a file
+		if (!location.isFullPathEndingWithDirectory() && !location.isRelativePathEndingWithDirectory()) {
+			Shell.getShell().outputToShellln(e.errorMessage("PATHNOTFOUND"));
+			return ;
+		}
+				
+		//Checking if directory with given name already exists
+		if (path.isValidFullPath() || path.isValidRelativePath()) {
+			Shell.getShell().outputToShellln(e.errorMessage("EXISTS"));
+			return ;
+		}
+		
+		/*
+		 * Creating a new directory
+		 */
+		
+		Directory newDir = Shell.getShell().getFileSystem().createNewDirectory(path);
+		if (newDir == null) {
+			Shell.getShell().outputToShellln(e.errorMessage("PATHNOTFOUND"));
+		}
+		
+	}
+	
+	/**
+	 * Return true if arguments in args are valid, and return false otherwise. 
+	 * If arguments are invalid, print an error message.
+	 * 
+	 * @param args
+	 * @return true, if arguments args are valid
+	 */
+	public boolean isValid(String args[]) {
+				
+		//Checking if exactly two arguments are passed 
+		if (args.length != 2) {
+			return false;
+		}
+		
+		return true;
+
+	}
+
+}

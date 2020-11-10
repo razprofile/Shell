@@ -1,0 +1,48 @@
+package jShell;
+
+public class File extends FileSystemNode {
+ 
+  private String contents; // Since the only "files" we are handling are .txt
+
+  public File(String name) {
+    
+    setName(name);
+  }
+
+  public File(String name, Path path) {
+    
+    setName(name);
+    setPath(path);
+  }
+
+  /**
+   * Provides the name of a particular file object
+   * 
+   * @return the name of the file
+   */
+  public boolean ifChildExists(String name) {
+    
+    return false;
+  }
+
+  /**
+   * Populates the contents of this file with whatever text the user desires
+   * 
+   * @param contents the text to be added to the file
+   */
+  public void setContents(String contents) {
+    
+    this.contents = contents;
+  }
+
+  /**
+   * Opens and returns the contents of this file
+   * 
+   * @return the contents of the file
+   */
+  public String getContents() {
+    
+    return contents;
+  }
+
+}

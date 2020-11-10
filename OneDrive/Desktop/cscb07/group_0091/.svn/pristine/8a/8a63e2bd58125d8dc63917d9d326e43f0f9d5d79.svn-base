@@ -1,0 +1,12 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class DirNotFoundException extends Error {
+
+  private static final String errorTemplate = "Dir not found: %s.";
+
+  public DirNotFoundException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

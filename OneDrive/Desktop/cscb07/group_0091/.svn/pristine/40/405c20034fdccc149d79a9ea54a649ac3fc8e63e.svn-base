@@ -1,0 +1,20 @@
+package jShell;
+
+public class Cd extends Command {
+
+	@Override
+	public void run(String[] args) {
+	  Error e = new Error();
+		if(args.length > 2) {
+			Shell.getShell().outputToShellln(e.errorMessage("WRONGARGS")
+			    + " Please only include one directory to change to.");
+			return;
+		}
+		if(args.length == 1) {
+			return;
+		}
+		Shell.getShell().outputToShellln("moveing to " + args[1]);
+
+	}
+
+}

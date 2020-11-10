@@ -1,0 +1,144 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+import jShell.interfaces.*;
+
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import jShell.Path;
+
+/**
+ * Ls class handles all operations related to ls command, namely checks if arguments are valid
+ * arguments for ls command and outputs the contents of specified location or multiple locations in
+ * the file system tree.
+ * 
+ * @author Sasha (Oleksandr)
+ *
+ */
+
+public class Find extends Command {
+	
+  public Find(IShell shell) {
+    super(shell);
+  }
+
+
+  public String run(String[] args) {
+    ArrayList<IFileSystemNode> foundNodes = new ArrayList<IFileSystemNode>();
+    Queue<IDirectory> searchIn = new LinkedList<IDirectory>();;
+    IPath path = new Path(args[1]);
+    if (args[1].equals("-type")) {
+      searchIn.add((IDirectory) shell.getFileSystem()
+          .getNodeAtPath(shell.getUserData().getCurPath()));
+    } else if (path.isValidPath()) {
+      for (int i = 1; path.isValidPath(); i++) {
+        path = new Path(args[i]);
+        if (!path.isValidPath()) {
+          break;
+        }
+        // try {
+        searchIn.add(
+            (IDirectory) shell.getFileSystem().getNodeAtPath(path));
+        // } catch (ClassCastException e) {
+        // TODO add error
+        // return;
+        // }
+
+      }
+
+    } else {
+      // TODO add error
+      return "";
+    }
+    ArrayList<String> list = new ArrayList<String>(Arrays.asList(args));
+    String name = String
+        .join(" ",
+            Arrays.copyOfRange(args, list.indexOf("-name") + 1, args.length))
+        .replace("\"", "");
+    try {
+      Iterator<IDirectory> iterator = searchIn.iterator();
+      while (iterator.hasNext()) {
+        IFileSystemNode node = iterator.next().getChild(name);
+        if (node == null) {
+          continue;
+        }
+        switch (args[list.indexOf("-type") + 1]) {
+          case ("d"):
+            if (!(node instanceof IDirectory)) {
+              // TODO Print error
+              continue;
+            }
+            foundNodes.add(node);
+            break;
+          case ("f"):
+            if (!(node instanceof IFile)) {
+              // TODO Print error
+              continue;
+            }
+            foundNodes.add(node);
+            break;
+          default:
+            // TODO print error
+            return "";
+        }
+      }
+    } catch (IndexOutOfBoundsException e) {
+      // TODO print error
+      return "";
+    }
+
+    if (foundNodes.isEmpty()) {
+      // TODO print error
+      return "";
+    }
+    foundNodes
+        .forEach(x -> shell.outputToShell(x.getPath().toString()));
+    return "";
+  }
+
+  @Override
+  public HashMap<String, String> isValid(String[] args) {
+    // TODO Auto-generated method stub
+    return new HashMap<String, String>();
+  }
+
+  @Override
+  public String toString() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+}

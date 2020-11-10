@@ -1,0 +1,277 @@
+package jShell.commands;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import jShell.Error;
+import jShell.Shell;
+
+/**
+ * The Man class holds all of the functions related to the Man command. It
+ * inherits some basic methods from the Command class in order to function
+ * properly within the Shell system as a whole.
+ * 
+ * Man returns a small document in the shell regarding the details of a given
+ * command.
+ * 
+ * @author Kevin Meharchand
+ *
+ */
+public class Man extends Command {
+	/**
+	 * The overridden run method inherited from the Command class. Simply determines
+	 * which manual to print out, giving an error if that command hasn't been added
+	 * to the system yet.
+	 */
+	@Override
+	public void run(String[] args) {
+		if (args[1].equalsIgnoreCase("cd")) {
+			printManualCd();
+		} else if (args[1].equalsIgnoreCase("cat")) {
+			printManualCat();
+		} else if (args[1].equalsIgnoreCase("echo")) {
+			printManualEcho();
+		} else if (args[1].equalsIgnoreCase("exit")) {
+			printManualExit();
+		} else if (args[1].equalsIgnoreCase("history")) {
+			printManualHistory();
+		} else if (args[1].equalsIgnoreCase("ls")) {
+			printManualLs();
+		} else if (args[1].equalsIgnoreCase("man")) {
+			printManualMan();
+		} else if (args[1].equalsIgnoreCase("mkdir")) {
+			printManualMkdir();
+		} else if (args[1].equalsIgnoreCase("popd")) {
+			printManualPopd();
+		} else if (args[1].equalsIgnoreCase("pushd")) {
+			printManualPushd();
+		} else if (args[1].equalsIgnoreCase("pwd")) {
+			printManualPwd();
+		} else if (args[1].equalsIgnoreCase("speak")) {
+			printManualSpeak();
+		} else {
+			Shell.getShell().outputErrorMessage(this, args[1], "INVALIDARGS");
+			Shell.getShell()
+					.outputToShellln("Please make sure the command " + "following \"man\" is a " + "valid command.");
+		}
+	}
+
+	@Override
+	public HashMap<String, String> isValid(String[] args) {
+		// HashMap to map every argument by an error it caused
+		HashMap<String, String> errors = new HashMap<String, String>();
+
+		// Checking if correct number of arguments is specified
+		if (args.length != 2) {
+			errors.put("all", "WRONGARGS");
+			return errors;
+		}
+
+		// Checking if argument is a valid command
+		String[] commands = { "cat", "cd", "echo", "exit", "history", "ls", "mkdir", "popd", "pushd", "pwd", "speak", "man" };
+
+		if (!Arrays.asList(commands).contains(args[1])) {
+			// Command is not in the list
+			errors.put(args[1], "NOCOMMAND");
+		}
+
+		return errors;
+	}
+
+	private void printManualCd() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The cd Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: cd [DIRECTORY]");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("This command will change the current " + "Directory to 'DIRECTORY'.");
+		Shell.getShell()
+				.outputToShellln("DIRECTORY may be relative to the current" + " directory, or it may be a full path.");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Similarly to Unix and other shells," + " .. indicates a parent directory");
+		Shell.getShell().outputToShellln("and . indicates the current directory");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	private void printManualCat() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The cat Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: cat FILE1 [FILE2 FILE3 ...]");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("This command will print out the contents" + " of all files indicated");
+		Shell.getShell().outputToShellln("(minimum 1) concatenated in the shell.");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("FILE can be a file name in the current " + "working directory, or it");
+		Shell.getShell().outputToShellln("can be a partial or full path to another" + " file in another directory.");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	private void printManualEcho() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The echo Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: echo STRING [> FILE]");
+		Shell.getShell().outputToShellln("Usage: echo STRING [>> FILE]");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("This command has multiple variants.");
+		Shell.getShell().outputToShellln("Variant 1: echo STRING");
+		Shell.getShell().outputToShellln("Simply prints out the given STRING" + " back into the shell.");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Variant 2: echo STRING > FILE");
+		Shell.getShell().outputToShellln("Takes the given STRING and writes it " + "into the given FILE,");
+		Shell.getShell().outputToShellln(
+				"overwriting the contents of FILE" + " if it exists, and creating FILE if it doesn't.");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Variant 3: echo STRING >> FILE");
+		Shell.getShell().outputToShellln(
+				"Takes the given STRING and appends it " + "to the end of the current contents of FILE.");
+		Shell.getShell().outputToShellln("This variant will also" + " create FILE if it does not exist.");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	private void printManualExit() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The exit Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: exit");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell()
+				.outputToShellln("The exit command closes the shell" + " entirely. Adding any arguments after the");
+		Shell.getShell().outputToShellln("initial command will result" + " in an error. Nothing else to see here!");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	private void printManualHistory() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The history Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: history [NUMBER]");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln(
+				"The history command prints out into the " + "shell a list of the most recently entered commands.");
+		Shell.getShell().outputToShellln("This list can be shortened by adding a " + "number after the command. ");
+		Shell.getShell().outputToShellln("If no number is specified, then all " + "commands up to and including");
+		Shell.getShell().outputToShellln("the current instance of the history " + "command will be listed.");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	private void printManualMan() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The man Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: man COMMAND");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln(
+				"The man command prints out the" + " documentation for a given COMMAND into the shell.");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	private void printManualLs() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The ls Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: ls [PATH ...]");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("The ls command prints out to the shell"
+				+ " the contents of the current directory if no PATH is specified.");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln(
+				"If a PATH is specified, ls will print " + "out the contents of the specified directory at the path.");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln(
+				"If the given PATH ends at a file, the" + " name of that file will be printed out instead");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Multiple PATHs may be included after the "
+				+ "first. If so, the contents of each will be displayed in the order" + " given.");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("If any PATHs included as arguments are"
+				+ " invalid/do not exist, an error message will be returned instead" + " of any output.");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	private void printManualMkdir() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The mkdir Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: mkdir DIRECTORY");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell()
+				.outputToShellln("The mkdir command creates a user-given" + " DIRECTORY at the user-specified path.");
+		Shell.getShell().outputToShellln(
+				"DIRECTORY may be either a full path" + " or a path relative to the current directory.");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	private void printManualPopd() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The popd Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: popd");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln(
+				"The popd command removes the top " + "directory stored in the directory stack (see pushd)");
+		Shell.getShell().outputToShellln("and changes the" + " current working directory to said " + "directory.");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("If there are no directories stored" + " in the stack, then popd will not ");
+		Shell.getShell().outputToShellln("move the user's current directory.");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	private void printManualPushd() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The pushd Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: pushd DIRECTORY");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln(
+				"The pushd command takes the current " + " directory and saves it onto the directory stack.");
+		Shell.getShell().outputToShellln("The current directory will then change" + " to the user-given DIRECTORY.");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	private void printManualPwd() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The pwd Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: pwd");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln(
+				"The pwd command simply prints out the" + " current working directory (including its whole path).");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	private void printManualSpeak() {
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+		Shell.getShell().outputToShellln("The speak Command:");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln("Usage: speak [STRING]");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell()
+				.outputToShellln("The speak command will convert a" + " user-given STRING into audible speech output.");
+		Shell.getShell().outputToShellln("");
+		Shell.getShell().outputToShellln(
+				"The STRING parameter is optional. If " + " excluded, the speak command will then enter");
+		Shell.getShell().outputToShellln(
+				"a state in which the user may" + " type in any input they wish, followed by the word ");
+		Shell.getShell().outputToShellln("QUIT (case-" + "sensitive) to have the output play.");
+		Shell.getShell().outputToShellln("~~~~~~~~~~~~~~~~~~~~");
+	}
+
+	@Override
+	public String toString() {
+
+		return "man";
+
+	}
+	/*
+	 * public static void main (String[] args) { //Test 1: No command after man
+	 * Shell s = new Shell(); Man m = new Man(); String[] test = {"man"};
+	 * m.run(test); //Should return an error //Test 2: Correct command after man
+	 * String[] test2 = {"man", "cat"}; m.run(test2); //Should return the manual for
+	 * Cat //Test 3: incorrect command after man String[] test3 = {"man", "brown"};
+	 * m.run(test3); //Should return an error //Test 4: More than one command asked
+	 * for //String[] test4 = {"man", "cat", "ls"}; //m.run(test4); //Should return
+	 * an error. It will crash when run through this // Command's main function, but
+	 * not when called via jShell.driver // (as isValid is called by the shell) }
+	 */
+}

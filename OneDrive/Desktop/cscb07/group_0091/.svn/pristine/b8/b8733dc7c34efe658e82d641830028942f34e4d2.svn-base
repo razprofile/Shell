@@ -1,0 +1,43 @@
+package jShell.commands;
+
+import jShell.Error;
+import jShell.Shell;
+
+public class Pwd extends Command {
+  
+  public boolean isValid(String[] args) {
+    if (args.length != 1) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Prints the full path to current working directory.
+   */
+  public void run(String args[]) {
+    // checking if the arguments entered are valid
+    if (isValid(args)) {
+      //just get current path and print in
+      Shell.getShell().outputToShellln(Shell.getShell().getUserData().getCurPath().toString());
+     
+
+    }
+
+    /*
+     * Print path to current working directory. To be updated, once UserData and Path classes are
+     * done.
+     */
+    
+    Shell.getShell()
+        .outputToShellln("Printing the path to current working directory from UserData");
+  };
+}
+  /**
+   * Return true if arguments args for pwd command are valid, return false otherwise. If arguments
+   * are invalid, print error message.
+   * 
+   * @param args
+   * @return true if arguments in args are valid
+   */
+  

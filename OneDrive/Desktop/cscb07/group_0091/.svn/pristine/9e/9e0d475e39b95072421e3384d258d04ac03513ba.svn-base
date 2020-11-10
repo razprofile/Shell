@@ -1,0 +1,12 @@
+Class name: InputFile
+Parent class: File
+Subclasses: none
+
+Responsibilities:
+* open file for reading
+* read contents of the file
+* close file
+* if file not found, give an error
+
+Collaborators:
+* Error

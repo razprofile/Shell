@@ -1,0 +1,66 @@
+package test;
+
+import static org.junit.Assert.*;
+import java.util.HashMap;
+import org.junit.Test;
+import jShell.commands.Echo;
+import jShell.mockClasses.MockShell;
+
+public class EchoTest {
+  
+  MockShell s = new MockShell();
+  Echo e = new Echo(s);
+  HashMap<String, String> expectedErrors = new HashMap<String, String>();
+
+  @Test
+  public void testRun() {
+    String[] params = {"echo", "\"hello\""};
+    e.run(params);
+    assertEquals("Single word", "hello\n", s.output.get(0));
+    String[] params2 = {"echo", "\"hello", "world\""};
+    e.run(params2);
+    assertEquals("Longer word", "hello world\n", s.output.get(1));
+    String[] params3 = {"echo", "hello"};
+    e.run(params3);
+    assertEquals("Bad string error", "Error caused by all. Type of error: BADSTRING", s.output.get(2));
+    String[] params4 = {"echo", "\"hello", "th\"ere\""};
+    e.run(params4);
+    assertEquals("Quotes inside a string", "Error caused by th\"ere\". Type of error: BADSTRING", s.output.get(3));
+  }
+  
+  @Test
+  public void testRunRedirection() {
+    String[] params = {"echo", "\"hello\"", ">", "file"};
+    e.run(params);
+    assertEquals("Single word", "Redirecting output for overwriting: hello\n to file with name: file\n", s.output.get(0));
+    String[] params2 = {"echo", "\"hello", "world\"", ">", "file"};
+    e.run(params2);
+    assertEquals("Longer word", "Redirecting output for overwriting: hello world\n to file with name: file\n", s.output.get(1));
+    String[] params3 = {"echo", "hello", ">", "file"};
+    e.run(params3);
+    assertEquals("Bad string error", "Error caused by all. Type of error: BADSTRING", s.output.get(2));
+    String[] params4 = {"echo", "\"hello", "th\"ere\"", ">>", "file"};
+    e.run(params4);
+    assertEquals("Quotes inside a string", "Error caused by th\"ere\". Type of error: BADSTRING", s.output.get(3));
+  }
+
+  @Test
+  public void testIsValid() {
+    String[] params = {"echo"};
+    expectedErrors.put("all", "WRONGARGS");
+    assertEquals("Not enough arguments", expectedErrors, e.isValid(params));
+  }
+  
+  @Test
+  public void testIsValidBadString() {
+    String[] params = {"echo", "hello\""};
+    expectedErrors.put("hello\"", "BADSTRING");
+    assertEquals("Not enough arguments", expectedErrors, e.isValid(params));
+  }
+
+  @Test
+  public void testToString() {
+    assertEquals("echo", e.toString());
+  }
+
+}

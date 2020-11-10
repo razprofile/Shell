@@ -1,0 +1,12 @@
+Class name: Cd
+Parent class: ShellCommand
+Subclasses: none
+
+Responsibilities:
+* Go to a subdirectory with a given name from the current directory.
+* Go to a subdirectory with a given name at given path.
+* Go back to parent directory.
+
+Collaborators:
+* Path
+* Directory

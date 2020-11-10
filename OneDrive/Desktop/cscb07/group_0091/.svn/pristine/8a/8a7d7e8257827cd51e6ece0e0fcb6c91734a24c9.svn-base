@@ -1,0 +1,277 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+import jShell.commands.*;
+import jShell.interfaces.*;
+
+/**
+ * Main shell class
+ * 
+ * @author Raz
+ */
+public class Shell implements IShell{
+
+  private static Shell Shell = null; // The main shell object for all classes to use
+  private InputModeCommand inputMode = null;
+
+  public void setInputMode(InputModeCommand inputMode) {
+    this.inputMode = inputMode;
+  }
+
+  public InputModeCommand getInputMode() {
+    return inputMode;
+  }
+
+  private UserData userData;
+  private ArrayList<Command> commands; // Stores all the commands
+
+  private Scanner input; // User input for the Shell
+  private FileSystem fileSystem;
+  private boolean running; // Keep track if the Shell is running
+  
+  private Redirection redirect; //Single Redirection object to be used by all classes
+  private Error err; //Single Error object to be used by all classes
+
+  /**
+   * constructor for Shell
+   */
+  private Shell() {
+
+    Shell = this;
+    setIsRunning(true);
+    commands = new ArrayList<Command>();
+    input = new Scanner(System.in);
+    fileSystem = FileSystem.getFileSystem();
+    redirect = new Redirection(Shell);
+    err = new Error();
+    userData = new UserData(new Path("/"), Shell);
+    registerCommands();
+    // TODO Add directory class and create an object for it here
+  }
+
+  /**
+   * Returns the fileSystem
+   * 
+   * @return The main FileSystem for the shell
+   */
+  public IFileSystem getFileSystem() {
+
+    return fileSystem;
+    
+  }
+
+  /**
+   * Returns userData
+   * 
+   * @return The main UserData object for the shell
+   */
+  public IUserData getUserData() {
+
+    return userData;
+  }
+
+  // Register all commands to the shell.
+  private void registerCommands() {
+     commands.add(new Exit(Shell));
+     commands.add(new Speak(Shell));
+     commands.add(new Mkdir(Shell));
+     commands.add(new Cd(Shell));
+     commands.add(new Cat(Shell));
+     commands.add(new Echo(Shell));
+     commands.add(new Man(Shell));
+     commands.add(new Pwd(Shell));
+     commands.add(new Ls(Shell));
+     commands.add(new Pushd(Shell));
+     commands.add(new Popd(Shell));
+     commands.add(new History(Shell));
+     commands.add(new Mv(Shell));
+     commands.add(new Cp(Shell));
+     commands.add(new Rm(Shell));
+     commands.add(new Find(Shell));
+     //commands.add(new CommandName());
+  }
+
+  /**
+   * Terminate shell
+   */
+  public void shutDown() {
+
+    commands.stream().filter(command -> command.getClass() == Speak.class)
+        .forEach(x -> 
+          ((Speak) x).shutDown()
+        );
+  }
+
+  /**
+   * Returns shell
+   * 
+   * @return The shell object all others classes use
+   */
+  public static Shell getShell() {
+
+	if (Shell == null) {
+		Shell = new Shell();
+	}
+	
+	return Shell;
+  }
+
+  /**
+   * Returns the input the user typed in the shell
+   * 
+   * @return The input the user typed in the shell
+   */
+  public String getUserInput() {
+
+    return this.input.nextLine();
+  }
+
+  /**
+   * Output a value to the shell.
+   * 
+   * @param The value to be output to the shell
+   */
+  public void outputToShell(String value) {
+
+    System.out.print(value);
+  }
+
+  /**
+   * Processes user's input.
+   * 
+   * @param The input the user typed to the shell
+   */
+  public void onInput(String input) {
+    if (inputMode != null) {
+      getUserData().getCommandHistory().set(
+          getUserData().getCommandHistory().size() - 1,
+          getUserData().getCommandHistory().get(
+              Shell.getUserData().getCommandHistory().size() - 1)
+              + " " + input);
+      inputMode.onInput(input);
+      return;
+    }
+    userData.getCommandHistory().add(input);
+    /*
+     * Get rid of all white spaces, and split the arguments into a String array
+     */
+    String args[] = input.trim().split("\\s+");
+    /*
+     * Check if command exists by comparing the first argument to class name
+     */
+    for (Command c : this.commands) {
+      if (c.getClass().getSimpleName().toLowerCase().equals(args[0])) {
+        // run command
+        if (!c.isValid(args).isEmpty()) {
+          for (String invalidArgument : c.isValid(args).keySet()) {
+            String errorCode = c.isValid(args).get(invalidArgument);
+            this.outputErrorMessage(c, invalidArgument, errorCode);
+          }
+          return;
+        }
+        String output = c.run(args);
+        outputToShell(output);
+        return;
+      }
+    }
+    // If the command does not exist, output an error.
+    Error e = new Error();
+    outputToShell(e.errorMessage("NOCOMMAND") + "\n");
+
+  }
+
+  /**
+   * Returns Whether the program is running or not
+   * 
+   * @return Whether the program is running or not
+   */
+  public boolean isRunning() {
+
+    return running;
+  }
+
+  /**
+   * Sets running to isRunning
+   * 
+   * @param The boolean value of isRunning
+   */
+  public void setIsRunning(boolean isRunning) {
+
+    running = isRunning;
+  }
+
+  /**
+   * Prints invalid argument and an error message in case of invalid arguments for the command being
+   * executed
+   * 
+   * @param c command with invalid arguments
+   * @param invalidArgument invalid argument; "all" if all arguments are invalid
+   * @param errorCode error code for error that occured
+   */
+  public void outputErrorMessage(ICommand c, String invalidArgument,
+      String errorCode) {
+
+    Error e = new Error();
+    if (invalidArgument.equals("all")) {
+      // If all arguments are invalid, print error message without specifying
+      // the argument
+      this.outputToShell(c.toString() + ": " + e.errorMessage(errorCode) + "\n");
+    } else {
+      // Output error message specifying invalid argument
+      this.outputToShell(c.toString() + ": " + invalidArgument + ": "
+          + e.errorMessage(errorCode) + "\n");
+    }
+
+  }
+  
+  /**
+   * Method to get reference to redirection
+   * 
+   * @return reference to redirection
+   */
+  public IRedirection getRedirection() {
+	  return redirect;
+  }
+  
+  /**
+   * Method to get reference to error
+   * 
+   * @return reference to error
+   */
+  public IError getError() {
+	  return err;
+  }
+
+}

@@ -1,0 +1,87 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+
+package jShell.commands;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.interfaces.IFileSystem;
+import jShell.interfaces.IRedirection;
+
+
+/**
+ * Tree command prints out the entire FileSystem hierarchy, starting from the 
+ * root. Each level is indented by a tab character. Tree also supports 
+ * redirection, a user can redirect the output to a file.
+ * 
+ * @author Sankalp Sharma
+ */
+
+public class Tree extends Command {
+	
+  public Tree() {
+	super();
+  }
+  
+  
+  public String run(String[] args)
+      throws InvalidPathException, ArgsNumberException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException {
+    
+    if (args.length != 1 && args.length !=3) {
+      throw new ArgsNumberException();
+    }
+   //create redirection, filesystem objects as required
+   IRedirection r = shell.getRedirection(); 
+   IFileSystem f = shell.getFileSystem();
+   //call filesystem's recursive method
+   String outputStr = f.toString();
+   if (args.length == 3 && (args[1].equalsIgnoreCase(">") ||
+       args[1].equalsIgnoreCase(">>"))) {
+     r.fileHandling(args[1], args[2], outputStr);
+     
+   }
+   //just print normally
+   else {
+     return outputStr;
+   }
+   return "";
+  }
+
+  @Override
+  public String toString() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+}

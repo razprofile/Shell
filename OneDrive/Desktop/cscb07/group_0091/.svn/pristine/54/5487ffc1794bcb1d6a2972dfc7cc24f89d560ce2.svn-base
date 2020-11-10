@@ -1,0 +1,14 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+import java.util.Formatter;
+
+public class InvalidURLException extends Error {
+
+  private static final String errorTemplate = "Invalid URL: %s.";
+
+  public InvalidURLException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

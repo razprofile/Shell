@@ -1,0 +1,334 @@
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.Error;
+import jShell.FileSystem;
+import jShell.Path;
+import jShell.Shell;
+import jShell.Redirection;
+
+/**
+ * The Echo class handles all operations related to the Echo command. It 
+ * inherits some basic methods from the Command class in order to function
+ * properly within the Shell system as a whole.
+ * 
+ * Echo displays a user-given string in the shell. If an operator and file
+ * follow the string, the output is instead stored in the given file. 
+ * 
+ * Operators can be either > for overwriting, or >> for appending to a file.
+ * Both operators are capable of creating new files (at local, relative or
+ * absolute paths) but cannot create directories.
+ * @author Kevin Meharchand
+ *
+ */
+public class Echo extends Command{
+  
+  
+  /**
+   * The overridden run method inherited from the Command class. Acts as a 
+   * main hub, calling helper functions when necessary, otherwise keeping 
+   * track of which argument is currently being parsed and handled.
+   */
+  @Override
+  public void run(String[] args) {
+    Error e = new Error();
+    String fullString = "";
+    String currentString = "";
+    boolean quotes;
+    for (int i = 1; i < args.length ; i++) {
+        currentString = args[i]; //Take one part of the string at a time
+        if (i == 1) { // Check the start of the string
+          fullString = handleFirstString(currentString, args);
+          if (fullString == null) { //If anything went wrong, end
+            return;
+          }
+          quotes = quoteCheck(currentString);
+          if (checkProcedure(quotes, i, args, fullString)) {
+            return;
+          }
+        } else { //Check other arguments
+          quotes = quoteCheck(currentString); //Store if the string was ended
+          currentString = handleOtherStrings(currentString, args, i);
+          if (currentString == null) {
+            return;
+          } else {
+            fullString = fullString + currentString;
+            if (checkProcedure(quotes, i, args, fullString)) {
+              return;
+            }
+            }
+          }       
+        }
+      Shell.getShell().outputErrorMessage(this, "all", "BADSTRING");
+      }
+  
+  @Override
+  public HashMap<String, String> isValid(String[] args) {
+    //HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+    
+	//Checking if correct number of arguments is passed
+    if (args.length < 2) {
+      errors.put("all", "WRONGARGS");
+      return errors;
+    }
+    
+    //Check for correctness of the string
+    if (!args[1].startsWith("\"") || !args[1].startsWith("\"")) {
+    	//String must be surrounded by ""
+        errors.put(args[1], "BADSTRING");
+        return errors;
+    }
+    
+    return errors;
+  }
+  
+  /**
+   * Checks to see if the string is correctly terminated.
+   * 
+   * @param currentString The section of the user's input to be checked
+   * @return a boolean value based on if the string has quotes at the end
+   * or not.
+   */
+  private boolean quoteCheck(String currentString) {
+    if (currentString.startsWith("\"") && currentString.endsWith("\"")
+        && (currentString.substring(1).indexOf("\"")
+        == currentString.length() - 2)) {
+      return true;
+    }
+    if ((currentString.endsWith("\"")) && 
+        (currentString.indexOf("\"") == currentString.length() - 1)){
+      return true; //Correctly terminated, no quotes within
+    }
+    return false;
+  }
+  
+  /**
+   * A helper function used to determine if the program is going to shift into
+   * logic for Redirection or printing to the shell
+   * @param quotes A boolean determining if the string is properly terminated
+   * @param i the current index of the outside loop for this command
+   * @param args the user-entered arguments
+   * @param fullString the current resultant string up to this point
+   * @return A boolean value representing if the command has completed its
+   * procedures (true) or not (false)
+   */
+  private boolean checkProcedure(boolean quotes, int i, String[] args,
+      String fullString) {
+    boolean failureCheck = false;
+    Redirection r = new Redirection();
+    FileSystem f = Shell.getShell().getFileSystem();
+    if (i == args.length - 1 && quotes == true) { // No more arguments
+      outputToShell(fullString, Shell.getShell());
+      return true;
+    }
+    if ((quotes == true) && ((args[i+1].equalsIgnoreCase(">")) || 
+            (args[i+1].equalsIgnoreCase(">>")))) {
+      boolean opCheck = checkOperatorAndFile(i, args);
+      if (opCheck == true) {
+        try {
+        r.fileHandling(args[i+1], args[i+2], fullString, f);
+        } catch (Exception nullPoint) {
+          Shell.getShell().outputToShell("");
+          failureCheck = true;
+        }
+        return true;
+      }
+      if (!failureCheck) {
+      return true;
+      }
+    } else if ((quotes == true) && (!((args[i+1].equalsIgnoreCase(">")) || 
+        (args[i+1].equalsIgnoreCase(">>"))))) {
+        Shell.getShell().outputToShellln("echo: Error: Argument type is "
+            + "incorrect. Operators for redirection must be > or >>");
+        return true;
+    }
+    return false;
+  }
+  
+  /**
+   * Specific operations designed for handling either the start of a given
+   * string, or for handling a one-word long string.
+   * 
+   * @param firstString : The first string input given by the user
+   * @param args : The list of arguments given by the user
+   * @return A formatted string if successful, otherwise returns null.
+   */
+  private String handleFirstString(String firstString, String[] args) {
+    Error e = new Error();
+    if (!(firstString.startsWith("\""))){ //Check for starting quotes
+      Shell.getShell().outputErrorMessage(this, "all", "BADSTRING");
+      return null;
+    } else if (firstString.startsWith("\"") && firstString.endsWith("\"")) {
+      try {
+      return (firstString.substring(1, firstString.length() - 1));
+      } catch (Exception onlyOneQuotation) {
+        if (args.length == 2) {
+        Shell.getShell().outputErrorMessage(this, "all", "BADSTRING");
+        return null;
+        } else {
+        return " ";
+        }
+      }
+    }
+      try {
+        return (firstString.substring(1));
+      } catch (Exception onlyOneCharacter) {
+        Shell.getShell().outputErrorMessage(this, "all", "BADSTRING");
+        return null;
+      }
+    }
+  
+  /**
+   * Performs concatenation and other operations on subsequent arguments past
+   * the start of the user-given string.
+   * 
+   * @param currentString : the current section of the string being analyzed
+   * @param args : the list of arguments following the command call
+   * @param i : the current index of arguments to be analyzed
+   * @return A formatted string to be added to the overall contents of
+   * the file if successful, otherwise returns null 
+   */
+  private String handleOtherStrings(String currentString, String[] args, int i){
+    Error e = new Error();
+    if (currentString.indexOf("\"") == -1) { // No double quote
+      if (i == args.length - 1) { //If this is the last argument, error
+        Shell.getShell().outputErrorMessage(this, "all", "BADSTRING");
+        return null;
+      } else {
+        return (" " + currentString); //Add to result
+      }
+    } else if ((currentString.endsWith("\"")) && 
+        (currentString.indexOf("\"") == currentString.length() - 1)){ //Correctly terminated
+        return (" " + currentString.substring(0, (currentString.length() - 1)));
+    } else {
+      // Quotations in the middle of a string
+      Shell.getShell().outputErrorMessage(this, currentString, "BADSTRING");
+      return null;
+    }
+  }
+  
+  /**
+   * Checks the user-given operator (> or >>) and file (absolute path, relative
+   * path or local file) for validity
+   * 
+   * @param currentArg : an index representing the current amount of arguments
+   * remaining in the command call.
+   * @param args : The list of arguments given with the command
+   * @return a boolean value representing the success or failure of this
+   * check
+   */
+  private boolean checkOperatorAndFile(int currentArg, String[] args) {
+    Error e = new Error();
+    if ((currentArg + 1) == (args.length - 1)) {
+      // Not enough arguments
+      Shell.getShell().outputErrorMessage(this, "all", "WRONGARGS");
+      Shell.getShell().outputToShell(" Please add a file after your "
+          + "desired operator.");
+      return false;
+  } else if ((currentArg + 1) < (args.length - 2)){
+      // Too many arguments
+      Shell.getShell().outputErrorMessage(this, "all", "WRONGARGS");
+      Shell.getShell().outputToShellln("Do not include multiple operators "
+          + "or files/paths.");
+      return false;
+    } else {
+      return true;
+    }
+  }
+  
+  /**
+   * Prints out the given string directly to the shell.
+   * 
+   * @param output : the string to be printed out to the shell.
+   * @param s : The active shell instance
+   */
+  private void outputToShell(String output, Shell s) {
+    s.outputToShellln(output);
+  }
+  
+  @Override
+  public String toString() {
+    
+    return "echo";
+    
+  }
+  /*
+  public static void main (String[] args) {
+    //Testing!! Fun fun fun!
+    Shell s = new Shell(); //To accommodate the necessary imports
+    Echo e = new Echo();
+    //TEST CASES TYPE 1: Single-String, no file
+    String[] test = {"echo", "\"Hello!\""}; // Good string
+    e.run(test); // Output should be: Hello!
+    String[] test2 = {"echo", "\"Hel\"lo\""}; //Quotes within string
+    e.run(test2); // Should return an error
+    String[] test3 = {"echo", "\"Hello"}; //No ending quote
+    e.run(test3); // Should return an error
+    String[] test4 = {"echo", "Hello\""}; //No starting quote
+    e.run(test4); // Should return an error
+    String[] test5 = {"echo", "Hello"}; // No quotes at all
+    e.run(test5); // Should return an error
+    
+    //TEST CASES TYPE 2: Single-String, file
+    Cat c = new Cat();
+    String[] test6 = {"echo", "\"Hello!\"", ">", "file"}; // Create with overwrite
+    e.run(test6); // Should see no output
+    String[] testCat = {"cat", "file"};
+    c.run(testCat); // Should print out "Hello!" in a file
+    String[] test7 = {"echo", "\"Goodbye!\"", ">", "file"}; // Overwrite
+    e.run(test7); // Should see no output
+    c.run(testCat); // Should print out "Goodbye!" in a file
+    String[] test8 = {"echo", "\"Hello!\"", ">>", "file"}; // Append
+    e.run(test8); // Should see no output
+    c.run(testCat); // Should print out "Goodbye!Hello!" in a file
+    String[] test9 = {"echo", "\"Append!\"", ">>", "file2"}; // Create with Append
+    e.run(test9); // Should see no output
+    String[] testCat2 = {"cat", "file2"};
+    c.run(testCat2); //Should print out "Append!" in a file
+    
+    //TEST CASES TYPE 3: Multi-word string, No file
+    String[] test10 = {"echo", "\"Hello", "there\""}; // Good string
+    e.run(test10); // Output should be: Hello there
+    String[] test11 = {"echo", "\"Hello", "the\"re\""}; //Quotes within string
+    e.run(test11); // Should return an error
+    String[] test12 = {"echo", "\"Hello", "there"}; //No ending quote
+    e.run(test12); // Should return an error
+    String[] test13 = {"echo", "Hello", "there\""}; //No starting quote
+    e.run(test13); // Should return an error
+    String[] test14 = {"echo", "Hello", "there"}; // No quotes at all
+    e.run(test14); // Should return an error
+    
+    //TEST CASES TYPE 4: Multi-word string, File
+    String[] test15 = {"echo", "\"Hello", "there\"", ">", "file3"}; // Create with overwrite
+    e.run(test15); // Should see no output
+    String[] testCat3 = {"cat", "file3"};
+    c.run(testCat3); // Should print out "Hello there" in a file
+    String[] test16 = {"echo", "\"Goodbye", "son!\"", ">", "file3"}; // Overwrite
+    e.run(test16); // Should see no output
+    c.run(testCat3); // Should print out "Goodbye son!" in a file
+    String[] test17 = {"echo", "\"Hello", "son!\"" ,">>", "file3"}; // Append
+    e.run(test17); // Should see no output
+    c.run(testCat3); // Should print out "Goodbye son!Hello son!" in a file
+    String[] test18 = {"echo", "\"Append", "homie\"", ">>", "file4"}; // Create with Append
+    e.run(test18); // Should see no output
+    String[] testCat4 = {"cat", "file4"};
+    c.run(testCat4); //Should print out "Append homie" in a file
+    
+    //TEST CASES TYPE 5: File/Operator errors
+    String[] test19 = {"echo", "\"Hello", "there\"", ">", ">", "file3"}; // Multiple operators
+    e.run(test19); // Should return an error
+    String[] test20 = {"echo", "\"Goodbye", "son!\"", ">>>", "file3"}; // Incorrect operator
+    e.run(test20); // Should return an error
+    String[] test21 = {"echo", "\"Hello", "son!\"" ,">>", "file3", "file4"}; // Multiple files
+    e.run(test21); // Should return an error
+    String[] test22 = {"echo", "\"Append", "homie\"", ">>", "file4.txt"}; // Incorrect file
+    e.run(test22); // Should return an error
+    
+    //TEST CASES TYPE 6: Misc.
+    String[] testFinal = {"echo"}; //Only the command
+    e.run(testFinal); // Gives back the incorrect error here. When run through
+    // the shell, the correct error is given.
+    * }
+    */
+}

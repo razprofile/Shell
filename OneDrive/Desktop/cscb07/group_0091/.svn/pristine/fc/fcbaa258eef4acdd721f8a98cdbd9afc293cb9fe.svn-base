@@ -1,0 +1,17 @@
+package jShell;
+
+public class InputFile extends File {
+  
+  public InputFile(String filename) {
+    super(filename);
+  }
+  public void readContents() {
+    /*
+     * Reads the contents of the file and prints them out to the shell
+     * 
+     * @return the contents of the file
+     */
+    super.getContents();
+  }
+  
+}

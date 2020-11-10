@@ -1,0 +1,46 @@
+package test;
+
+import static org.junit.Assert.*;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.fileSystem.Redirection;
+import jShell.fileSystem.File;
+import jShell.fileSystem.Path;
+import jShell.Shell;
+import org.junit.Test;
+
+public class RedirectionTest {
+  
+
+  Shell s = new Shell();
+  Redirection r = new Redirection();
+  @Test
+  public void testFileHandling() throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException {
+    Path p = new Path("file");
+    r.fileHandling(">", "file", "Contents");
+    Path p2 = new Path("file2");
+    r.fileHandling(">>", "file2", "appended");
+  }
+  
+  @Test(expected = RedirectionOperatorsException.class)
+  public void testFileHandlingBadRedirOp() throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException {
+    Path p = new Path("file");
+    r.fileHandling(">>>", "file", "Unimportant");
+  }
+
+  @Test(expected = BadFileNameException.class)
+  public void testFileHandlingBadFilename() throws InvalidPathException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException {
+    Path p = new Path("file.txt");
+    r.fileHandling(">", "file.txt", "Unimportant");
+  }
+  
+  @Test
+  public void testCheckRedirection() {
+    assertEquals("Bad operator", false, r.checkRedirection(">>>", "file"));
+    assertEquals("Bad filename", false, r.checkRedirection(">", "file.txt"));
+    assertEquals("All good", true, r.checkRedirection(">", "file"));
+  }
+}

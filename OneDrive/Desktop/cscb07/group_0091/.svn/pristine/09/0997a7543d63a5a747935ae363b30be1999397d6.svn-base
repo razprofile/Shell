@@ -1,0 +1,26 @@
+package jShell.interfaces;
+
+public interface IFile extends IFileSystemNode{
+
+	  /**
+	   * Returns false, as file cannot have children
+	   * 
+	   * @return false
+	   */
+	  public boolean ifChildExists(String name);
+
+	  /**
+	   * Populates the contents of this file with whatever text the user desires
+	   * 
+	   * @param contents the text to be added to the file
+	   */
+	  public void setContents(String contents);
+	  /**
+	   * Opens and returns the contents of this file
+	   * 
+	   * @return the contents of the file
+	   */
+	  public String getContents();
+
+	
+}

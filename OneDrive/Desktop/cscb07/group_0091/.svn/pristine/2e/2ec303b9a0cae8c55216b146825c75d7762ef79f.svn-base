@@ -1,0 +1,15 @@
+Class name: Shell
+Parent class: none
+Subclasses: none
+
+Responsibilities:
+* Start a new session when shell is opened
+* Read and recognize the commands entered by a user
+* Print outputs on the command to the shell
+* End current session when shell is closed
+* Print error message if command is not found
+
+Collaborators:
+* Command
+* Exit
+* Error

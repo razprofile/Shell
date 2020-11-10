@@ -1,0 +1,51 @@
+package jShell.mockClasses;
+
+import java.util.ArrayList;
+import java.util.Stack;
+
+import jShell.interfaces.*;
+
+public class MockUserData implements IUserData{
+
+	@Override
+	public ArrayList<String> getCommandHistory() {
+		ArrayList<String> commandHistory = new ArrayList<String>();
+		commandHistory.add("command");
+		commandHistory.add("some other command");
+		commandHistory.add("this was valid command");
+		commandHistory.add("this was invalid command");
+		commandHistory.add("some more commands");
+		commandHistory.add("some more commands");
+		commandHistory.add("some more commands");
+		
+		return commandHistory;
+		
+		
+	}
+
+	@Override
+	public IPath getCurPath() {
+		return new MockPath("this/is/a/path/to/working/directory");
+	}
+
+	@Override
+	public void setCurPath(IPath curPath) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public IDirectory getCurDir() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Stack<IPath> getPathStack() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
+	
+}

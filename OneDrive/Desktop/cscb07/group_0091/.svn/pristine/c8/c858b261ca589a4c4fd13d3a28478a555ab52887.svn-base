@@ -1,0 +1,125 @@
+package jShell.interfaces;
+
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.DirNotFoundException;
+import jShell.Errors.Error;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NodeExistsException;
+
+public interface IFileSystem {
+
+	  /**
+	   * Get reference to root directory
+	   * 
+	   * @return Reference to root directory
+	   */
+	  public IDirectory getRootDir();
+
+	  /**
+	   * Assuming pass is a valid full path ending with a directory or file, get 
+	   * the reference to the bottom directory or file
+	   * 
+	   * @param path Full path
+	   * @return The reference to the node at full path
+	   * @throws InvalidPathException 
+	   */
+	  public IFileSystemNode getNodeAtFullPath(IPath path) throws InvalidPathException;
+
+	  /**
+	   * Get the reference to the bottom directory or file, assuming path is a valid
+	   * relative path ending with a directory or file,
+	   * 
+	   * @param path Relative path
+	   * @return The reference to the node at full path 
+	   * @throws InvalidPathException
+	   */
+	  public IFileSystemNode getNodeAtRelativePath(IPath path) throws InvalidPathException;
+
+	  /**
+	   * Get the reference to the bottom directory or file, assuming path is 
+	   * valid relative or full path
+	   * 
+	   * @param path
+	   * @return The reference to the node at the bottom of path
+	   * @throws InvalidPathException 
+	   */
+	  public IFileSystemNode getNodeAtPath(IPath path) throws InvalidPathException;
+
+	  /**
+	   * Creates and returns a file given by the path (either relative or full 
+	   * path). If parent path does not exist or name is contains invalid 
+	   * characters, return null.
+	   * 
+	   * @param path Path pointing at the file to be created
+	   * @return Reference to the newly created file
+	   * @throws InvalidPathException 
+	   * @throws NodeExistsException 
+	   * @throws BadFileNameException 
+	   */
+	  public IFile createNewFile(IPath path) throws InvalidPathException, NodeExistsException, BadFileNameException;
+	  
+	  /**
+	   * Creates and returns a directory given by the path (either relative or full 
+	   * path). If parent path does not exist or name is contains invalid 
+	   * characters, return null.
+	   * 
+	   * @param path Path pointing to the directory to be created.
+	   * @return reference to newly created directory
+	   * @throws InvalidPathException 
+	   * @throws NodeExistsException 
+	   */
+	  public IDirectory createNewDirectory(IPath path) throws InvalidPathException, NodeExistsException;
+
+	  /**
+	   * This method returns a parent of specified node, assuming that node is 
+	   * part of current file tree. If node is root directory, return 
+	   * root directory.
+	   * 
+	   * @param dir Directory in file system
+	   * @return Parent of dir
+	   */
+	  public IDirectory getParent(IFileSystemNode node);
+	  
+	  @Override
+	  /**
+	   * Method that returns contents of the file system tree represented as a string.
+	   * 
+	   * @return string representation of file system tree
+	   */
+	  public String toString();
+	  
+	  
+	  /**
+	   * Remove the node at specified path from the file tree and return the reference to it. 
+	   * 
+	   * @param toDelete Path for a node to be deleted
+	   * @return reference to the node being deleted; null, if operation is unsuccessful.
+	   * @throws InvalidPathException 
+	   */
+	  public IFileSystemNode removeNode(IPath toDelete) throws InvalidPathException;
+	  
+	  /**
+	   * Method to move the node from old location to the children of given directory. If new 
+	   * new parent is a successor of node being moved, do not move the node.
+	   * 
+	   * @param pathToNode Path to node to be moved
+	   * @param newParent Path to new parent of node being moved
+	   * @return reference to the node, if operation succeeds; null otherwise
+	   * @throws InvalidPathException 
+	   * @throws NodeExistsException 
+	   */
+	  public IFileSystemNode moveNode(IPath pathToNode, IPath newParent) throws InvalidPathException, NodeExistsException;
+	  
+	  /**
+	   * Method to copy the node from old location to the children of given directory
+	   * 
+	   * @param pathToNode Path to node being copied
+	   * @param newParent Path to new parent of node being copied
+	   * @return the reference to node copied; null, if operation fails
+	   * @throws InvalidPathException 
+	   * @throws NodeExistsException 
+	   */
+	  public IFileSystemNode copyNode(IPath pathToNode, IPath newParent) throws InvalidPathException, NodeExistsException;
+	  
+	
+}

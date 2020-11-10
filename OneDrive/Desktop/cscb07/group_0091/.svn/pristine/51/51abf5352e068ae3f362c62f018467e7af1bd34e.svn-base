@@ -1,0 +1,84 @@
+package jShell.interfaces;
+
+import jShell.*;
+
+import jShell.commands.*;
+
+public abstract class IShell {
+  
+  /**
+   * Returns the fileSystem
+   * 
+   * @return The main FileSystem for the shell
+   */
+  public abstract IFileSystem getFileSystem();
+  
+  private static IShell shell;
+  public static IShell getShell() {
+    return shell;
+  }
+  protected IShell(){
+    shell = this;
+  }
+  /**
+   * Returns userData
+   * 
+   * @return The main UserData object for the shell
+   */
+  public abstract IUserData getUserData();
+
+
+  public abstract void shutDown();
+
+  /**
+   * Returns the input the user typed in the shell
+   * 
+   * @return The input the user typed in the shell
+   */
+  public abstract String getUserInput();
+
+  /**
+   * Output a value to the shell on the same line
+   * 
+   * @param The value to be output to the shell
+   */
+  public abstract void outputToShell(String value);
+
+  /**
+   * Processes user's input.
+   * 
+   * @param The input the user typed to the shell
+   */
+  public abstract void onInput(String input);
+
+  /**
+   * Returns Whether the program is running or not
+   * 
+   * @return Whether the program is running or not
+   */
+  public abstract boolean isRunning();
+
+  /**
+   * Sets running to isRunning
+   * 
+   * @param The boolean value of isRunning
+   */
+  public abstract void setIsRunning(boolean isRunning);
+  /**
+   * Prints invalid argument and an error message in case of invalid arguments for the command being
+   * executed
+   * 
+   * @param c command with invalid arguments
+   * @param invalidArgument invalid argument; "all" if all arguments are invalid
+   * @param errorCode error code for error that occured
+   */
+  public abstract void outputErrorMessage(ICommand c, String invalidArgument,
+      String errorCode);
+  
+  public abstract IRedirection getRedirection();
+  
+  public abstract IError getError();
+
+  public abstract void outputToShellln(String value);
+
+}

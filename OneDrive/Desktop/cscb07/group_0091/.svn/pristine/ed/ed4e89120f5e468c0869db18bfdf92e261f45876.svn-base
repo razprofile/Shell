@@ -1,0 +1,132 @@
+// **********************************************************
+// Assignment2:
+// Student1:
+// UTORID user_name: benhaimr
+// UT Student #: 1006139830
+// Author: Raz Ben Haim
+//
+// Student2:
+// UTORID user_name: sharm697
+// UT Student #: 1002352465
+// Author: Sankalp Sharma
+//
+// Student3:
+// UTORID user_name: voitovyc
+// UT Student #: 1005735563
+// Author: Oleksandr Voitovych
+//
+// Student4:
+// UTORID user_name: meharch6
+// UT Student #: 1003963570
+// Author: Kevin Meharchand
+//
+//
+// Honor Code: I pledge that this program represents my own
+// program code and that I have coded on my own. I received
+// help from no one in designing and debugging my program.
+// I have also read the plagiarism section in the course info
+// sheet of CSC B07 and understand the consequences.
+// *********************************************************
+
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.Shell;
+
+/**
+ * The pwd class prints out the current working directory that the user is in. 
+ * It takes in no additional arguments, other than the command name. 
+ * Any additional argument results in a Incorrect number of arguments error.
+ * 
+ * @author Sankalp Sharma
+ **/
+
+public class Pwd extends Command {
+
+
+  /**
+   * Handles the errors for the pwd command. If any errors are found, 
+   * It stores the error code as a key and the corresponding 
+   * error message as value. The pwd isValid method takes care of additional
+   * argument error messages.
+   * 
+   * 
+   * @param args Arguments for the command
+   * @return Hashmap containing any error codes and their corresponding 
+   * error messages. If command is run successfully, then an empty
+   * hashmap is returned.
+   */
+  @Override
+  public HashMap<String, String> isValid(String[] args) {
+
+    // HashMap to map every argument by an error it caused
+    HashMap<String, String> errors = new HashMap<String, String>();
+
+    // Checking that correct number of arguments is passed
+    if (args.length != 1) {
+      errors.put("all", "WRONGARGS");
+    }
+
+    return errors;
+  }
+
+  /**
+   * The run method executes if correct arguments are entered. 
+   * It gets the current path that the User is in.
+   * 
+   */
+  public void run(String args[]) {
+
+    // assuming that the arguments are correct.
+    // Just get current path and print it
+    Shell.getShell().outputToShellln(
+        Shell.getShell().getUserData().getCurPath().toString());
+  }
+
+  @Override
+  public String toString() {
+
+    return "pwd";
+
+  }
+
+
+
+  /*
+   * public static void main(String[] args) { 
+   * 
+   * Shell shell = new Shell();
+   * 
+   * //testing for Pwd class
+   * 
+   * //test 1 will print out / signifying root path 
+   * String test1 = "pwd";
+   * shell.getShell().onInput(test1);
+   * 
+   * //test 2 will not print any output 
+   * String test2 = "mkdir a"; 
+   * shell.getShell().onInput(test2);
+   * 
+   * //test 3 will not print any output 
+   * String test3 = "cd a"; 
+   * shell.getShell().onInput(test3);
+   * 
+   * //test 4 will print /a 
+   * String test4 = "pwd"; 
+   * shell.getShell().onInput(test4);
+   * 
+   * //test 5 will not print out any output 
+   * String test5 = "cd .."; 
+   * shell.getShell().onInput(test5);
+   * 
+   * //test 6 will print out / 
+   * String test6 = "pwd"; 
+   * shell.getShell().onInput(test6);
+   * 
+   * //test 7 will print out Error: Incorrect number of arguments.
+   *  String test7 = "pwd a";
+   * shell.getShell().onInput(test7);
+   * 
+   * }
+   */
+}

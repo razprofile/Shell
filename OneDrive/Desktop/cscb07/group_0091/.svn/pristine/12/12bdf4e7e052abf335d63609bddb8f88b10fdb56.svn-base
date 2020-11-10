@@ -1,0 +1,22 @@
+package jShell.interfaces;
+
+import jShell.Errors.Error;
+
+public interface ICommand {
+
+	  /**
+	   * Run command with given arguments, assuming arguments are valid
+	   * 
+	   * @param args Arguments for the command
+	   * @return A string representing the command's output, if any
+	   * @throws Error 
+	   */
+	  public abstract String run(String args[]) throws Error;
+
+
+	  /**
+	   * Return the name of the command
+	   */
+	  public abstract String toString();
+	
+}

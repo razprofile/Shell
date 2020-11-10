@@ -1,0 +1,60 @@
+package jShell.mockClasses;
+
+import jShell.fileSystem.Path;
+import jShell.interfaces.*;
+
+public class MockFile implements IFile{
+  
+  String name;
+  
+  public MockFile() {
+    this.name = "SomeFile";
+  }
+  
+  public MockFile(String name) {
+    this.name = name;
+  }
+  
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  @Override
+  public IPath getPath() {
+    if (this == MockFileSystem.childFile) {
+      return new Path(MockFileSystem.validFileFullPath);
+    }  
+    
+    return new Path("this/is/some/path/to/file");
+  }
+
+  @Override
+  public IFileSystemNode clone() {
+    return new MockFile();
+  }
+
+  @Override
+  public boolean ifChildExists(String name) {
+    return false;
+  }
+
+  @Override
+  public void setContents(String contents) {
+    IShell.getShell().outputToShellln("Setting contents of file " + this.name 
+        + " to " + contents);
+  }
+
+  @Override
+  public String getContents() {
+    return "CONTENTS";
+  }
+
+ 
+  
+}

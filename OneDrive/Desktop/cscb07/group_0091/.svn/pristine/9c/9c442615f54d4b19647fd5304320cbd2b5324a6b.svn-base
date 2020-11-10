@@ -1,0 +1,18 @@
+package jShell;
+
+public class Cd extends Command {
+
+	@Override
+	public void run(String[] args) {
+		if(args.length > 2) {
+			Shell.getShell().OutputToShellln("Arg error");
+			return;
+		}
+		if(args.length == 1) {
+			return;
+		}
+		Shell.getShell().OutputToShellln("moveing to " + args[1]);
+
+	}
+
+}

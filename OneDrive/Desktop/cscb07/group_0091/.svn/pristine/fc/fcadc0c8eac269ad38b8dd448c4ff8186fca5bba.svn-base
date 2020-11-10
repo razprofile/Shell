@@ -1,0 +1,56 @@
+package test;
+
+import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import jShell.commands.Pushd;
+import jShell.mockClasses.MockShell;
+
+/**
+ * Test cases for the Pushd command.
+ * 
+ * @author Raz Ben Haim
+ *
+ */
+public class PushdTest {
+  MockShell ms;
+  Pushd pd;
+  
+  @Before
+  public void setUp() throws Exception {
+    ms = new MockShell();
+    pd = new Pushd();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    
+  }
+
+  @Test
+  public void testRootOnly() {
+    fail("Not yet implemented");
+  }
+  
+  @Test
+  public void testTooManyArgs() {
+    
+  }
+  
+  @Test
+  public void testCompletePath() {
+    
+  }
+  
+  @Test
+  public void testDotDot() {
+    
+  }
+  
+  @Test
+  public void testDot() {
+    
+  }
+
+}

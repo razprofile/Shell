@@ -1,0 +1,12 @@
+Class name: Cat
+Parent class (if any): ShellCommand
+Subclasses (if any): -
+
+Responsibilities:
+*Outputs the contents of a file to the shell (either in the current directory or at a given path) 
+*Prints an error message to shell, if file or path is not found.
+
+Collaborators:
+*Path
+*InputFile
+*Error

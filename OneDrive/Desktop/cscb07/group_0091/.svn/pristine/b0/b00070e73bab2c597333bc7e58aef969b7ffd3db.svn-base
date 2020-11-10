@@ -1,0 +1,98 @@
+package jShell;
+
+import java.util.Collection;
+
+public class Cd extends Command {
+
+
+  
+
+  /*
+   * main method for parsing
+   * 
+   */
+  private Directory goDirFull(String dirStr) {
+   //prepare directory for parsing
+   //split by slash to get directories
+   //set pwd to null initially
+    String[] dirArray = dirStr.split("/");
+    Directory pwd = null;
+    
+    // absolute path case 
+    //pwd starting point is the root
+    if (dirStr.startsWith("/")) {
+      pwd = Shell.getShell().getFileSystem().getRootDir();
+
+    } 
+    //relative path case
+    
+    else {
+     /*starting point is the current directory (to the relative path)
+     get the Directory corresponding to current path */
+      pwd = (Directory) Shell.getShell().getFileSystem().getNodeAtFullPath(Shell.getShell().getUserData().getCurPath());
+    }
+
+    
+   
+    /*loop through all the directory tokens in the string array
+     can go either up or down by the 2nd method
+    stop at the most bottom directory **/
+
+    for (String dirToken : dirArray) {
+      pwd = goDir(pwd, dirToken);
+    }
+    return pwd;
+
+  }
+
+  private Directory goDir(Directory curr, String dir) {
+    // 1st case, stay where you're at
+    if (dir.equals(".")) {
+
+      return curr;
+    }
+    // go up
+    else if (dir.equals("..")) {
+
+      /*
+       * Get Immediate parent  of curr.
+       * curr.getPath gets the path of the current directory. 
+       * getParentPath gets the full path of the current directory's parent.
+       *  getNodeatfullPath takes in that path then returns a directory object 
+       */
+      Directory parentDir = (Directory) Shell.getShell().getFileSystem().getNodeAtFullPath(curr.getPath().getParentPath());
+      return parentDir;
+    }
+    // go down one directory
+    // get child
+    else {
+      Directory destination = (Directory) curr.getChild(dir);
+      return destination;
+    }
+
+  }
+
+
+
+  @Override
+  public void run(String[] args) {
+    Error e = new Error();
+    if (args.length > 2) {
+      Shell.getShell().outputToShellln(
+          e.errorMessage("WRONGARGS") + " Please only include one directory to change to.");
+      return;
+    }
+    if (args.length == 2) {
+      //directory that you want to
+      Directory dirDestionation = goDirFull(args[1]);
+      //change to destionation directory
+      Shell.getShell().getUserData().setCurPath(dirDestionation.getPath());
+
+    }
+    Shell.getShell().outputToShellln("moving to " + args[1]);
+
+  }
+  
+  
+
+}

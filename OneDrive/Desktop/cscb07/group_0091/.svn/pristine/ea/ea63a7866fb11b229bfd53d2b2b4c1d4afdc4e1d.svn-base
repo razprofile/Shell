@@ -1,0 +1,147 @@
+package jShell.mockClasses;
+
+import jShell.interfaces.*;
+
+public class MockPath implements IPath {
+
+  /**
+   * This is a mock version of path class
+   * 
+   * In this class:
+   *   - /this/is/a/valid/full/path/to/dir: represents any valid full path that ends at directory
+   *   - this/is/a/valid/relative/path/to/dir: represents any valid relative path that ends at directory
+   *   - /this/is/a/valid/full/path/to/file: represents any valid full path that ends at file
+   *   - this/is/a/valid/relative/path/to/file: represents any valid relative path that ends at file
+   *   - /this/is/a/valid/full/path/to/dir/child: represents any valid path for the new directory or file to be created
+   */
+  
+	String path;
+	
+	public MockPath(String path) {
+		this.path = path;
+	}
+	
+	@Override
+	public boolean isValidFullPath() {
+	  
+		return path.equals("/this/is/a/valid/full/path/to/dir") 
+		    || path.equals("/this/is/a/valid/full/path/to/file");
+		
+	}
+
+	@Override
+	public boolean isValidRelativePath() {
+	  
+      return path.equals("this/is/a/valid/relative/path/to/dir") 
+          || path.equals("this/is/a/valid/relative/path/to/file");
+          
+	}
+
+	@Override
+	public boolean isValidPath() {
+	 
+	    return this.isValidFullPath() || this.isValidRelativePath();
+
+	}
+
+	@Override
+	public boolean isPathToDirectory() {
+		return path.equals("/this/is/a/valid/full/path/to/dir")
+		    || path.equals("this/is/a/valid/relative/path/to/dir");
+	}
+
+	@Override
+	public boolean doubleSlashChecker() {
+
+	    // Iterating over the characters in the path
+	    for (int i = 0; i < this.path.length() - 1; i++) {
+	      if (this.path.charAt(i) == '/' && this.path.charAt(i + 1) == '/') {
+	        // If at least two consecutive slashes are found, return false
+	        return false;
+	      }
+	    }
+
+	    return true;
+	  
+	}
+
+	@Override
+	public String[] getSequence() {	  
+	  switch(this.path){
+	    case "/this/is/a/valid/full/path/to/dir":
+	      String[] sequence1 = {"this", "is", "a", "valid", "full", "path", "to", "dir"};
+	      return sequence1;
+	    case "this/is/a/valid/relative/path/to/dir":
+	      String[] sequence2 = {"this", "is", "a", "valid", "relative", "path", "to", "dir"};
+	      return sequence2;
+	    case "/this/is/a/valid/full/path/to/file":
+	      String[] sequence3 = {"this", "is", "a", "valid", "full", "path", "to", "file"};
+          return sequence3;
+	    case "this/is/a/valid/relative/path/to/file":
+	      String[] sequence4 = {"this", "is", "a", "valid", "relative", "path", "to", "file"};
+          return sequence4;
+	    case "/this/is/a/valid/full/path/to/dir/child":
+	      String[] sequence5 = {"this", "is", "a", "full", "path", "to", "dir", "child"};
+	      return sequence5;
+	  }
+	  
+	  return null;
+	}
+
+	@Override
+	public IPath getParentPath() {
+	    String[] sequence = this.path.split("/");
+	    String result = "";
+	    for (int i = 0; i < sequence.length - 1; i++) {
+	      if (!sequence[i].isEmpty()) {
+	        result += "/" + sequence[i];
+	      }
+	    }
+	    //System.out.println(result);
+	    return new MockPath(result);
+	}
+
+	@Override
+	public String getBottomName() {
+	    //System.out.println(this.path);
+	    
+		if(this.path.endsWith("file")) {
+		  return "file";
+		}
+		if(this.path.endsWith("dir")) {
+		  return "dir";
+		}
+		if(this.path.endsWith("child")) {
+		  return "child";
+		}
+		
+		return null;
+	}
+
+	@Override
+	public IPath appendNodeName(String nodeName) {
+		return new MockPath(this.path + nodeName);
+	}
+
+	@Override
+	public IPath convertRelativeToFull() {
+		if (this.path.equals("this/is/a/relative/path/to/dir")) {
+		  return new MockPath("/this/is/a/full/path/to/dir");
+		}
+		if (this.path.equals("this/is/a/relative/path/to/file")) {
+          return new MockPath("/this/is/a/full/path/to/file");
+        }
+		return null;
+	}
+
+	@Override
+	public boolean isSuccessor(IPath potentialSuccessor) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	@Override
+	public String toString() {
+	    return path;
+	}
+}

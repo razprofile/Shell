@@ -1,0 +1,69 @@
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.Error;
+import jShell.File;
+import jShell.FileSystem;
+import jShell.FileSystemNode;
+import jShell.Path;
+import jShell.Shell;
+
+/**
+ * A class to implement the Pushd command (Saves the current working directory
+ * by pushing onto directory stack and then changes the new current working
+ * directory to DIR).
+ * 
+ * @author Raz
+ */
+public class Pushd extends Command {
+
+	@Override
+	public void run(String[] args) {
+
+		// Path of the directory to be created
+		Path path = new Path(args[1]);
+		Error e = new Error();
+
+		// Checking if given location corresponds to a valid location at current file
+		// If it is, add args[1] to stack
+		// Else, print the corresponding error message.
+		if (!path.isValidFullPath()) {
+			if (!path.isValidRelativePath()) {
+				Shell.getShell().outputToShellln(e.errorMessage("PATHNOTFOUND"));
+				return;
+			}
+			Shell.getShell().getUserData().getPathStack().add(Path.convertRelativeToFull(new Path(args[1])));
+			return;
+		}
+		Shell.getShell().getUserData().getPathStack().add(new Path(args[1]));
+	}
+
+	@Override
+	public HashMap<String, String> isValid(String[] args) {
+
+		// HashMap to map every argument by an error it caused
+		HashMap<String, String> errors = new HashMap<String, String>();
+
+		// Checking that correct number of arguments is specified
+		if (args.length != 2) {
+			errors.put("all", "WRONGARGS");
+			return errors;
+		}
+
+		Path path = new Path(args[1]);
+		// Checking that specified path exists and is a path to directory
+		if (!path.isValidPath() || !path.isPathToDirectory()) {
+			errors.put(args[1], "DIRNOTFOUND");
+		}
+
+		return errors;
+	}
+
+	@Override
+	public String toString() {
+
+		return "pushd";
+
+	}
+
+}

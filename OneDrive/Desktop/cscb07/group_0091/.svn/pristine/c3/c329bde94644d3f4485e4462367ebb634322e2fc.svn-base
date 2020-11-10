@@ -1,0 +1,136 @@
+package jShell;
+	
+//import java.util.*;
+	
+public class FileSystem {
+	
+	private Directory rootDir;
+	
+	public FileSystem() {
+		
+		this.rootDir = new Directory("");
+		
+	}
+	
+	public FileSystem(Directory root) {
+		
+		this.rootDir = root;
+		
+	}
+	
+	/**
+	 * Get reference to root directory
+	 * 
+	 * @return reference to root directory
+	 */
+	public Directory getRootDir() {
+		
+		return this.rootDir;
+		
+	}
+	
+		
+	/**
+	 * Assuming pass is a valid full path ending with a directory or file, get the reference to the bottom 
+	 * directory or file
+	 * 
+	 * @param path full path
+	 * @return the reference to the node at a full path
+	 */
+	public FileSystemNode getNodeAtFullPath(Path path) {
+		
+		//Sequence of locations to be processed
+		String[] sequenceOfLocations = path.getSequence();
+		
+		//Iterator variable for directories being processed
+		Directory currDir = this.rootDir;
+		
+		for (String dirName : sequenceOfLocations) {
+			if (dirName.equals("..")) {
+				currDir = this.getParent(currDir);
+			}else {
+				if (currDir.getChild(dirName) instanceof Directory) {
+					//If new location is a directory, update the iterator
+					currDir = (Directory) currDir.getChild(dirName);
+				} else {
+					//If new location is file, we must have reached the bottom of the path. We can return this file.
+					return currDir.getChild(dirName);
+				}
+			}
+
+		}
+		
+		return currDir;
+		
+	}
+	
+	
+	/**
+	 * Get the reference to the bottom directory or file, assuming pass is a valid 
+	 * relative path ending with a directory or file,
+	 * 
+	 * @param path full path
+	 * @return the reference to the node at a full path
+	 */
+	public FileSystemNode getNodeAtRelativePath(Path path) {
+		
+		//Get full path from relative path for the same location in the file tree 
+		Path fullPath = Path.convertRelativeToFull(path);
+		return this.getNodeAtFullPath(fullPath);
+		
+	}
+	
+	
+	/**
+	 * Assuming pass is a valid full path ending with a directory, add the specified node to the 
+	 * contents of bottom directory
+	 * 
+	 * @param node File or Directory object to be added
+	 * @param path location of the directory, which contents are being modified
+	 */
+	public void addToLocationAtFullPath(FileSystemNode node, Path path) {
+		
+		//Getting reference to the directory begin updated with the node
+		Directory d = (Directory) this.getNodeAtFullPath(path);
+		
+		Path pathForNode = Path.appendNodeName(path, node.getName());
+		node.setPath(pathForNode);
+		d.addChildren(node);
+		
+	}
+	
+	
+	/**
+	 * Assuming pass is a valid relative path ending with a directory, add the specified node to the 
+	 * contents of bottom directory
+	 * 
+	 * @param node File or Directory object to be added
+	 * @param path location of the directory at a relative path, which contents are being modified
+	 */
+	public void addToLocationAtRelativePath(FileSystemNode node, Path path) {
+		
+		//Getting reference to the directory begin updated with the node
+		Directory d = (Directory) this.getNodeAtRelativePath(path);
+		node.setPath(path);
+		d.addChildren(node);
+		
+	}
+	
+	
+	/**
+	 * This method returns a parent of specified directory, assuming that directory has been added to the file system.
+	 * If directory is root directory, return root directory.
+	 * 
+	 * @param dir directory in file system
+	 * @return parent of dir
+	 */
+	public Directory getParent(Directory dir) {
+		
+		Path pathToDir = dir.getPath();
+		Path pathToParent = pathToDir.getParentPath();
+		Directory parent = (Directory) this.getNodeAtFullPath(pathToParent);
+		return parent;
+		
+	}
+	
+}

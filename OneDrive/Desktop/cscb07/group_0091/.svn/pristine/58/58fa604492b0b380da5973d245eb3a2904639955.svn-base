@@ -1,0 +1,46 @@
+//Sprint 2 Backlog.  
+June 24 to June 30
+
+
+User Stories from Product Backlog that we will address in this sprint:
+1) As a User, exit the Shell using exit command
+2) As a User, get an audible form of a String using speak command
+3) As a User, make directory in a working directory using mkdir command
+4) As a User, make directory in a working directory at a relative path using mkdir command
+5) As a User, make directory in a working directory at a full path using mkdir command
+6) As a User, switch working directory to specified directory in current working directory using cd command
+7) As a User, switch working directory to specified directory at relative path using cd command
+8) As a User, switch working directory to specified directory at full path using cd command
+9) As a User, get the full path to current working directory using pwd command
+10) As a User, get the contents of listed files concatenated using cat command
+11) As a User, print specified string to the Shell using echo command	
+12) As a User, overwrite the contents of a specified file with a specified string using echo command
+13) As a User, create the new file at given path and put a given string inside using echo command	
+14) As a User, get the documentation for specified command using man command
+
+Specific tasks to be accomplished:
+a-1. (Path) Finish code for the Path class
+a-2. (FileSystem) Finish code for the FileSystem class
+a-3. (UserData) Finish code for UserData class
+b-1. (Mkdir) Finish mkdir comm andand perform basic testing
+b-2. (Pwd) Finish pwd command and perform basic testing
+b-3. (Cd) Finish cd command and perform basic testing
+b-4. (Echo) Write base code for echo command
+b-5. (Exit) Finish exit command and perform basic testing
+c-1. (Cat) Finish cat command and perform basic testing
+c-2. (Speak) Write base code for speak command
+c-3. (Man) Write base code for man command
+
+These tasks are assigned as follows:
+
+User: Sasha (Oleksandr)
+Tasks: a-2, b-1, b-2
+
+User: Raz
+Tasks: a-3, b-5, c-2
+
+User: Sankalp
+Tasks: a-1, b-3
+
+User: Kevin
+Tasks: b-4, c-1, c-3

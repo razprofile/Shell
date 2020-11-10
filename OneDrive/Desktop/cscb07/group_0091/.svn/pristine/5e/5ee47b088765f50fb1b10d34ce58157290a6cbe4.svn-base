@@ -1,0 +1,142 @@
+package test;
+
+import static org.junit.Assert.*;
+import org.junit.Test;
+import jShell.Errors.ArgsException;
+import jShell.Errors.ArgsNumberException;
+import jShell.Errors.BadFileNameException;
+import jShell.Errors.FileNotFoundException;
+import jShell.Errors.InvalidPathException;
+import jShell.Errors.NegativeNumberException;
+import jShell.Errors.NodeExistsException;
+import jShell.Errors.RedirectionException;
+import jShell.Errors.RedirectionOperatorsException;
+import jShell.commands.History;
+import jShell.mockClasses.MockShell;
+
+
+public class HistoryTest {
+
+  MockShell s = new MockShell();
+  History h = new History();
+
+  @Test(expected = ArgsNumberException.class)
+  public void testInvalidNumberArgsException() throws InvalidPathException, ArgsNumberException,
+      NegativeNumberException, ArgsException, NodeExistsException, BadFileNameException,
+      RedirectionOperatorsException, FileNotFoundException, RedirectionException {
+    String[] params = {"history", "a", "b"};
+    h.run(params);
+
+    String[] params2 = {"history", "2", "a"};
+    h.run(params2);
+  }
+
+  @Test(expected = ArgsException.class)
+  public void testInvalidArgsTypeException() throws InvalidPathException, ArgsNumberException,
+      NegativeNumberException, ArgsException, NodeExistsException, BadFileNameException,
+      RedirectionOperatorsException, FileNotFoundException, RedirectionException {
+    String[] params = {"history", "a"};
+    h.run(params);
+  }
+
+  @Test(expected = RedirectionException.class)
+  public void testInvalidReDirection() throws InvalidPathException, ArgsNumberException,
+      NegativeNumberException, ArgsException, NodeExistsException, BadFileNameException,
+      RedirectionOperatorsException, FileNotFoundException, RedirectionException {
+    String[] params = {"history", "2", ">"};
+    h.run(params);
+
+    String[] params2 = {"history", ">>", ">"};
+    h.run(params2);
+  }
+
+  @Test(expected = BadFileNameException.class)
+  public void testBadFileNameReDirection() throws InvalidPathException, ArgsNumberException,
+      NegativeNumberException, ArgsException, NodeExistsException, BadFileNameException,
+      RedirectionOperatorsException, FileNotFoundException, RedirectionException {
+    String[] params = {"history", ">", "!"};
+    h.run(params);
+  }
+
+  @Test(expected = NegativeNumberException.class)
+  public void testNegativeNumber() throws InvalidPathException, ArgsNumberException,
+      NegativeNumberException, ArgsException, NodeExistsException, BadFileNameException,
+      RedirectionOperatorsException, FileNotFoundException, RedirectionException {
+    String[] params = {"history", "-1"};
+    h.run(params);
+
+  }
+
+  @Test
+  public void testHistoryNMostRecent() throws InvalidPathException, ArgsNumberException,
+      NegativeNumberException, ArgsException, NodeExistsException, BadFileNameException,
+      RedirectionOperatorsException, FileNotFoundException, RedirectionException {
+    String[] params = {"history", "1"};
+    assertEquals("7.some more commands\n", h.run(params));
+
+    // last 4
+    String[] params2 = {"history", "4"};
+    String historyRep = "4.this was invalid command\n" + "5.some more commands\n"
+        + "6.some more commands\n" + "7.some more commands\n";
+    assertEquals(historyRep, h.run(params2));
+
+    // all of them in three different ways
+    String[] params3 = {"history"};
+    String historyRepAll = "1.command\n" + "2.some other command\n" + "3.this was valid command\n"
+        + "4.this was invalid command\n" + "5.some more commands\n" + "6.some more commands\n"
+        + "7.some more commands\n";
+    assertEquals(historyRepAll, h.run(params3));
+    
+    String[] params4 = {"history 7"};
+    assertEquals(historyRepAll, h.run(params4));
+    
+    String[] params5 = {"history 77"};
+    assertEquals(historyRepAll, h.run(params5));
+    
+  }
+  
+  @Test
+  public void testHistoryValidRedirection() throws InvalidPathException, ArgsNumberException, NegativeNumberException, ArgsException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException, RedirectionException {
+    String[] params = {"history", ">","childFile"};
+    String historyRepAll = "1.command\n" + "2.some other command\n" + "3.this was valid command\n"
+        + "4.this was invalid command\n" + "5.some more commands\n" + "6.some more commands\n"
+        + "7.some more commands\n";
+    String RedirectionOverwrite = "Redirecting output for overwriting:" + historyRepAll +  "\n to file with name: " + "childFile"; 
+    h.run(params);
+    assertEquals(RedirectionOverwrite, s.getLastOutput());
+    
+    //Testing RedirectionAppend
+    
+    String[] params2 = {"history", ">>","childFile"};
+    String historyRepAll2 = "1.command\n" + "2.some other command\n" + "3.this was valid command\n"
+        + "4.this was invalid command\n" + "5.some more commands\n" + "6.some more commands\n"
+        + "7.some more commands\n";
+    String RedirectionAppend = "Redirecting output for appending:" + historyRepAll +  "\n to file with name: " + "childFile"; 
+    h.run(params2);
+    assertEquals(RedirectionAppend, s.getLastOutput());
+  }
+  
+  @Test
+  public void testHistoryValidRedirectionNmost() throws InvalidPathException, ArgsNumberException, NegativeNumberException, ArgsException, NodeExistsException, BadFileNameException, RedirectionOperatorsException, FileNotFoundException, RedirectionException {
+    String[] params = {"history","4", ">","childFile"};
+    String historyRep = "4.this was invalid command\n" + "5.some more commands\n"
+        + "6.some more commands\n" + "7.some more commands\n";
+    String RedirectionOverwrite = "Redirecting output for overwriting:" + historyRep +  "\n to file with name: " + "childFile"; 
+    h.run(params);
+    assertEquals(RedirectionOverwrite, s.getLastOutput());
+    
+    //Redirection Overwriting 
+    String[] params2 = {"history","4", ">>","childFile"};
+    String historyRep2 = "4.this was invalid command\n" + "5.some more commands\n"
+        + "6.some more commands\n" + "7.some more commands\n";
+    String RedirectionAppending= "Redirecting output for appending:" + historyRep +  "\n to file with name: " + "childFile"; 
+    h.run(params2);
+    assertEquals(RedirectionAppending,s.getLastOutput());    
+  }
+
+  @Test
+  public void testtoString() {
+    assertEquals("history", h.toString());
+  }
+  
+}

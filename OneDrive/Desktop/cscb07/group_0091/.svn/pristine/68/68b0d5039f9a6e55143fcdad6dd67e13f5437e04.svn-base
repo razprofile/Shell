@@ -1,0 +1,46 @@
+package jShell.commands;
+
+import java.util.HashMap;
+import jShell.Shell;
+
+/**
+ * Exists the shell
+ * 
+ * @author Raz
+ */
+public class Exit extends Command {
+
+	@Override
+	/**
+	 * Exits the terminal and handles errors in args processing.
+	 * 
+	 * @param The array of arguments that the user typed in the shell
+	 */
+	public void run(String[] args) {
+
+		Shell.getShell().shutDown();
+		Shell.getShell().setIsRunning(false);
+	}
+
+	@Override
+	public HashMap<String, String> isValid(String[] args) {
+
+		// HashMap to map every argument by an error it caused
+		HashMap<String, String> errors = new HashMap<String, String>();
+
+		// Check if number of arguments is correct
+		if (args.length != 1) {
+			errors.put("all", "WRONGARGS");
+		}
+
+		return errors;
+	}
+
+	@Override
+	public String toString() {
+
+		return "exit";
+
+	}
+
+}

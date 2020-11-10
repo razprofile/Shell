@@ -1,0 +1,13 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class SuccessorException extends Error {
+
+  private static final String errorTemplate = "Trying to move a node %s to it's" 
+                                              + "sucessor %s";
+
+  public SuccessorException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+}

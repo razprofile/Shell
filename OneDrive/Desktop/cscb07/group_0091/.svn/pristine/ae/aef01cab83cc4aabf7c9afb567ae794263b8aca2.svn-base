@@ -1,0 +1,99 @@
+package jShell.mockClasses;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import jShell.interfaces.*;
+
+public class MockDirectory implements IDirectory {
+  
+  @Override
+  public String getName() {
+    return "mockDir";
+  }
+
+  @Override
+  public void setName(String name) {
+  }
+
+  @Override
+  public IPath getPath() {
+    return new MockPath("this/is/a/path/to/mockDir");
+  }
+
+  @Override
+  public IFileSystemNode clone() {
+    return new MockDirectory();
+  }
+
+  @Override
+  public boolean tryAddChildren(IFileSystemNode n) {
+    if (n.getName().equals("file")) {
+      return false;
+    }
+    
+    if (n.getName().equals("dir")) {
+      return false;
+    }
+    
+    return true;
+  }
+
+  @Override
+  public void removeChild(IFileSystemNode n) {
+  }
+
+  @Override
+  public boolean ifChildExists(String name) {
+    if (name.equals("file")) {
+      return true;
+    }
+    
+    if (name.equals("dir")) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  @Override
+  public IFileSystemNode getChild(String name) {
+
+    if (name.equals("dir")) {
+      return new MockDirectory();
+    }
+    
+    if (name.equals("file")) {
+      return new MockFile();
+    }
+    
+    return null;
+    
+  }
+
+  @Override
+  public Collection<IFileSystemNode> getChildren() {
+    Collection<IFileSystemNode> result = new ArrayList<>();; 
+    result.add(new MockDirectory());
+    result.add(new MockFile());
+    
+    return result;
+  }
+
+  @Override
+  public IFileSystemNode removeChild(String name) {
+    
+    if (name.equals("dir")) {
+      return new MockDirectory();
+    }
+    
+    if (name.equals("file")) {
+      return new MockFile();
+    }
+    
+    return null;
+    
+  }
+  
+  
+
+}

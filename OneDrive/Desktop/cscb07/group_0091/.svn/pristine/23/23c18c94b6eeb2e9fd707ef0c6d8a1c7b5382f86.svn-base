@@ -1,0 +1,97 @@
+package jShell;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+
+public class Shell {
+
+	private static Shell Shell; // The main shell object for all classes to use
+
+	private UserData userData;
+	private ArrayList<Command> commands; // Stores all the commands
+
+	private Scanner input; // User input for the Shell
+	// TODO Add directory class and create an object for it here
+	private FileSystem fileSystem;
+	private boolean running; // Keep track if the Shell is running
+
+	public Shell() { // constructor for JShell
+
+		Shell = this;
+		setIsRunning(true);
+		commands = new ArrayList<Command>();
+		input = new Scanner(System.in);
+		fileSystem = new FileSystem();
+		userData = new UserData(new Path("/"));
+		RegisterCommands();
+		// TODO Add directory class and create an object for it here
+	}
+
+	public FileSystem getFileSystem() {
+		return fileSystem;
+	}
+
+	public UserData getUserData() {
+		return userData;
+	}
+
+	private void RegisterCommands() { // TODO Right now all the commands have to be added manually (look at the cd
+										// example) can we find a better way?e
+		commands.add(new Exit());
+		commands.add(new Speak());
+		commands.add(new Mkdir());
+		// commands.add(new CommandName());
+	}
+
+	public void shutDown() {
+		commands.stream().filter(command -> command.getClass() == Speak.class).forEach(x -> {
+			((Speak) x).shutDown();
+		});
+	}
+
+	public static Shell getShell() {
+		return Shell;
+	}
+
+	public String getUserInput() {
+		return this.input.nextLine();
+	}
+
+	public void outputToShell(String value) {
+		System.out.print(value);
+	}
+
+	public void outputToShellln(String value) {
+		System.out.println(value);
+	}
+
+	/**
+	 * Processes user's input.
+	 */
+	public void onInput(String input) {
+		userData.getCommandHistory().add(input);
+		String args[] = input.trim().split("\\s+"); // Get rid of all white spaces, and split the arguments into a
+													// String array
+		for (Command c : this.commands) { // check if command exists by comparing the first argument to class name
+			if (c.getClass().getSimpleName().toLowerCase().equals(args[0])) {
+				// run command
+				c.run(args);
+				return;
+			}
+		}
+		// If the command does not exist, out put an error.
+		// TODO create a class error and use it to handle the errors
+		outputToShellln("command not found");
+
+	}
+
+	public boolean isRunning() {
+		return running;
+	}
+
+	public void setIsRunning(boolean isRunning) {
+		running = isRunning;
+	}
+
+}

@@ -1,0 +1,95 @@
+package test;
+
+import static org.junit.Assert.*;
+import java.util.HashMap;
+import org.junit.After;
+import org.junit.Test;
+import jShell.mockClasses.MockPath;
+import jShell.mockClasses.MockShell;
+import jShell.commands.Man;
+
+public class ManTest {
+  
+  MockShell s = new MockShell();
+  Man m = new Man(s);
+  HashMap<String, String> errors = new HashMap<String, String>();
+  
+  // TESTS FOR THE run METHOD
+  @Test
+  public void testRunGoodManual() {
+    String[] params = {"man", "exit"};
+    m.run(params);
+    String expected = "";
+    expected = expected + ("~~~~~~~~~~~~~~~~~~~~\n");
+    expected = expected + ("The exit Command:\n");
+    expected = expected + ("\n");
+    expected = expected + ("Usage: exit\n");
+    expected = expected + ("\n");
+    expected = expected + ("The exit command closes the shell"
+        + " entirely. Adding any arguments after the\n");
+    expected = expected + ("initial command will result"
+        + " in an error. Nothing else to see here!\n");
+    expected = expected + ("~~~~~~~~~~~~~~~~~~~~\n");
+    assertEquals(expected + "\n", s.output.get(0));
+  }
+  
+  @After
+  public void clearList() {
+    s.output.clear();
+  }
+  
+  @Test
+  public void testRunRedirection() {
+    String[] params = {"man", "exit", ">", "file"};
+    m.run(params);
+    String expected = "";
+    expected = expected + ("~~~~~~~~~~~~~~~~~~~~\n");
+    expected = expected + ("The exit Command:\n");
+    expected = expected + ("\n");
+    expected = expected + ("Usage: exit\n");
+    expected = expected + ("\n");
+    expected = expected + ("The exit command closes the shell"
+        + " entirely. Adding any arguments after the\n");
+    expected = expected + ("initial command will result"
+        + " in an error. Nothing else to see here!\n");
+    expected = expected + ("~~~~~~~~~~~~~~~~~~~~\n");
+    assertEquals("Redirecting output for overwriting:" + expected +"\n" + " to file with name: file\n" 
+        , s.output.get(0));
+  }
+  
+  // TESTS FOR THE isValid METHOD
+  @Test
+  public void testIsValidNotEnoughArgs() {
+    errors.put("all", "WRONGARGS");
+    String[] params = {"man"};
+    assertEquals("One argument only", m.isValid(params), errors);
+    String[] params2 = {"man", "cat", "cd", "man", "save"};
+    assertEquals("Too many arguments", m.isValid(params2), errors);
+    String[] params3 = {"man", "cat", "cd"};
+    assertEquals("Not enough arguments for redirection", m.isValid(params3), errors);
+  }
+  
+  @Test
+  public void testIsVaidNonexistentManual() {
+    errors.put("abbas", "NOCOMMAND");
+    String[] params = {"man", "abbas"};
+    assertEquals("Nonexistent manual", m.isValid(params), errors);
+  }
+  
+  @Test
+  public void testIsValidBadRedirection() {
+    errors.put("all", "BADREDIR");
+    String[] params = {"man", "cat", ">>>", "file"};
+    assertEquals("bad operator", m.isValid(params), errors);
+    String[] params2 = {"man", "cat", ">", "file.txt"};
+    assertEquals("Bad filename", m.isValid(params2), errors);
+  }
+  
+  
+  // TESTS FOR THE toString METHOD
+  @Test
+  public void testToString() {
+    assertEquals(m.toString(), "man");
+  }
+  
+}

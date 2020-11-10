@@ -1,0 +1,14 @@
+package jShell.Errors;
+
+import java.util.Formatter;
+
+public class LoadNotFirstException extends Error{
+  
+  private static final String errorTemplate =
+      "Load must be the first command called.";
+  
+  public LoadNotFirstException(Object... args) {
+    super(new Formatter().format(errorTemplate, args).toString());
+  }
+
+}
